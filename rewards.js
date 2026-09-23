@@ -187,6 +187,8 @@
     [["湯船につかったあと"], ["寝る前", "今夜"]],
     // 寝る前に1袋は多い
     [["寝る前", "今夜"], ["1袋"]],
+    // 「気持ちいいところまで」は伸ばす動きだけ
+    [["気持ちいいところまで"], ["グーパー", "ぶらぶら", "回す", "落とす", "指", "かかと", "ひねる"]],
     // 音楽をかけながら何もしない
     [["音楽をかけながら"], ["何もしない"]]
   ];
@@ -716,7 +718,7 @@
       "ちょっとおしゃれして|eat_out drink_out out meet event|3-6|h seq e0.5",
       "奮発して|buy eat_out salon|4-6|m0.5",
       "思う存分|watch play read hobby nap rest|3-6",
-      "日にちを決めて|trip event eat_out salon meet|5-6|seq w2-3",
+      "日にちを決めて|trip event eat_out salon meet|5-6|seq span w2-3",
       "写真をたくさん撮りながら|trip event out|4-6",
       "身軽な荷物で|trip out|5-6",
       "おいしいものを調べておいて|trip event|5-6|seq w2-3",
