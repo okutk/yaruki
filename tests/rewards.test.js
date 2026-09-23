@@ -58,6 +58,87 @@ TYPES.forEach(function (type) {
   }
 });
 
+// ── 1c. 段階の釣り合い: レベルが上がるほどご褒美が大きい(tools/reward-scale.md) ─────────
+function quantile(list, p) {
+  var s = list.slice().sort(function (a, b) { return a - b; });
+  var i = (s.length - 1) * p, lo = Math.floor(i), hi = Math.ceil(i);
+  return s[lo] + (s[hi] - s[lo]) * (i - lo);
+}
+TYPES.forEach(function (type) {
+  var med = [], q1 = [];
+  for (var lv = 1; lv <= R.LEVELS; lv++) {
+    var items = R.details(type, lv);
+    var scores = items.map(function (x) { return x.score; });
+    med.push(quantile(scores, 0.5));
+    q1.push(quantile(scores, 0.25));
+    // 行動そのものの点数は、そのレベルの目安の幅に入る
+    var band = R.BANDS[type][lv - 1], seenAct = {};
+    items.forEach(function (x) {
+      if (seenAct[x.act]) return;
+      seenAct[x.act] = true;
+      check(x.base >= band[0] && x.base <= band[1], type + " レベル" + lv + " の行動の点数 " + x.base + " が目安 " + band.join("〜") + " の外: 「" + x.act + "」");
+    });
+    // 低いレベルは「今すぐ・今日のうち」だけ。先の日付は上のレベルから
+    var maxW = type === "box" ? 0 : [1, 1, 2, 2, 3, 3][lv - 1];
+    items.forEach(function (x) { check(x.size.w <= maxW, type + " レベル" + lv + " に先すぎるもの(時期 " + x.size.w + "): 「" + x.text + "」"); });
+  }
+  for (var i = 1; i < med.length; i++) {
+    check(med[i] > med[i - 1], type + ": 点数の中央値がレベル" + i + "→" + (i + 1) + "で増えていない: " + med.join(" / "));
+    // 隣のレベルとの重なり: 上のレベルの下位25%が、下のレベルの中央値を下回らない
+    check(q1[i] >= med[i - 1], type + ": レベル" + (i + 1) + "の下位25%(" + q1[i] + ")がレベル" + i + "の中央値(" + med[i - 1] + ")より小さい");
+  }
+  console.log(type + ": 点数の中央値 レベル1〜6 = " + med.join(" / "));
+});
+
+// ── 1d. 場所(家/外/どこでも) ──────────────────────────
+TYPES.forEach(function (type) {
+  var outSizes = [];
+  for (var lv = 1; lv <= R.LEVELS; lv++) {
+    var base = R.pool(type, lv);
+    // 省略したときは、これまでと同じ(家・どこでも)
+    check(JSON.stringify(R.pool(type, lv, {})) === JSON.stringify(base), type + " レベル" + lv + ": opts が空でも結果が同じ");
+    check(JSON.stringify(R.pool(type, lv, { place: "home" })) === JSON.stringify(base), type + " レベル" + lv + ": place home は省略と同じ");
+    check(JSON.stringify(R.details(type, lv).map(function (x) { return x.text; })) === JSON.stringify(base), type + " レベル" + lv + ": details と pool の並びが同じ");
+    R.details(type, lv).forEach(function (x) { check(x.place !== "o", type + " に外だけの文が混じる: 「" + x.text + "」"); });
+    var out = R.details(type, lv, { place: "out" });
+    outSizes.push(out.length);
+    out.forEach(function (x) {
+      var ok = x.place !== "h" || (type === "final" && x.size.w >= 1);
+      check(ok, type + " の外の候補に家でしかできない文: 「" + x.text + "」");
+    });
+    check(out.length >= 500, type + " レベル" + lv + " の外の候補が少ない: " + out.length);
+  }
+  console.log(type + ": 外で使える件数 レベル1〜6 = " + outSizes.join(" / "));
+});
+
+// 外の条件で引く: 外の候補だけが出る・周回しても重複しない・履歴は省略時と共通で使える
+(function () {
+  var rng = makeRng(7), hist = R.emptyHistory("box");
+  var outSet = {};
+  R.pool("box", 4, { place: "out" }).forEach(function (t) { outSet[t] = true; });
+  var texts = [];
+  for (var i = 0; i < 1500; i++) {
+    var r = R.draw("box", 4, hist, rng, { place: "out" });
+    check(outSet[r.text], "外の条件で外の候補以外が出た: 「" + r.text + "」");
+    texts.push(r.text);
+    if (i % 3 === 0) R.draw("box", 4, hist, rng); // 省略時の抽選とまぜても壊れない
+  }
+  var n = R.pool("box", 4, { place: "out" }).length;
+  var bad = windowDuplicatesOf(texts, Math.min(n, 400));
+  check(bad.length === 0, "外の条件で " + Math.min(n, 400) + " 回の窓に重複: " + bad.slice(0, 3).join(" / "));
+  var homeSet = {};
+  R.pool("box", 4).forEach(function (t) { homeSet[t] = true; });
+  for (var j = 0; j < 300; j++) check(homeSet[R.draw("box", 4, hist, rng).text], "省略時に外だけの文が出た");
+})();
+function windowDuplicatesOf(texts, windowSize) {
+  var last = {}, bad = [];
+  texts.forEach(function (t, i) {
+    if (last[t] !== undefined && i - last[t] < windowSize) bad.push(t);
+    last[t] = i;
+  });
+  return bad;
+}
+
 // ── 2. 1000回連続で引いて重複がない ─────────────────────
 function run(type, n, levelOf, rng, roundTrip) {
   var hist = R.emptyHistory(type), texts = [];
