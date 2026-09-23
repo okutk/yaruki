@@ -1,5 +1,5 @@
 /*
- * やる気の原稿用紙: 綴じ帳(書いた原稿用紙の記録。普段のマス目とジムの紙)・累計マス・気分の傾向・付箋・バックアップ
+ * やる気の原稿用紙: 綴じ帳(書いた原稿用紙の記録。普段のマス目とジムの紙)・累計マス・気分の傾向・付箋・最近のタスク・バックアップ
  *
  * ブラウザでは window.YarukiRecords、node では require("./records.js") で使う。
  * 画面(DOM)と localStorage には触らない(読み書きは index.html が行う)。
@@ -17,10 +17,12 @@
   var BINDER_KEY = "genkouyoushi-history-v1";
   var BACKUP_APP = "yaruki-genkouyoushi";
   var BACKUP_FORMAT = 1;
-  var PAGE_SIZE = 400;            // 原稿用紙1枚 = 400マス
   var NOTE_MAX = 100;
   var STICKY_MAX = 40;            // 付箋(書きかけの紙に貼る短いメモ)
   var TREND_MIN = 3;              // 気分の傾向は、前後がそろった記録がこれ以上あるときだけ出す
+  var OLD_PAGE_SIZE = 400;        // 前の版の「400マスで原稿用紙1枚」(celebratedPages の数え方)
+  var RECENT_MAX = 5;             // 最近のタスクは最大5つ
+  var RECENT_DAYS = 60;           // これより前にやったことは出さない
 
   var MOODS = [
     { v: 1, face: "😣", label: "しんどい" },
@@ -35,9 +37,10 @@
   //  mainCount / light / dayType はジムの紙だけ(本体のマスの数・軽めで始めたか・平日/休日)。普段の紙では null。
   //  filledAt: マスごとに埋めた時刻(埋まっていないマスは null)。週のたよりで、その週に埋めたマスを数える。
   //  sticky: 付箋。普段の紙だけ(ジムの紙では null)。
+  //  gold: 金のマスの番号(マス目を作るときに決める)。埋めるまでは画面に出さない。
   var FIELDS = [
     "id", "kind", "task", "category", "difficulty", "heaviness", "time", "energy", "lowEnergy", "level",
-    "steps", "done", "filledAt", "mainCount", "light", "dayType", "finalReward", "rewardLocked", "finalUserId",
+    "steps", "done", "filledAt", "gold", "mainCount", "light", "dayType", "finalReward", "rewardLocked", "finalUserId",
     "createdAt", "firstFilledAt", "updatedAt", "completedAt",
     "moodBefore", "moodAfter", "note", "sticky"
   ];
@@ -73,6 +76,15 @@
     if (typeof v !== "string") return null;
     var t = v.replace(/\s+/g, " ").trim();
     return t ? t.slice(0, STICKY_MAX) : null;
+  }
+  // 金のマスの番号をそろえる(0〜n-1 の整数、重複なし、小さい順)
+  function goldOf(v, n) {
+    if (!Array.isArray(v)) return [];
+    var seen = {}, out = [];
+    v.forEach(function (i) {
+      if (intIn(i, 0, n - 1) === i && !seen[i]) { seen[i] = true; out.push(i); }
+    });
+    return out.sort(function (a, b) { return a - b; });
   }
   function laterIso(a, b) {
     if (!a) return b || null;
@@ -124,6 +136,7 @@
       steps: steps,
       done: done,
       filledAt: filledAt,
+      gold: goldOf(s.gold, steps.length),
       mainCount: mainCount,
       light: gym ? s.light === true : null,
       dayType: gym ? (s.dayType === "holiday" ? "holiday" : "weekday") : null,
@@ -143,6 +156,8 @@
   }
 
   /* 綴じ帳全体に持つもの
+   *  celebratedPages: 前の版の「400マスで原稿用紙1枚」のお祝いの記録。今は原稿用紙の枚数を manuscript.js で数えるので
+   *           画面では使わない(前の版で開いたときに、お祝いが出直さないように残す)
    *  lastFilledAt: 最後にマスを埋めた時刻(普段の紙・ジムの紙・おまけのマスを含む)。おかえりに使う
    *  welcome: おかえり。shownFor = 出したときの lastFilledAt(同じ間あきには1回だけ出す)、
    *           bonusPending = 次に埋めた1マスのご褒美を1段上げる、bonusFor = 上げたマス { id, box } */
@@ -281,13 +296,33 @@
   function completedCount(binder) {
     return binder.sheets.filter(function (s) { return !!s.completedAt; }).length;
   }
-  function pageInfo(total) {
-    return { pages: Math.floor(total / PAGE_SIZE), rest: total % PAGE_SIZE };
+
+  /* ── 最近のタスク(入力欄の下に出す) ────────────────
+   * 普段の紙だけ(ジムの紙は入れない)。入力文は前後の空白を除き、続く空白を1つにする。空白を除いて同じなら重複とみなす。
+   * 最後にマスを埋めた時刻(無ければ作った時刻)の新しい順。RECENT_DAYS 日より前のものは出さない。 */
+  function taskText(s) { return String((s && s.task) || "").replace(/[ \t\u3000]+/g, " ").trim(); }
+  function lastTouched(s) {
+    var best = s.createdAt;
+    (s.filledAt || []).forEach(function (t) { if (t) best = laterIso(best, t); });
+    return Date.parse(best) || 0;
   }
-  // まだお祝いしていない枚数に届いていれば、その通算枚数を返す(無ければ 0)
-  function pageToCelebrate(binder) {
-    var p = Math.floor(totalDone(binder) / PAGE_SIZE);
-    return p > binder.celebratedPages ? p : 0;
+  function recentTasks(sheets, now) {
+    var limit = (now instanceof Date ? now.getTime() : Date.now()) - RECENT_DAYS * 86400000;
+    var list = (sheets || []).filter(function (s) {
+      return s && s.kind !== "gym" && taskText(s);
+    }).map(function (s) {
+      return { s: s, at: lastTouched(s) };
+    }).filter(function (x) {
+      return x.at >= limit;
+    }).sort(function (a, b) { return b.at - a.at; });
+    var seen = {}, out = [];
+    list.forEach(function (x) {
+      var t = taskText(x.s), key = t.replace(/\s/g, "");
+      if (seen[key] || out.length >= RECENT_MAX) return;
+      seen[key] = true;
+      out.push({ task: t, category: x.s.category, heaviness: x.s.heaviness, time: x.s.time });
+    });
+    return out;
   }
 
   /* ── 同じ種類のタスク・気分の傾向・前のあなたより ── */
@@ -419,9 +454,9 @@
       else if (newer(s, binder.sheets[i])) { binder.sheets[i] = s; updated++; }
       else same++;
     });
-    // 読み込みで増えたマスではお祝いを出さない
+    // 前の版の「400マスで1枚」のお祝い(celebratedPages): 読み込みで増えたマスでは出さない
     binder.celebratedPages = Math.max(binder.celebratedPages, incoming.celebratedPages,
-      Math.floor(totalDone(binder) / PAGE_SIZE));
+      Math.floor(totalDone(binder) / OLD_PAGE_SIZE));
     // 最後にマスを埋めた時刻は新しい方。おかえりの記録(welcome)はこの端末のものを残す
     binder.lastFilledAt = laterIso(binder.lastFilledAt, incoming.lastFilledAt);
     return { added: added, updated: updated, same: same };
@@ -431,10 +466,11 @@
     PREFIX: PREFIX,
     BINDER_KEY: BINDER_KEY,
     BACKUP_APP: BACKUP_APP,
-    PAGE_SIZE: PAGE_SIZE,
     NOTE_MAX: NOTE_MAX,
     STICKY_MAX: STICKY_MAX,
     TREND_MIN: TREND_MIN,
+    RECENT_MAX: RECENT_MAX,
+    RECENT_DAYS: RECENT_DAYS,
     MOODS: MOODS,
     FIELDS: FIELDS,
     GYM_KIND_KEY: GYM_KIND_KEY,
@@ -453,8 +489,7 @@
     removeSheet: removeSheet,
     totalDone: totalDone,
     completedCount: completedCount,
-    pageInfo: pageInfo,
-    pageToCelebrate: pageToCelebrate,
+    recentTasks: recentTasks,
     kindKey: kindKey,
     moodTrend: moodTrend,
     latestNote: latestNote,

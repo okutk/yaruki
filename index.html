@@ -39,6 +39,8 @@
     --sticky-bg: #fff2a6;
     --sticky-ink: #4a3d00;
     --sticky-edge: #9a7b00;
+    /* 金のマス */
+    --gold-bright: #f3e3a6;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -61,6 +63,7 @@
       --sticky-bg: #594c16;
       --sticky-ink: #fff4c2;
       --sticky-edge: #d9bd4a;
+      --gold-bright: #6a5626;
     }
   }
   :root[data-theme="dark"] {
@@ -83,6 +86,7 @@
     --sticky-bg: #594c16;
     --sticky-ink: #fff4c2;
     --sticky-edge: #d9bd4a;
+    --gold-bright: #6a5626;
   }
 
   * { box-sizing: border-box; }
@@ -790,17 +794,320 @@
     font-size: 12px;
     color: var(--ink-soft);
   }
-  .tally-bar {
-    height: 4px;
-    margin-top: 6px;
-    background: var(--rule-soft);
-    border-radius: 2px;
+  .tally-main .back-btn { margin-top: 8px; }
+  .tally-now { margin-top: 2px; }
+
+  /* ── 原稿用紙(縦書き 20字×20行。マスを埋めるごとに作品を1文字ずつ書く) ──
+   * 行は右から左へ、字は上から下へ。マスは grid で並べ、文字だけを縦書きにする(句読点・長音を縦の形にする) */
+  .ms-page {
+    --cell: 15px;
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 20), var(--cell));
+    grid-template-rows: repeat(var(--rows, 20), var(--cell));
+    width: max-content;
+    border: 1.5px solid var(--rule);
+    background: var(--card-bg);
+    font-family: "Noto Serif JP", serif;
+    color: var(--ink);
+  }
+  .ms-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid var(--rule-soft);
+    border-bottom: 1px solid var(--rule-soft);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: calc(var(--cell) * 0.72);
+    line-height: 1;
     overflow: hidden;
   }
-  .tally-bar span {
+  .ms-cell.edge-r { border-right: none; }
+  .ms-cell.edge-b { border-bottom: none; }
+  .ms-cell.fold { border-left: 1.5px solid var(--rule); }
+  .ms-cell.gold { color: var(--gold); font-weight: 700; }
+  .ms-cell.next { animation: msBlink 1.8s ease-in-out infinite; }
+  @keyframes msBlink {
+    0%, 100% { background: transparent; }
+    50% { background: var(--gold-soft); }
+  }
+  .ms-cell.wait { color: transparent; }
+  .ms-cell.fresh { animation: msFresh 0.9s ease-out var(--delay, 0s) both; }
+  @keyframes msFresh {
+    0% { opacity: 0; transform: scale(1.35); filter: blur(2px); }
+    100% { opacity: 1; transform: none; filter: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ms-cell.next { animation: none; background: var(--gold-soft); }
+    .ms-cell.fresh { animation: none; }
+  }
+
+  /* 小さな原稿用紙(累計マスの横。書いている行のまわりだけ) */
+  .ms-mini {
+    flex: none;
+    align-self: flex-start;
+    padding: 5px;
+    background: var(--paper-2);
+    border: 1px solid var(--rule-soft);
+    border-radius: 2px;
+    cursor: pointer;
+    box-shadow: 0 1px 0 var(--rule-soft);
+  }
+  .ms-mini .ms-page { --cell: 14px; }
+  .ms-mini:focus-visible { outline: 2px solid var(--rule); outline-offset: 2px; }
+  .ms-retro {
+    margin: 10px 0 0;
+    padding: 8px 12px;
+    background: var(--card-bg);
+    border-left: 3px solid var(--gold);
+    font-family: "Noto Serif JP", serif;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .ms-retro small { display: block; font-family: "Noto Sans JP", sans-serif; font-size: 12px; color: var(--ink-soft); }
+
+  /* 原稿用紙のオーバーレイ(全体・作品・お祝い) */
+  .ms-sheet { width: min(480px, 100%); padding: 0 8px 12px; }
+  .ms-sheet .letter-head { padding-left: 4px; }
+  .ms-body { margin: 10px 0 12px; }
+  .ms-scroll {
+    direction: rtl;           /* 拡大したときは右端(1行目)から見えるように */
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+  .ms-scroll .ms-page { direction: ltr; margin: 0 auto; }
+  /* 375px 幅でマスは 15px ほど(横スクロールなしで 20行が収まる) */
+  .ms-sheet .ms-page { --cell: clamp(11px, calc((100vw - 76px) / 20), 16px); }
+  .ms-sheet .ms-page.zoom { --cell: 26px; }
+  .ms-tools {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .ms-info { margin: 10px 0 0; font-size: 13.5px; line-height: 1.7; color: var(--ink-soft); }
+  .ms-info strong { font-family: "Noto Serif JP", serif; font-size: 15px; color: var(--ink); }
+  .ms-works { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+  .ms-works .sheet-item { padding-right: 12px; }
+  .ms-works .sheet-task { padding-right: 0; font-family: "Noto Serif JP", serif; }
+  .ms-label { margin: 16px 0 6px; font-size: 13px; color: var(--ink-soft); }
+
+  /* 書き上がった作品のカード(短冊のように縦書きで) */
+  .ms-card {
+    margin: 4px 0 12px;
+    padding: 18px 14px 14px;
+    background: var(--paper-2);
+    border: 1.5px solid var(--gold);
+    border-radius: 2px;
+    text-align: center;
+  }
+  .ms-cheer {
+    margin: 0 0 12px;
+    font-family: "Noto Serif JP", serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--hanko);
+  }
+  .ms-text {
+    display: inline-block;
+    max-width: 100%;
+    max-height: 62vh;
+    overflow-x: auto;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    text-align: start;
+    font-family: "Noto Serif JP", serif;
+    font-size: 19px;
+    line-height: 1.9;
+    letter-spacing: 0.12em;
+    white-space: pre;
+  }
+  .ms-text .gold { color: var(--gold); font-weight: 700; }
+  .ms-attr { margin: 10px 0 0; font-size: 12.5px; color: var(--ink-soft); }
+  .ms-attr-date { display: block; margin-top: 2px; }
+
+  /* 原稿用紙1枚のお祝い */
+  .ms-party-head { text-align: center; padding: 8px 0 4px; }
+  .ms-party-head .seal {
+    display: inline-block;
+    font-family: "Noto Serif JP", serif;
+    font-weight: 900;
+    font-size: 22px;
+    color: var(--hanko);
+    border: 3px solid var(--hanko);
+    border-radius: 50%;
+    width: 84px;
+    height: 84px;
+    line-height: 78px;
+    transform: rotate(-4deg);
+    animation: stampIn 0.5s cubic-bezier(.2,1.4,.4,1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ms-party-head .seal { animation: none; }
+  }
+  .ms-party-head .hanamaru-slot { width: 76px; height: 76px; top: -22px; }
+  .ms-party-title {
+    margin: 12px 0 2px;
+    font-family: "Noto Serif JP", serif;
+    font-size: 19px;
+    font-weight: 900;
+    line-height: 1.5;
+  }
+  .ms-party-sub { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+  .ms-reward {
+    margin: 14px 0 4px;
+    padding: 12px;
+    background: var(--paper-2);
+    border: 2px solid var(--gold);
+  }
+  .ms-reward .field-label { margin-bottom: 6px; color: var(--gold); }
+  .ms-reward-text {
+    font-family: "Noto Serif JP", serif;
+    font-size: 17px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+  .ms-reward-text.secret { filter: blur(6px); user-select: none; cursor: pointer; }
+  .ms-reward .detail-actions { margin-top: 10px; }
+  .ms-mini-page { margin-top: 12px; }
+  .ms-mini-page .ms-page { --cell: clamp(8px, calc((100vw - 110px) / 20), 12px); margin: 0 auto; }
+
+  /* 金のマス(埋めた瞬間に金色に変わる。埋める前は見分けがつかない) */
+  .box.gold.done {
+    background: linear-gradient(135deg, var(--gold-soft), var(--gold-bright) 55%, var(--gold-soft));
+    border-color: var(--gold);
+    border-width: 2px;
+    color: var(--ink);
+  }
+  .box.gold.done .stamp { border-color: var(--gold); color: var(--gold); }
+  .box.gold.shine { animation: goldShine 1s ease-out; }
+  .box.gold.shine::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.85) 48%, transparent 66%);
+    background-size: 250% 100%;
+    animation: goldSweep 0.9s ease-out both;
+    pointer-events: none;
+  }
+  @keyframes goldShine {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.05); box-shadow: 0 0 0 4px rgba(217, 179, 76, 0.45); }
+    100% { transform: scale(1); box-shadow: none; }
+  }
+  @keyframes goldSweep {
+    0% { background-position: 120% 0; }
+    100% { background-position: -40% 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .box.gold.shine { animation: none; }
+    .box.gold.shine::after { display: none; }
+  }
+  .gold-tag {
     display: block;
-    height: 100%;
-    background: var(--gold);
+    margin-bottom: 2px;
+    font-family: "Noto Serif JP", serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold);
+  }
+  .mini-boxes i.on.gold {
+    background: #e7c35a;
+    border-color: #b8871f;
+    box-shadow: 0 0 0 1.5px rgba(231, 195, 90, 0.55);
+  }
+  .detail-steps li.gold { background: linear-gradient(135deg, var(--gold-soft), var(--gold-bright)); border-color: var(--gold); color: var(--ink); }
+  li.gold .step-mark { border-color: var(--gold); color: var(--gold); }
+  .sheet-gold { font-size: 12px; color: var(--gold); white-space: nowrap; }
+  .bonus-tag.gold-tag-inline { border-style: solid; font-weight: 700; }
+
+  /* 最近のタスク(入力欄の下。押すと入力欄に入る) */
+  .recent { margin-top: 10px; }
+  .recent .field-label { margin-bottom: 6px; font-size: 12px; }
+  .recent-btn {
+    max-width: 100%;
+    font-size: 13px;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 原稿用紙の設定(#genkou-settings) */
+  #msSettingsCard { display: none; }
+  body.view-msset #msSettingsCard { display: block; }
+  body.view-msset header.hero,
+  body.view-msset #formCard,
+  body.view-msset #panel,
+  body.view-msset #panel.show,
+  body.view-msset #gymCard,
+  body.view-msset #gymUndo,
+  body.view-msset .notice { display: none; }
+  #msSettingsCard .field-label { display: block; margin-bottom: 10px; font-size: 15px; color: var(--ink); }
+  #msSettingsCard.masking .secret-input { -webkit-text-security: disc; }
+  @supports not (-webkit-text-security: disc) {
+    #msSettingsCard.masking .secret-input { filter: blur(5px); }
+  }
+  .ms-set-now {
+    margin: 0 0 8px;
+    font-family: "Noto Serif JP", serif;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .ms-pick-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+  .ms-pick {
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 12px;
+    background: var(--paper-2);
+    border: 1px solid var(--rule-soft);
+    border-radius: 2px;
+    color: var(--ink);
+    font-family: "Noto Serif JP", serif;
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: left;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+  }
+  .ms-pick small { display: block; font-family: "Noto Sans JP", sans-serif; font-size: 11.5px; color: var(--ink-soft); }
+  .ms-pick[aria-pressed="true"] { border: 2px solid var(--hanko); }
+  .ms-pick:disabled { opacity: 0.6; cursor: default; }
+  .ms-pick:focus-visible { outline: 2px solid var(--rule); outline-offset: 2px; }
+  .ms-group { margin: 14px 0 0; font-size: 13px; font-weight: 700; color: var(--rule); }
+  #msSettingsCard details summary {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: var(--hanko);
+    cursor: pointer;
+  }
+
+  /* 綴じ帳の「原稿用紙」の欄 */
+  .ms-binder { margin-top: 18px; }
+  .ms-binder .month-head { margin-top: 0; }
+  .ms-binder .sheet-item .sheet-task { padding-right: 0; }
+  .ms-works-box { margin-top: 6px; }
+  .ms-works-box summary {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: var(--hanko);
+    cursor: pointer;
+  }
+  .ms-page-works {
+    display: block;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* 生成直後のパネル上部: 前のあなたより・気分の傾向・始める前の気分を1枚にまとめる */
@@ -1771,12 +2078,14 @@
       <p>気が重いことほど、いきなり全部はやらなくていい。質問に答えると、マス目のタスクと難易度に合ったご褒美の提案ができるよ。</p>
       <div class="tally">
         <div class="tally-main">
-          <div class="tally-line" id="tallyLine">1マス埋めると、ここに積み上がっていくよ</div>
+          <div class="tally-line" id="tallyLine">1マス埋めるごとに、原稿用紙に名作を1文字ずつ書いていくよ</div>
           <div class="tally-sub" id="tallySub" hidden></div>
-          <div class="tally-bar" id="tallyBar" aria-hidden="true" hidden><span id="tallyFill"></span></div>
+          <div class="tally-sub tally-now" id="tallyNow" hidden></div>
+          <button type="button" class="back-btn" id="openBinderBtn">📒 綴じ帳</button>
         </div>
-        <button type="button" class="back-btn" id="openBinderBtn">📒 綴じ帳</button>
+        <button type="button" class="ms-mini" id="msMini" aria-label="原稿用紙の全体を見る" hidden></button>
       </div>
+      <p class="ms-retro" id="msRetro" role="status" hidden></p>
     </header>
 
     <div class="notice" id="notice" hidden>
@@ -1890,6 +2199,10 @@
       <h2><span class="num">1</span>何をやりたい？</h2>
       <label class="field-label" for="taskInput">気になっていること・後回しにしていることを書いてみて</label>
       <textarea id="taskInput" placeholder="例：部屋の掃除／家族との旅行の計画／溜まったメールの返信 など"></textarea>
+      <div class="recent" id="recentTasks" hidden>
+        <div class="field-label" id="recentLabel">最近やったこと（押すと入るよ）</div>
+        <div class="chipset" id="recentList" role="group" aria-labelledby="recentLabel"></div>
+      </div>
 
       <div class="qgrid">
         <div class="qrow">
@@ -2086,6 +2399,47 @@
       <p class="privacy-note gym-shortcut-note">📱 ホーム画面のアイコンを長押しすると「ジムに行く」が出ます。押すと、すぐにジムの紙が始まります。<br>出てこないときは、少し時間をおくか、ホーム画面に追加し直してください。</p>
     </div>
 
+    <div class="card" id="msSettingsCard" aria-labelledby="msSetTitle">
+      <div class="my-head">
+        <h2 id="msSetTitle"><span class="num">⚙</span>原稿用紙</h2>
+        <button type="button" class="back-btn" id="msSetBackBtn">← 戻る</button>
+      </div>
+      <p class="privacy-note">ここでの設定は、この端末のブラウザの中にだけ保存されます。GitHub などの外部には送られません。</p>
+
+      <div class="my-section">
+        <label class="field-label" for="msRewardInput">1枚書き上がったときのご褒美</label>
+        <input type="text" id="msRewardInput" class="my-input secret-input" maxlength="100" autocomplete="off" enterkeyhint="done" placeholder="空欄ならおまかせ">
+        <div class="detail-actions">
+          <button type="button" class="small-btn strong" id="msRewardSave">決める</button>
+          <button type="button" class="small-btn" id="msRewardClear">おまかせに戻す</button>
+        </div>
+        <p class="my-card-hint" id="msRewardHint"></p>
+        <div id="msMyPickRow" hidden>
+          <div class="ms-group" id="msMyPickLabel">自分のご褒美から選ぶ</div>
+          <ul class="ms-pick-list" id="msMyPick" aria-labelledby="msMyPickLabel"></ul>
+        </div>
+        <div class="note-hint" id="msRewardMsg" aria-live="polite"></div>
+      </div>
+
+      <div class="my-section">
+        <div class="field-label">いま書いている作品</div>
+        <p class="ms-set-now" id="msSetNow"></p>
+        <button type="button" class="small-btn" id="msSkipBtn">この作品を飛ばす</button>
+        <p class="my-card-hint">飛ばしても、ここまで書いた文字は原稿用紙に残るよ。</p>
+      </div>
+
+      <div class="my-section">
+        <div class="field-label">次に書く作品</div>
+        <p class="ms-set-now" id="msSetNext"></p>
+        <button type="button" class="small-btn" id="msNextClear" hidden>おまかせに戻す</button>
+        <details id="msPickBox">
+          <summary id="msPickSummary">作品を選ぶ</summary>
+          <div id="msPickList"></div>
+        </details>
+        <div class="note-hint" id="msNextMsg" aria-live="polite"></div>
+      </div>
+    </div>
+
     <div class="card" id="binderCard" aria-labelledby="binderTitle">
       <div class="my-head">
         <h2 id="binderTitle"><span class="num">綴</span>綴じ帳</h2>
@@ -2102,6 +2456,16 @@
           <h3 class="month-head" id="lettersTitle">📮 たより</h3>
           <ul class="sheet-list" id="lettersList"></ul>
           <button type="button" class="link-btn" id="lettersMore" hidden>前のたよりも見る</button>
+        </section>
+        <section class="ms-binder" id="msBinder" aria-labelledby="msBinderTitle" hidden>
+          <h3 class="month-head" id="msBinderTitle">📜 原稿用紙</h3>
+          <ul class="sheet-list" id="msPagesList"></ul>
+          <button type="button" class="link-btn" id="msPagesMore" hidden>前の原稿用紙も見る</button>
+          <details class="ms-works-box" id="msWorksBlock" hidden>
+            <summary id="msWorksTitle">✒ 書き上げた作品</summary>
+            <ul class="sheet-list" id="msWorksList"></ul>
+            <button type="button" class="link-btn" id="msWorksMore" hidden>もっと見る</button>
+          </details>
         </section>
         <div id="binderList"></div>
         <p class="binder-empty" id="binderEmpty" hidden>まだ何も綴じていないよ。1マス埋めると、ここに残るよ。</p>
@@ -2186,6 +2550,16 @@
     <button type="button" class="secondary-btn" id="letterDone">閉じる</button>
   </div>
 </div>
+<div class="overlay" id="msOverlay" hidden>
+  <div class="letter ms-sheet" id="msPaper" role="dialog" aria-modal="true" aria-labelledby="msTitle" tabindex="-1">
+    <div class="letter-head">
+      <h2 id="msTitle"></h2>
+      <button type="button" class="icon-btn" id="msClose" aria-label="閉じる">×</button>
+    </div>
+    <div class="ms-body" id="msBody"></div>
+    <button type="button" class="secondary-btn" id="msDone">閉じる</button>
+  </div>
+</div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="classify.js"></script>
@@ -2193,6 +2567,7 @@
 <script src="records.js"></script>
 <script src="gym.js"></script>
 <script src="watch.js"></script>
+<script src="manuscript.js"></script>
 <script>
 (function () {
   var C = window.YarukiClassify;
@@ -2200,6 +2575,7 @@
   var Rec = window.YarukiRecords;
   var G = window.YarukiGym;
   var W = window.YarukiWatch;
+  var M = window.YarukiManuscript;
 
   var praisePool = {
     firstStep: [
@@ -2235,8 +2611,9 @@
   // 古い保存データにはこれらが無いので、既定値のまま扱われる(level は tier から読み替える)。
   // sheetId: 今の原稿用紙の id(綴じ帳の記録と同じ)。task / timeAtGen / energyAtGen: 生成したときの入力。
   // moodBefore / moodAfter: 始める前・終わった後の気分(1〜5)。note: 次の自分への一言。sticky: 付箋。どれも任意。
+  // gold: 金のマスの番号(生成したときに決める。埋めるまでは見た目で分からない)。
   var state = {
-    heaviness: 3, time: 15, energy: 2, lockChoice: "show", steps: [], done: [], boxRewards: [],
+    heaviness: 3, time: 15, energy: 2, lockChoice: "show", steps: [], done: [], gold: [], boxRewards: [],
     heavinessAtGen: 3, rewardLocked: false, lowEnergyAtGen: false,
     level: 3, score: null, category: "", categoryLabel: "", finalUserId: null,
     sheetId: null, createdAt: null, task: "", timeAtGen: null, energyAtGen: null,
@@ -2430,16 +2807,18 @@
         '</span>';
 
       box.querySelector(".label").textContent = step;
+      var gold = isGoldTask(i);
       if (state.done[i]) {
         box.classList.add("done");
+        box.classList.toggle("gold", gold);
         box.setAttribute("aria-checked", "true");
       }
       var rewardTextEl = box.querySelector(".box-reward-text");
       var rerollEl = box.querySelector(".box-reroll");
 
-      if (typeof state.boxRewards[i] !== "string") state.boxRewards[i] = drawBoxReward(state.level);
+      if (typeof state.boxRewards[i] !== "string") state.boxRewards[i] = drawBoxReward(taskBoxLevel(i));
       function refreshRewardText() {
-        setBoxRewardText(rewardTextEl, state.boxRewards[i], isWelcomeBox(state.sheetId, i));
+        setBoxRewardText(rewardTextEl, state.boxRewards[i], isWelcomeBox(state.sheetId, i), gold);
       }
       refreshRewardText();
 
@@ -2447,24 +2826,29 @@
         var newDone = !state.done[i];
         var wasComplete = taskComplete();
         state.done[i] = newDone;
-        // おかえりの後、最初に埋めたマスは、ご褒美を1段上げる
+        // おかえりの後、最初に埋めたマスは、ご褒美を1段上げる(金のマスはもう1段上げてあるので、そのまま。二重には上げない)
         var welcomed = newDone && takeWelcomeBonus(state.sheetId, i);
         if (welcomed) {
-          state.boxRewards[i] = drawBoxReward(W.bumpLevel(state.level));
+          if (!gold) state.boxRewards[i] = drawBoxReward(W.bumpLevel(state.level));
           refreshRewardText();
         }
-        if (newDone && !wasComplete && taskComplete()) hanamaruPending.task = true;
+        var finished = newDone && !wasComplete && taskComplete();
+        if (finished) hanamaruPending.task = true;
         box.classList.toggle("done", newDone);
+        box.classList.toggle("gold", newDone && gold);
         box.setAttribute("aria-checked", String(newDone));
+        if (newDone && gold) shine(box);
         updateProgress();
         saveState();
         syncRecord();
-        celebratePage();
+        advanceManuscript(newDone && gold ? 1 : 0, finished);
 
         if (newDone) {
           var doneCount = state.done.filter(Boolean).length;
           var tier = heavinessTier(state.heavinessAtGen);
-          if (welcomed && doneCount < state.steps.length) {
+          if (gold && doneCount < state.steps.length) {
+            showPraise(GOLD_PRAISE);
+          } else if (welcomed && doneCount < state.steps.length) {
             showPraise(WELCOME_PRAISE);
           } else if (doneCount === 1) {
             showPraise(randomFrom(praisePool.firstStep));
@@ -2485,8 +2869,7 @@
 
       rerollEl.addEventListener("click", function (e) {
         e.stopPropagation();
-        var lv = isWelcomeBox(state.sheetId, i) ? W.bumpLevel(state.level) : state.level;
-        state.boxRewards[i] = drawBoxReward(lv);
+        state.boxRewards[i] = drawBoxReward(taskBoxLevel(i));
         refreshRewardText();
         saveState();
       });
@@ -2613,10 +2996,27 @@
     var b = binder.welcome.bonusFor;
     return !!b && !!id && b.id === id && b.box === box;
   }
-  function setBoxRewardText(elm, text, welcome) {
+  function setBoxRewardText(elm, text, welcome, gold) {
     elm.textContent = "";
+    if (gold) elm.appendChild(el("span", "gold-tag", "✦ 金のマス"));
     if (welcome) elm.appendChild(el("span", "welcome-tag", "おかえりのおまけ"));
     elm.appendChild(document.createTextNode("→ " + text));
+  }
+
+  /* ── 金のマス(マス目を作るときに約3%で仕込む。埋めた瞬間に金色になり、ご褒美は1段上) ── */
+  var GOLD_PRAISE = "✦ 金のマス！このマスのご褒美、1段上げたよ";
+  function isGoldTask(i) { return state.gold.indexOf(i) !== -1; }
+  // 普段の紙のマスのご褒美レベル。金のマス・おかえりのおまけは1段上(重なっても1段だけ)
+  function taskBoxLevel(i) {
+    return isGoldTask(i) || isWelcomeBox(state.sheetId, i) ? W.bumpLevel(state.level) : state.level;
+  }
+  // きらっとさせる(動きを減らす設定では、色が変わるだけ)
+  function shine(box) {
+    if (reduceMotion()) return;
+    box.classList.remove("shine");
+    void box.offsetWidth;
+    box.classList.add("shine");
+    box.addEventListener("animationend", function () { box.classList.remove("shine"); }, { once: true });
   }
 
   var SVG_NS = "http://www.w3.org/2000/svg";
@@ -2681,6 +3081,7 @@
       level: state.level,
       steps: state.steps,
       done: state.done,
+      gold: state.gold,
       finalReward: $("rewardInput").value,
       rewardLocked: !!state.rewardLocked,
       finalUserId: state.finalUserId,
@@ -2698,6 +3099,7 @@
     refreshBinder();
     var r = Rec.putSheet(binder, currentRecord(), nowIso());
     if (r !== "same" && r !== "none") saveBinder();
+    if (r === "added" || r === "removed") renderRecent();
     renderTally();
   }
 
@@ -2713,31 +3115,206 @@
     toastTimer = setTimeout(function () { el.classList.remove("show"); }, ms || 3200);
   }
 
-  /* ── 累計マス(今の紙も含む。400マスで原稿用紙1枚) ── */
+  /* ── 書き上がる原稿用紙(genkouyoushi-manuscript-v1。決まりごとは manuscript.js) ──────────
+   * マスを1つ埋めるごとに、原稿用紙に作品を1文字書く(普段の紙・ジムの紙・おまけのマス)。
+   * 書いた字数は「累計マスのこれまでの最大値」から進める(外して付け直しても二重には進まない)。 */
+  var ms = null;
+  var msSaveFailed = false;
+  function saveManuscript() { msSaveFailed = !store(M.KEY, JSON.stringify(ms)); }
+  // 別のタブで書き換わっていることもあるので、変える前に読み直す(保存に失敗しているときは手元のものを使う)。
+  // まだ無ければ(この機能を入れたとき)、これまでの累計マスの分を最初から書いてあることにする
+  function refreshManuscript() {
+    if (msSaveFailed && ms) return;
+    var raw = null;
+    try { raw = JSON.parse(localStorage.getItem(M.KEY)); } catch (e) {}
+    var c = M.check(raw);
+    if (c) { ms = c; return; }
+    ms = M.create(Rec.totalDone(binder));
+    saveManuscript();
+  }
+  refreshManuscript();
+
+  // マスを埋めたとき: 増えた分だけ書き進める。gold: 今回埋めた金のマスの数。afterBanner: 紙が仕上がった直後(お祝いを少し待つ)
+  function advanceManuscript(gold, afterBanner) {
+    refreshManuscript();
+    var ev = M.sync(ms, Rec.totalDone(binder), { gold: gold });
+    if (!ev.chars) return;
+    var fixed = !!ms.rewardOverride;
+    ev.pages.forEach(setPageReward);
+    saveManuscript();
+    renderTally();
+    if (ev.works.length || ev.pages.length) queueParty(ev, afterBanner, fixed);
+  }
+  // 開いたとき・読み込んだとき: 増えていた分を、お祝いなしで書き進める(大きいご褒美も付けない)
+  function catchUpManuscript() {
+    refreshManuscript();
+    var ev = M.sync(ms, Rec.totalDone(binder), { quiet: true });
+    if (ev.chars) saveManuscript();
+    return ev;
+  }
+
+  // 1枚書き上がったときの大きいご褒美: 自分で決めたものがあればそれ。無ければいちばん大きい段階からおまかせ
+  // (全部埋まったときのご褒美と同じ引き方。出し切るまで同じものは出さない)
+  function drawPageReward() {
+    if (ms.rewardOverride) return { text: ms.rewardOverride, userId: ms.rewardOverrideId };
+    return drawFinalReward(M.PAGE_REWARD_LEVEL);
+  }
+  function setPageReward(p) {
+    if (p.quiet) return;
+    var f = drawPageReward();
+    p.reward = f.text;
+    p.rewardUserId = f.userId;
+  }
+  function findPage(no) {
+    for (var i = 0; i < ms.pages.length; i++) if (ms.pages[i].no === no) return ms.pages[i];
+    return null;
+  }
+
+  /* ── 累計マスと、小さな原稿用紙(書いている行のまわり) ── */
   function renderTally() {
     var total = Rec.totalDone(binder);
     var line = $("tallyLine");
-    $("tallySub").hidden = !total;
-    $("tallyBar").hidden = !total;
     if (!total) {
-      line.textContent = "1マス埋めると、ここに積み上がっていくよ";
+      line.textContent = "1マス埋めるごとに、原稿用紙に名作を1文字ずつ書いていくよ";
+    } else {
+      line.textContent = "これまでに埋めたマス";
+      line.appendChild(el("strong", null, String(total)));
+    }
+    if (!ms) return;
+    var parts = [];
+    if (ms.pages.length) parts.push("書き上げた原稿用紙 " + ms.pages.length + "枚");
+    parts.push("この原稿用紙はあと " + M.pageLeft(ms) + "マス");
+    $("tallySub").textContent = parts.join("・");
+    $("tallySub").hidden = false;
+    var cur = M.current(ms);
+    $("tallyNow").hidden = !(cur && cur.work);
+    if (cur && cur.work) $("tallyNow").textContent = "いま書いているのは：" + M.kindLabel(cur.work);
+    paintMini(M.pageGrid(ms));
+    renderRetro();
+  }
+
+  // 原稿用紙のマス1つ(文字は縦書き)
+  function msCell(cell, next) {
+    return el("span", "ms-cell" + (cell && cell.gold ? " gold" : "") + (next ? " next" : ""), cell ? cell.ch : null);
+  }
+  // 書いた文字を行ごとに(読み上げ用)
+  function gridText(pg) {
+    return pg.grid.map(function (row) {
+      return row.map(function (c) { return c ? c.ch : ""; }).join("");
+    }).filter(Boolean).join("　");
+  }
+
+  var MINI_LINES = 7, MINI_CHARS = 8;
+  var miniShown = null;   // 小さな原稿用紙に最後に見せたときの字数。それより後の文字は、見えたときにふわっと出す
+  var miniIO = null;
+  function paintMini(pg) {
+    var btn = $("msMini");
+    var cur = pg.cursor || { r: M.LINES - 1, c: M.LINE - 1 };
+    // 次に書く行を左から2番目に置き、右にこれまでの行を並べる。縦は次に書くマスのまわり
+    var left = Math.min(M.LINES - 1, Math.max(MINI_LINES - 1, cur.r + 1));
+    var right = left - (MINI_LINES - 1);
+    var top = Math.max(0, Math.min(M.LINE - MINI_CHARS, cur.c - (MINI_CHARS - 3)));
+    var from = miniShown == null ? ms.written : miniShown;
+    var page = el("span", "ms-page");
+    page.style.setProperty("--cols", String(MINI_LINES));
+    page.style.setProperty("--rows", String(MINI_CHARS));
+    for (var r = right; r <= left; r++) {
+      for (var c = top; c < top + MINI_CHARS; c++) {
+        var cell = pg.grid[r][c];
+        var span = msCell(cell, !!pg.cursor && pg.cursor.r === r && pg.cursor.c === c);
+        span.style.gridColumn = String(left - r + 1);
+        span.style.gridRow = String(c - top + 1);
+        if (r === right) span.classList.add("edge-r");
+        if (c === top + MINI_CHARS - 1) span.classList.add("edge-b");
+        if (cell && cell.i >= from) span.classList.add("wait");
+        page.appendChild(span);
+      }
+    }
+    btn.textContent = "";
+    btn.appendChild(page);
+    btn.hidden = false;
+    btn.setAttribute("aria-label", "原稿用紙 " + pg.no + "枚目の全体を見る");
+    revealMini();
+  }
+  function inView(elm) {
+    if (!elm.offsetParent) return false;
+    var r = elm.getBoundingClientRect();
+    return r.bottom > 0 && r.top < window.innerHeight;
+  }
+  // 新しく書いた文字を、小さな原稿用紙が見えたところでふわっと出す(動きを減らす設定では、すぐ出す)
+  function revealMini() {
+    var btn = $("msMini");
+    var waiting = btn.querySelectorAll(".wait");
+    var io = "IntersectionObserver" in window;
+    if (waiting.length && !reduceMotion() && io && !inView(btn)) {
+      if (!miniIO) {
+        miniIO = new IntersectionObserver(function (entries) {
+          if (!entries.some(function (e) { return e.isIntersecting; })) return;
+          miniIO.disconnect();
+          miniIO = null;
+          revealMini();
+        }, { threshold: 0.6 });
+        miniIO.observe(btn);
+      }
       return;
     }
-    var p = Rec.pageInfo(total);
-    line.textContent = "これまでに埋めたマス";
-    var strong = document.createElement("strong");
-    strong.textContent = String(total);
-    line.appendChild(strong);
-    $("tallySub").textContent = "原稿用紙 " + p.pages + "枚と" + p.rest + "マス";
-    $("tallyFill").style.width = (p.rest / Rec.PAGE_SIZE * 100) + "%";
+    var step = waiting.length ? Math.min(0.12, 1.6 / waiting.length) : 0;
+    Array.prototype.forEach.call(waiting, function (s, k) {
+      s.classList.remove("wait");
+      if (reduceMotion()) return;
+      s.style.setProperty("--delay", (k * step).toFixed(2) + "s");
+      s.classList.add("fresh");
+    });
+    miniShown = ms.written;
+    if (retroNote && !ms.retroDone) {   // 導入時のお知らせは、見えたら「見せた」にする(この画面を開いている間は出したまま)
+      refreshManuscript();
+      ms.retroDone = true;
+      saveManuscript();
+    }
   }
-  // 400マスの倍数を超えた瞬間に一度だけお祝いする。何枚目まで祝ったかは綴じ帳に保存する
-  function celebratePage() {
-    var p = Rec.pageToCelebrate(binder);
-    if (!p) return;
-    binder.celebratedPages = p;
-    saveBinder();
-    toast("📜 原稿用紙1枚分、書き上げたよ（通算" + p + "枚目）", 6000);
+  $("msMini").addEventListener("click", function () { navTo("#genkou"); });
+
+  // 導入時: これまでに埋めたマスで、もう書けていた分(一度だけ)
+  var retroNote = null;
+  function retroText(r) {
+    var parts = [r.written + "文字"];
+    if (r.works) parts.push("書き上がった作品 " + r.works + "つ");
+    if (r.pages) parts.push("原稿用紙 " + r.pages + "枚");
+    return parts.join("・");
+  }
+  function renderRetro() {
+    var p = $("msRetro");
+    p.hidden = !retroNote;
+    if (!retroNote) return;
+    p.textContent = "これまでに埋めたマスで、もうここまで書けていたよ";
+    p.appendChild(el("small", null, retroText(retroNote) + "。原稿用紙を押すと、全体を見られるよ"));
+  }
+
+  /* ── 書き上がったときのお祝い(#iwai のオーバーレイ)。マスを埋めた少しあとに出す ── */
+  var party = null;          // { works: 書き上がった作品, pageNo: 書き上がった紙の番号, fixed: ご褒美を自分で決めていたか, wait }
+  var partyTimer = null;
+  var PARTY_DELAY = 700, PARTY_DELAY_AFTER_BANNER = 1900;   // 紙が仕上がった直後は、はなまるを描き終えてから
+  function queueParty(ev, afterBanner, fixed) {
+    if (!party || party.open) party = { works: [], pageNo: null, fixed: false, wait: 0, open: false };
+    ev.works.forEach(function (f) { party.works.push(f); });
+    if (ev.pages.length) {
+      party.pageNo = ev.pages[ev.pages.length - 1].no;
+      party.fixed = fixed;
+    }
+    party.wait = Math.max(party.wait, afterBanner ? PARTY_DELAY_AFTER_BANNER : PARTY_DELAY);
+    if (partyTimer) clearTimeout(partyTimer);
+    partyTimer = setTimeout(openParty, party.wait);
+  }
+  function openParty() {
+    partyTimer = null;
+    if (!party || party.open) return;
+    if (currentView !== "main" && currentView !== "gym") return;   // ほかの画面にいたら、戻ったときに出す
+    party.open = true;
+    navTo("#iwai");
+  }
+  // ほかの画面・オーバーレイから戻ったとき、まだ出していないお祝いがあれば出す
+  function resumeParty() {
+    if (party && !party.open && !partyTimer) partyTimer = setTimeout(openParty, PARTY_DELAY);
   }
 
   /* ── 気分(始める前・終わった後)。選ばなくてもよく、同じ顔をもう一度押すと選ばなかったことに戻る ── */
@@ -2875,7 +3452,8 @@
     state.category = plan.category;
     state.categoryLabel = plan.categoryLabel;
     state.lowEnergyAtGen = plan.light;
-    state.boxRewards = state.steps.map(function () { return drawBoxReward(plan.level); });
+    state.gold = M.drawGold(state.steps.length);
+    state.boxRewards = state.steps.map(function (_, i) { return drawBoxReward(taskBoxLevel(i)); });
     state.heavinessAtGen = state.heaviness;
     state.rewardLocked = state.lockChoice === "lock";
     delete state.tier;
@@ -2928,6 +3506,7 @@
     $("taskInput").value = "";
     state.steps = [];
     state.done = [];
+    state.gold = [];
     state.rewardLocked = false;
     state.finalUserId = null;
     state.score = null;
@@ -3024,6 +3603,7 @@
     var savedLevel = saved.state.level;
     if (!(savedLevel >= 1 && savedLevel <= 6)) state.level = LEGACY_TIER_LEVEL[saved.state.tier] || 3;
     if (!Array.isArray(state.boxRewards)) state.boxRewards = [];
+    state.gold = M.checkGold(state.gold, (state.steps || []).length);
     if (typeof state.finalUserId !== "string") state.finalUserId = null;
     state.sticky = Rec.stickyOrNull(state.sticky);
     $("taskInput").value = saved.task || "";
@@ -3052,6 +3632,11 @@
     if (missingRewards || migrated) saveState();
     syncRecord();
   })();
+  catchUpManuscript();
+  if (!ms.retroDone && ms.retro && ms.retro.written) {
+    retroNote = ms.retro;
+    miniShown = ms.page.start;   // 今の紙の文字を、見えたところでふわっと出す
+  }
   renderTally();
 
   /* ── 自分のご褒美の画面(#my-rewards) ───────────────── */
@@ -3298,6 +3883,10 @@
     if (s.kind === "gym") return "🏋 ジム" + (s.light ? "（軽め）" : "");
     return s.task.trim() || "（名前のない原稿用紙）";
   }
+  // 埋めた金のマスの数(埋めていない金のマスは数えない。見た目でも分からないように)
+  function goldDoneOf(s) {
+    return (s.gold || []).filter(function (i) { return s.done[i] === true; }).length;
+  }
   function bonusOf(s) {
     return s.kind === "gym" ? { done: Rec.countDone(s.done.slice(s.mainCount)), total: s.steps.length - s.mainCount } : null;
   }
@@ -3322,6 +3911,7 @@
   function renderBinderList() {
     refreshBinder();
     renderLettersList();
+    renderMsBinder();
     $("statBoxes").textContent = String(Rec.totalDone(binder));
     $("statSheets").textContent = String(binder.sheets.length);
     $("statDone").textContent = String(Rec.completedCount(binder));
@@ -3354,15 +3944,19 @@
       var row = el("span", "sheet-row");
       var mini = el("span", "mini-boxes");
       mini.setAttribute("role", "img");
-      mini.setAttribute("aria-label", isGym ? Rec.countDone(s.done) + "マス" : Rec.countDone(s.done) + " / " + s.steps.length + "マス");
+      var goldDone = goldDoneOf(s);
+      mini.setAttribute("aria-label", (isGym ? Rec.countDone(s.done) + "マス" : Rec.countDone(s.done) + " / " + s.steps.length + "マス") +
+        (goldDone ? "（金のマス " + goldDone + "つ）" : ""));
       s.done.forEach(function (d, i) {
         var cls = d ? ["on"] : [];
+        if (d && s.gold.indexOf(i) !== -1) cls.push("gold");
         if (isGym && i >= s.mainCount) cls.push(i === s.mainCount ? "bonus bonus-first" : "bonus");
         mini.appendChild(el("i", cls.join(" ") || null));
       });
       row.appendChild(mini);
       var bonus = bonusOf(s);
       if (bonus && bonus.done) row.appendChild(el("span", "sheet-bonus", "おまけ " + bonus.done + "/" + bonus.total));
+      if (goldDone) row.appendChild(el("span", "sheet-gold", "✦ 金のマス" + (goldDone > 1 ? " " + goldDone + "つ" : "")));
       var mp = moodPair(s);
       if (mp) row.appendChild(el("span", "sheet-mood", mp));
       btn.appendChild(row);
@@ -3418,6 +4012,7 @@
     var status = $("dStatus");
     status.innerHTML = "";
     var bonus = bonusOf(s);
+    var goldDone = goldDoneOf(s);
     if (s.completedAt) {
       status.appendChild(el("span", "seal-sm", "完"));
       status.appendChild(markSpan("hana", hanamaruEl(W.hanamaruTier(s.difficulty), false)));
@@ -3431,6 +4026,7 @@
       status.appendChild(el("span", "tag", "書きかけ"));
       status.appendChild(el("span", null, "ここまで " + Rec.countDone(s.done) + " / " + s.steps.length + "マス"));
     }
+    if (goldDone) status.appendChild(el("span", "sheet-gold", "✦ 金のマス " + goldDone + "つ"));
     // 付箋: 書きかけの普段の紙だけ
     var canSticky = !isGym && !s.completedAt;
     $("dStickyShow").hidden = !(canSticky && s.sticky);
@@ -3443,9 +4039,11 @@
     ol.innerHTML = "";
     s.steps.forEach(function (step, i) {
       var extra = isGym && i >= s.mainCount;
-      var li = el("li", [s.done[i] ? "on" : "", extra ? "bonus" : ""].join(" ").trim() || null);
+      var goldOn = s.done[i] && s.gold.indexOf(i) !== -1;
+      var li = el("li", [s.done[i] ? "on" : "", extra ? "bonus" : "", goldOn ? "gold" : ""].join(" ").trim() || null);
       li.appendChild(el("span", "step-mark", s.done[i] ? (isGym && i === s.mainCount - 1 ? "着" : "済") : ""));
       var text = el("span", null, step);
+      if (goldOn) text.appendChild(el("span", "bonus-tag gold-tag-inline", "✦ 金のマス"));
       if (extra) text.appendChild(el("span", "bonus-tag", "おまけ"));
       li.appendChild(text);
       ol.appendChild(li);
@@ -3552,8 +4150,9 @@
     state.moodAfter = s.moodAfter;
     state.note = s.note;
     state.sticky = s.sticky;
+    state.gold = (s.gold || []).slice();
     stickyEditing = false;
-    state.boxRewards = s.steps.map(function () { return drawBoxReward(level); });
+    state.boxRewards = s.steps.map(function (_, i) { return drawBoxReward(taskBoxLevel(i)); });
     delete state.tier;
     $("taskInput").value = s.task;
     $("rewardInput").value = s.finalReward;
@@ -3590,8 +4189,13 @@
       .then(function (yes) {
         if (!yes) return;
         refreshBinder();
+        var removed = Rec.findSheet(binder, s.id);
+        var boxes = removed ? Rec.countDone(removed.done) : 0;
         Rec.removeSheet(binder, s.id);
         saveBinder();
+        refreshManuscript();
+        M.forget(ms, boxes);
+        saveManuscript();
         if (current) clearCurrentSheet();
         if (gymToday && s.id === todayGymId()) {
           gym.today.sheet = null;
@@ -3610,6 +4214,7 @@
   KEY_NAMES[HISTORY_KEY] = "ご褒美の出方の記録（同じご褒美を続けて出さないためのもの）";
   KEY_NAMES[G.KEY] = "ジムの日カードの設定（曜日・いつ・どうする・お供）と、今日のジムの紙";
   KEY_NAMES[W.KEY] = "週のたより";
+  KEY_NAMES[M.KEY] = "原稿用紙（書いた作品・書き上げた原稿用紙・その設定）";
   var IMPORT_ERRORS = {
     broken: "読み込めなかったよ。ファイルが途中で切れているか、形が違うみたい。データは何も変えていないよ",
     other: "このアプリで書き出したファイルではないみたい。データは何も変えていないよ",
@@ -3643,6 +4248,7 @@
     if (rewardHistory) out[HISTORY_KEY] = JSON.stringify(rewardHistory);
     out[G.KEY] = JSON.stringify(gym);
     if (letters.letters.length) out[W.KEY] = JSON.stringify(letters);
+    if (ms) out[M.KEY] = JSON.stringify(ms);
     return out;
   }
   function backupText() {
@@ -3752,9 +4358,14 @@
       gymBoxesKey = null;
     }
     if (replaceKeys.indexOf(W.KEY) !== -1) letters = loadLetters();
+    if (replaceKeys.indexOf(M.KEY) !== -1) msSaveFailed = false;
+    // 読み込んで増えたマスの分も、原稿用紙を書き進める(お祝いと大きいご褒美はなし)
+    var caught = catchUpManuscript();
+    if (caught.chars) msg += "\n原稿用紙も、増えたマスの分（" + caught.chars + "文字）まで書き進めたよ";
     renderNotice();
     renderBinderList();
     renderTally();
+    renderRecent();
     updateProgress();
     renderGym();
     backupMsg(msg, !ok);
@@ -3826,7 +4437,7 @@
     return {
       id: s.id, kind: "gym", task: "ジム", category: G.PLAN.category, difficulty: s.score,
       heaviness: G.PLAN.heaviness, time: G.PLAN.time, energy: s.light ? 1 : 2, lowEnergy: s.light, level: s.level,
-      steps: s.steps, done: s.done, mainCount: s.mainCount, light: s.light, dayType: s.dayType,
+      steps: s.steps, done: s.done, gold: s.gold, mainCount: s.mainCount, light: s.light, dayType: s.dayType,
       finalReward: s.finalReward, rewardLocked: s.rewardLocked, finalUserId: s.finalUserId,
       createdAt: s.createdAt, moodBefore: s.moodBefore, moodAfter: s.moodAfter, note: s.note
     };
@@ -3841,8 +4452,12 @@
     renderTally();
   }
 
-  // マスごとの小さなご褒美。おまけのマスはいちばん小さいレベルから
-  function gymBoxLevel(s, i) { return G.isBonus(s, i) ? 1 : s.level; }
+  // マスごとの小さなご褒美。おまけのマスはいちばん小さいレベルから。金のマスは1段上
+  function isGoldGym(s, i) { return (s.gold || []).indexOf(i) !== -1; }
+  function gymBoxLevel(s, i) {
+    var lv = G.isBonus(s, i) ? 1 : s.level;
+    return isGoldGym(s, i) ? W.bumpLevel(lv) : lv;
+  }
   function fillGymBoxRewards(s) {
     var changed = false;
     s.steps.forEach(function (_, i) {
@@ -3863,6 +4478,7 @@
       rewardLocked: state.lockChoice === "lock", createdAt: keep ? keep.createdAt : nowIso()
     });
     if (keep) s.moodBefore = keep.moodBefore;
+    s.gold = M.drawGold(s.steps.length);
     fillGymBoxRewards(s);
     // 休日は「ジムの後のお昼ごはん」を最初の候補にする(「他の案」で変えられる)
     var f = s.dayType === "holiday" ? { text: G.HOLIDAY_LUNCH, userId: null } : drawFinalReward(s.level);
@@ -3899,6 +4515,7 @@
     var s = gymSheet();
     if (!s) return;
     var wasArrived = G.arrived(s);
+    var before = s.done.slice();
     var next = !s.done[i];
     if (next && i === s.mainCount - 1) {
       // 「ジムに着いた」= そこまでのマスも済んでいる。本体をまとめて埋める
@@ -3906,20 +4523,26 @@
     } else {
       s.done[i] = next;
     }
-    // おかえりの後、最初に埋めたマス(押したマス)は、ご褒美を1段上げる
+    // おかえりの後、最初に埋めたマス(押したマス)は、ご褒美を1段上げる(金のマスはもう上げてあるので二重には上げない)
     var welcomed = next && takeWelcomeBonus(s.id, i);
-    if (welcomed) s.boxRewards[i] = drawBoxReward(W.bumpLevel(gymBoxLevel(s, i)));
-    if (!wasArrived && G.arrived(s)) hanamaruPending.gym = true;
+    if (welcomed && !isGoldGym(s, i)) s.boxRewards[i] = drawBoxReward(W.bumpLevel(gymBoxLevel(s, i)));
+    // 今回埋まった金のマス(着いたときは、まとめて埋まったマスも)
+    var goldNow = [];
+    s.done.forEach(function (d, k) { if (d && !before[k] && isGoldGym(s, k)) goldNow.push(k); });
+    var arrivedNow = !wasArrived && G.arrived(s);
+    if (arrivedNow) hanamaruPending.gym = true;
     saveGym();
     syncGym();
-    celebratePage();
+    advanceManuscript(goldNow.length, arrivedNow);
     renderGym();
+    var boxes = $("gymBoxes").querySelectorAll(".box");
+    goldNow.forEach(function (k) { if (boxes[k]) shine(boxes[k]); });
     if (!next) return;
-    if (!wasArrived && G.arrived(s)) {
+    if (arrivedNow) {
       revealBelow($("gymBanner"));
       return;
     }
-    var p = welcomed ? WELCOME_PRAISE : G.praiseFor(s, i);
+    var p = goldNow.length ? GOLD_PRAISE : welcomed ? WELCOME_PRAISE : G.praiseFor(s, i);
     if (p) gymPraise(p);
     // 最後のおまけ(帰ってからのマス)を埋めたら、気分と一言の欄をそっと見せる
     if (i === s.steps.length - 1 && G.arrived(s)) revealBelow($("gymAfter"));
@@ -3962,7 +4585,7 @@
         var cur = gymSheet();
         if (!cur) return;
         var lv = gymBoxLevel(cur, i);
-        cur.boxRewards[i] = drawBoxReward(isWelcomeBox(cur.id, i) ? W.bumpLevel(lv) : lv);
+        cur.boxRewards[i] = drawBoxReward(isWelcomeBox(cur.id, i) && !isGoldGym(cur, i) ? W.bumpLevel(lv) : lv);
         paintGymBoxes(cur);
         saveGym();
       });
@@ -3973,8 +4596,9 @@
     $("gymBoxes").querySelectorAll(".box").forEach(function (box, i) {
       var d = !!s.done[i];
       box.classList.toggle("done", d);
+      box.classList.toggle("gold", d && isGoldGym(s, i));
       box.setAttribute("aria-checked", String(d));
-      setBoxRewardText(box.querySelector(".box-reward-text"), s.boxRewards[i], isWelcomeBox(s.id, i));
+      setBoxRewardText(box.querySelector(".box-reward-text"), s.boxRewards[i], isWelcomeBox(s.id, i), isGoldGym(s, i));
     });
   }
 
@@ -4590,8 +5214,10 @@
     $("letterPaper").focus({ preventScroll: true });
     renderNotice();
   }
-  function closeLetter() {
+  // switching: 別のオーバーレイに切り替えるとき(背景のスクロール止めとフォーカスはそのまま)
+  function closeLetter(switching) {
     $("letterOverlay").hidden = true;
+    if (switching) return;
     document.documentElement.classList.remove("overlay-open");
     var back = letterOpener;
     letterOpener = null;
@@ -4643,7 +5269,488 @@
     renderLettersList();
   });
 
-  /* ── 画面の切り替え(#my-rewards / #tojicho / #tojicho/記録のid / #gym-settings / #gym / #tayori/週) ──────
+  /* ── 原稿用紙のオーバーレイ ──────────────────────────
+   * #genkou: 書いている紙の全体 / #genkou/番号: 書き上げた紙 / #saku/番号: 書き上げた作品(finishedWorks の番号) /
+   * #iwai: 書き上がったときのお祝い。どれも Android の戻る操作で閉じる */
+  var msOpener = null, msOpenedAt = 0, msZoom = false, msPeek = false;
+  var CHEERS = {
+    haiku: ["一句できたね", "一句、書き上がったよ", "また一句、できあがり"],
+    poem: ["一編、書き上がったよ", "詩が一編、できあがったよ"]
+  };
+  function quoted(w) { return "「" + (w.type === "poem" ? w.title : M.shortName(w)) + "」"; }
+
+  // 20字×20行の原稿用紙
+  function msPageEl(pg, zoom) {
+    var page = el("div", "ms-page" + (zoom ? " zoom" : ""));
+    page.setAttribute("role", "img");
+    var text = gridText(pg);
+    page.setAttribute("aria-label", "原稿用紙 " + pg.no + "枚目" + (text ? "：" + text : "（まだ何も書いていない）"));
+    for (var r = 0; r < M.LINES; r++) {
+      for (var c = 0; c < M.LINE; c++) {
+        var span = msCell(pg.grid[r][c], !!pg.cursor && pg.cursor.r === r && pg.cursor.c === c);
+        span.style.gridColumn = String(M.LINES - r);
+        span.style.gridRow = String(c + 1);
+        if (r === 0) span.classList.add("edge-r");
+        if (c === M.LINE - 1) span.classList.add("edge-b");
+        if (r === M.LINES / 2 - 1) span.classList.add("fold");   // 真ん中の折り目
+        page.appendChild(span);
+      }
+    }
+    return page;
+  }
+
+  // 通し番号 [from, to) に文字がある、書き上げた作品の番号(無ければ -1)
+  function finishedIndexIn(id, from, to) {
+    for (var i = ms.finishedWorks.length - 1; i >= 0; i--) {
+      var f = ms.finishedWorks[i];
+      if (f.id === id && f.at < to && f.at + M.lengthOf(f.id) > from) return i;
+    }
+    return -1;
+  }
+  // その紙の作品。書き上げた作品は押すとカードを開く(書いている途中の作品は、先の文字を見せない)
+  function msWorksList(ids, from, to, currentId) {
+    var ul = el("ul", "ms-works");
+    ids.forEach(function (id) {
+      var w = M.LIB.byId[id];
+      if (!w) return;
+      var idx = finishedIndexIn(id, from, to);
+      var item;
+      if (idx !== -1) {
+        item = el("button", "sheet-item");
+        item.type = "button";
+        item.appendChild(el("span", "sheet-task", M.shortName(w)));
+        item.appendChild(el("span", "ms-page-works", M.sourceLabel(w)));
+        item.addEventListener("click", function () { navTo("#saku/" + idx); });
+      } else {
+        item = el("div", "sheet-item");
+        item.style.cursor = "default";
+        item.appendChild(el("span", "sheet-task", M.kindLabel(w) + (id === currentId ? "（書いているところ）" : "（途中まで）")));
+      }
+      var li = document.createElement("li");
+      li.appendChild(item);
+      ul.appendChild(li);
+    });
+    return ul;
+  }
+
+  // 1枚ごとのご褒美。自分のご褒美を伏せる設定なら、タップで表示
+  function pageRewardBlock(page, canReroll) {
+    var box = el("div", "ms-reward");
+    box.appendChild(el("div", "field-label", "🎁 1枚書き上げたご褒美"));
+    var masked = my.masked && !!page.rewardUserId;
+    var t = el("div", "ms-reward-text" + (masked && !msPeek ? " secret" : ""), page.reward);
+    box.appendChild(t);
+    if (masked) {
+      t.addEventListener("click", function () { msPeek = !msPeek; renderMsOverlay(overlayOf(currentView), true); });
+      if (!msPeek) box.appendChild(el("div", "secret-hint", "伏せています。タップで表示"));
+    }
+    if (canReroll) {
+      var acts = el("div", "detail-actions");
+      acts.appendChild(makeButton("他の案", "small-btn", function () {
+        refreshManuscript();
+        var p = findPage(page.no);
+        if (!p) return;
+        var f = drawFinalReward(M.PAGE_REWARD_LEVEL);
+        p.reward = f.text;
+        p.rewardUserId = f.userId;
+        saveManuscript();
+        msPeek = false;
+        renderMsOverlay(overlayOf(currentView), true);
+      }));
+      box.appendChild(acts);
+    }
+    return box;
+  }
+
+  // 書き上げた作品のカード(縦書き。金のマスで書いた文字は金色)
+  function workCard(f, cheer) {
+    var w = M.LIB.byId[f.id];
+    var card = el("div", "ms-card");
+    if (cheer) card.appendChild(el("p", "ms-cheer", cheer));
+    var text = el("div", "ms-text");
+    M.workLines(ms, w, f.at).forEach(function (line, k) {
+      if (k) text.appendChild(document.createTextNode("\n"));
+      line.forEach(function (c) {
+        text.appendChild(c.gold ? el("span", "gold", c.ch) : document.createTextNode(c.ch));
+      });
+    });
+    card.appendChild(text);
+    var attr = el("p", "ms-attr", M.attribution(w));
+    attr.appendChild(el("span", "ms-attr-date", Rec.dayLabel(f.completedAt) + "に書き上げたよ"));
+    card.appendChild(attr);
+    return card;
+  }
+  function cheerFor(f) {
+    var w = M.LIB.byId[f.id], list = CHEERS[w.type === "poem" ? "poem" : "haiku"];
+    return list[f.at % list.length];
+  }
+
+  function renderMsPage(no) {
+    var body = $("msBody");
+    var page = no ? findPage(no) : null;
+    var pg = page ? M.frozenGrid(ms, page) : M.pageGrid(ms);
+    $("msTitle").textContent = "📜 原稿用紙 " + pg.no + "枚目";
+    if (!page && retroNote) {
+      var intro = el("p", "ms-retro", "これまでに埋めたマスで、もうここまで書けていたよ");
+      intro.appendChild(el("small", null, retroText(retroNote)));
+      body.appendChild(intro);
+    }
+    var tools = el("div", "ms-tools");
+    tools.appendChild(el("span", null, page ? Rec.dayLabel(page.completedAt) + "に書き上げたよ" :
+      "あと " + M.pageLeft(ms) + "マスで、この1枚が書き上がるよ"));
+    var zoomBtn = makeButton(msZoom ? "全体を見る" : "🔍 拡大して見る", "small-btn", function () {
+      msZoom = !msZoom;
+      renderMsOverlay(overlayOf(currentView), true);
+    });
+    zoomBtn.setAttribute("aria-pressed", String(msZoom));
+    tools.appendChild(zoomBtn);
+    body.appendChild(tools);
+    var scroll = el("div", "ms-scroll");
+    scroll.appendChild(msPageEl(pg, msZoom));
+    body.appendChild(scroll);
+    var cur = page ? null : M.current(ms);
+    if (cur && cur.work) {
+      var info = el("p", "ms-info", "いま書いているのは：");
+      info.appendChild(el("strong", null, M.kindLabel(cur.work)));
+      info.appendChild(document.createTextNode("（" + cur.done + " / " + cur.total + "字）"));
+      body.appendChild(info);
+    }
+    if (page && page.reward && !page.quiet) body.appendChild(pageRewardBlock(page, false));
+    var ids = page ? page.workIds : M.pageWorkIds(ms);
+    if (ids.length) {
+      body.appendChild(el("div", "ms-label", "この原稿用紙の作品"));
+      body.appendChild(msWorksList(ids, page ? page.start : ms.page.start, page ? page.start + pg.written : ms.written,
+        cur && cur.work ? cur.work.id : null));
+    }
+    if (!page) body.appendChild(makeButton("⚙ 原稿用紙の設定（次に書く作品・1枚ごとのご褒美）", "link-btn", function () { navTo("#genkou-settings"); }));
+  }
+
+  function renderMsParty() {
+    var body = $("msBody");
+    var page = party.pageNo ? findPage(party.pageNo) : null;
+    var works = party.works.filter(function (f) { return !!M.LIB.byId[f.id]; });
+    var first = works.length ? M.LIB.byId[works[0].id] : null;
+    $("msTitle").textContent = page ? "📜 原稿用紙が書き上がったよ" : "✒ " + (first ? cheerFor(works[0]) : "書き上がったよ");
+    if (page) {
+      var head = el("div", "ms-party-head");
+      var wrap = el("span", "seal-wrap");
+      wrap.appendChild(el("span", "seal", "完"));
+      var slot = el("span", "hanamaru-slot");
+      slot.setAttribute("role", "img");
+      slot.setAttribute("aria-label", "はなまる");
+      slot.appendChild(hanamaruEl(3, !party.drawn));   // はなまるは最初に開いたときだけ描いていく
+      wrap.appendChild(slot);
+      head.appendChild(wrap);
+      head.appendChild(el("p", "ms-party-title", "1枚、書き上げたね"));
+      head.appendChild(el("p", "ms-party-sub", "通算" + page.no + "枚目。一マスずつが、ちゃんと1枚になったよ"));
+      body.appendChild(head);
+      if (page.reward) body.appendChild(pageRewardBlock(page, !party.fixed));
+    }
+    party.drawn = true;
+    works.forEach(function (f) { body.appendChild(workCard(f, page || works.length > 1 ? cheerFor(f) : null)); });
+    if (page) {
+      var mp = el("div", "ms-mini-page ms-scroll");
+      mp.appendChild(msPageEl(M.frozenGrid(ms, page), false));
+      body.appendChild(mp);
+      body.appendChild(el("p", "ms-info", "綴じ帳の「原稿用紙」にしまったよ。いつでも眺められるよ"));
+    }
+  }
+
+  function renderMsOverlay(ov, keepScroll) {
+    if (!ov) return;
+    var paper = $("msPaper"), y = paper.scrollTop;
+    $("msBody").textContent = "";
+    if (ov.kind === "genkou") renderMsPage(ov.arg === "" ? 0 : Number(ov.arg));
+    else if (ov.kind === "saku") $("msBody").appendChild(workCard(ms.finishedWorks[Number(ov.arg)], null));
+    else renderMsParty();
+    if (ov.kind === "saku") $("msTitle").textContent = "✒ 書き上げた作品";
+    paper.scrollTop = keepScroll ? y : 0;
+  }
+  function msOverlayValid(ov) {
+    if (!ms) return false;
+    var n = /^\d+$/.test(ov.arg) ? Number(ov.arg) : null;
+    if (ov.kind === "genkou") return ov.arg === "" || (n !== null && !!findPage(n));
+    if (ov.kind === "saku") return n !== null && !!ms.finishedWorks[n] && !!M.LIB.byId[ms.finishedWorks[n].id];
+    if (ov.kind === "iwai") return !!party;
+    return false;
+  }
+  function openMsOverlay(ov, switching) {
+    refreshManuscript();
+    if ($("msOverlay").hidden && !switching) msOpener = document.activeElement;
+    msPeek = false;
+    renderMsOverlay(ov, false);
+    $("msOverlay").hidden = false;
+    document.documentElement.classList.add("overlay-open");
+    msOpenedAt = Date.now();
+    $("msPaper").focus({ preventScroll: true });
+    // 導入時のお知らせは、全体を開いたら「見せた」にする
+    if (ov.kind === "genkou" && retroNote && !ms.retroDone) {
+      ms.retroDone = true;
+      saveManuscript();
+    }
+  }
+  function closeMsOverlay(ov, switching) {
+    $("msOverlay").hidden = true;
+    if (switching) return;
+    if (ov.kind === "iwai") party = null;
+    document.documentElement.classList.remove("overlay-open");
+    var back = msOpener;
+    msOpener = null;
+    if (baseView === "binder") renderMsBinder();
+    else if (baseView === "main" || baseView === "gym") renderTally();
+    if (back && back.focus && back.offsetParent !== null) back.focus({ preventScroll: true });
+  }
+  $("msClose").addEventListener("click", function () { navBack(); });
+  $("msDone").addEventListener("click", function () { navBack(); });
+  $("msOverlay").addEventListener("click", function (e) {
+    // 開いた直後のタップ(マスを続けて押していたとき)では閉じない
+    if (e.target === $("msOverlay") && Date.now() - msOpenedAt > 500) navBack();
+  });
+  $("msOverlay").addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { e.preventDefault(); navBack(); return; }
+    if (e.key !== "Tab") return;
+    var first = $("msClose"), last = $("msDone");
+    if (e.shiftKey && (document.activeElement === first || document.activeElement === $("msPaper"))) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
+
+  /* ── 原稿用紙の設定(#genkou-settings) ── */
+  function renderMsSettings() {
+    refreshManuscript();
+    $("msSettingsCard").classList.toggle("masking", my.masked);
+    var input = $("msRewardInput");
+    if (document.activeElement !== input) input.value = ms.rewardOverride || "";
+    $("msRewardClear").hidden = !ms.rewardOverride;
+    $("msRewardHint").textContent = ms.rewardOverride ?
+      "自分で決めたご褒美が出るよ。空にして「決める」か「おまかせに戻す」を押すと、おまかせに戻るよ。" :
+      "いまは、おまかせ。いちばん大きい段階のご褒美から選んで、書き上がったときに「他の案」で変えられるよ。";
+    // 自分のご褒美から選ぶ(大きいレベルのものから)
+    var items = my.items.slice().sort(function (a, b) {
+      return Math.max.apply(null, b.levels) - Math.max.apply(null, a.levels);
+    });
+    var ul = $("msMyPick");
+    ul.textContent = "";
+    $("msMyPickRow").hidden = !items.length;
+    items.forEach(function (it) {
+      var b = el("button", "ms-pick");
+      b.type = "button";
+      b.setAttribute("aria-pressed", String(!!ms.rewardOverride && ms.rewardOverrideId === it.id));
+      b.appendChild(document.createTextNode(my.masked ? "●●●●●●" : it.text));
+      b.appendChild(el("small", null, levelsText(it.levels) + (my.masked ? "（伏せています）" : "")));
+      b.addEventListener("click", function () { setMsReward(it.text, it.id); });
+      var li = document.createElement("li");
+      li.appendChild(b);
+      ul.appendChild(li);
+    });
+    var cur = M.current(ms);
+    $("msSetNow").textContent = cur && cur.work ? M.kindLabel(cur.work) + "（" + cur.done + " / " + cur.total + "字）" : "";
+    var next = ms.nextWorkId ? M.LIB.byId[ms.nextWorkId] : null;
+    $("msSetNext").textContent = next ? quoted(next) + "　" + M.sourceLabel(next) : "おまかせ（並びの順に書いていくよ）";
+    $("msNextClear").hidden = !next;
+    renderMsPickList(cur);
+  }
+  function renderMsPickList(cur) {
+    var box = $("msPickList");
+    box.textContent = "";
+    var counts = {};
+    [["haiku", "俳句"], ["poem", "詩"]].forEach(function (g) {
+      var list = M.WORKS.filter(function (w) { return !w.retired && w.type === g[0]; });
+      counts[g[0]] = list.length;
+      box.appendChild(el("div", "ms-group", g[1] + "（" + list.length + "）"));
+      var ul = el("ul", "ms-pick-list");
+      list.forEach(function (w) {
+        var isCur = !!(cur && cur.work && cur.work.id === w.id);
+        var b = el("button", "ms-pick");
+        b.type = "button";
+        b.disabled = isCur;
+        b.setAttribute("aria-pressed", String(ms.nextWorkId === w.id));
+        b.appendChild(document.createTextNode(M.shortName(w) + (isCur ? "（いま書いている）" : "")));
+        b.appendChild(el("small", null, M.sourceLabel(w)));
+        b.addEventListener("click", function () { pickNextWork(w.id); });
+        var li = document.createElement("li");
+        li.appendChild(b);
+        ul.appendChild(li);
+      });
+      box.appendChild(ul);
+    });
+    $("msPickSummary").textContent = "作品を選ぶ（俳句 " + counts.haiku + "・詩 " + counts.poem + "）";
+  }
+  // 1枚ごとのご褒美を決める(空ならおまかせに戻す)。id: 自分のご褒美から選んだときのその id
+  function setMsReward(text, id) {
+    refreshManuscript();
+    var v = String(text || "").replace(/\s+/g, " ").trim().slice(0, M.REWARD_MAX);
+    var before = ms.rewardOverride;
+    ms.rewardOverride = v || null;
+    ms.rewardOverrideId = v && id ? id : null;
+    saveManuscript();
+    $("msRewardInput").value = v;
+    if (v) $("msRewardMsg").textContent = "決めたよ。次に1枚書き上がったら、これが出るよ";
+    else if (before) $("msRewardMsg").textContent = "おまかせに戻したよ";
+    renderMsSettings();
+  }
+  // 入力欄の内容で決める(自分のご褒美から選んだあと、そのままなら id も残す)
+  function commitMsReward() {
+    var v = $("msRewardInput").value.replace(/\s+/g, " ").trim();
+    if (v === (ms.rewardOverride || "")) return;
+    setMsReward(v, null);
+  }
+  $("msRewardSave").addEventListener("click", function () {
+    var v = $("msRewardInput").value.replace(/\s+/g, " ").trim();
+    setMsReward(v, v === ms.rewardOverride ? ms.rewardOverrideId : null);
+  });
+  $("msRewardClear").addEventListener("click", function () { setMsReward("", null); });
+  $("msRewardInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.isComposing && e.keyCode !== 229) {
+      e.preventDefault();
+      $("msRewardInput").blur();
+      commitMsReward();
+    }
+  });
+  $("msRewardInput").addEventListener("change", commitMsReward);
+
+  function pickNextWork(id) {
+    refreshManuscript();
+    var r = M.chooseNext(ms, id);
+    saveManuscript();
+    var w = M.LIB.byId[id];
+    $("msNextMsg").textContent = r === "now" ? "次のマスから、" + quoted(w) + "を書くよ" :
+      r === "next" ? "いまの作品を書き終えたら、" + quoted(w) + "を書くよ" :
+      r === "same" ? "いま書いている作品だよ" : "";
+    renderMsSettings();
+  }
+  $("msNextClear").addEventListener("click", function () {
+    refreshManuscript();
+    M.chooseNext(ms, null);
+    saveManuscript();
+    $("msNextMsg").textContent = "おまかせに戻したよ";
+    renderMsSettings();
+  });
+  $("msSkipBtn").addEventListener("click", function () {
+    ask("いま書いている作品を飛ばす？\nここまで書いた文字は、原稿用紙に残るよ。", "飛ばす").then(function (yes) {
+      if (!yes) return;
+      refreshManuscript();
+      var fixed = !!ms.rewardOverride;
+      var ev = M.skip(ms);
+      ev.pages.forEach(setPageReward);
+      saveManuscript();
+      var cur = M.current(ms);
+      $("msNextMsg").textContent = cur && cur.work ? "飛ばしたよ。次は" + M.kindLabel(cur.work) + "を書くよ" : "";
+      if (ev.pages.length) queueParty(ev, false, fixed);
+      renderMsSettings();
+    });
+  });
+  $("msSetBackBtn").addEventListener("click", function () { navBack(); });
+
+  /* ── 綴じ帳の「原稿用紙」の欄(書いている紙・書き上げた紙・書き上げた作品) ── */
+  var MS_PAGES_PAGE = 2, MS_WORKS_PAGE = 20;
+  var msPagesShown = MS_PAGES_PAGE, msWorksShown = MS_WORKS_PAGE;
+  function pageAuthors(p) {
+    var names = [];
+    p.workIds.forEach(function (id) {
+      var w = M.LIB.byId[id];
+      if (w && names.indexOf(w.author) === -1) names.push(w.author);
+    });
+    var shown = names.slice(0, 3).join("・") + (names.length > 3 ? "ほか" : "");
+    return shown + "（作品 " + p.workIds.length + "）";
+  }
+  function listItem(ul, child) {
+    var li = document.createElement("li");
+    li.appendChild(child);
+    ul.appendChild(li);
+  }
+  function renderMsBinder() {
+    refreshManuscript();
+    $("msBinder").hidden = false;
+    var ul = $("msPagesList");
+    ul.textContent = "";
+    var cur = el("button", "sheet-item");
+    cur.type = "button";
+    var top = el("span", "sheet-top");
+    top.appendChild(el("span", "tag now", "書いているところ"));
+    cur.appendChild(top);
+    cur.appendChild(el("span", "sheet-task", "原稿用紙 " + ms.page.no + "枚目"));
+    cur.appendChild(el("span", "ms-page-works", "あと " + M.pageLeft(ms) + "マスで書き上がるよ"));
+    cur.addEventListener("click", function () { navTo("#genkou"); });
+    listItem(ul, cur);
+    var pages = ms.pages.slice().reverse();
+    pages.slice(0, msPagesShown).forEach(function (p) {
+      var b = el("button", "sheet-item");
+      b.type = "button";
+      var t = el("span", "sheet-top");
+      t.appendChild(el("span", null, Rec.dayLabel(p.completedAt)));
+      b.appendChild(t);
+      b.appendChild(el("span", "sheet-task", "原稿用紙 " + p.no + "枚目"));
+      b.appendChild(el("span", "ms-page-works", pageAuthors(p)));
+      if (p.reward && !p.quiet) b.appendChild(el("span", "ms-page-works", "🎁 " + (my.masked && p.rewardUserId ? "●●●●●●" : p.reward)));
+      b.addEventListener("click", function () { navTo("#genkou/" + p.no); });
+      listItem(ul, b);
+    });
+    $("msPagesMore").hidden = pages.length <= msPagesShown;
+    var works = ms.finishedWorks.map(function (f, i) { return { f: f, i: i }; })
+      .filter(function (x) { return !!M.LIB.byId[x.f.id]; }).reverse();
+    $("msWorksBlock").hidden = !works.length;
+    $("msWorksTitle").textContent = "✒ 書き上げた作品（" + works.length + "）";
+    var wl = $("msWorksList");
+    wl.textContent = "";
+    works.slice(0, msWorksShown).forEach(function (x) {
+      var w = M.LIB.byId[x.f.id];
+      var b = el("button", "sheet-item");
+      b.type = "button";
+      var t = el("span", "sheet-top");
+      t.appendChild(el("span", null, Rec.dayLabel(x.f.completedAt)));
+      b.appendChild(t);
+      b.appendChild(el("span", "sheet-task", M.shortName(w)));
+      b.appendChild(el("span", "ms-page-works", M.sourceLabel(w)));
+      b.addEventListener("click", function () { navTo("#saku/" + x.i); });
+      listItem(wl, b);
+    });
+    $("msWorksMore").hidden = works.length <= msWorksShown;
+  }
+  $("msPagesMore").addEventListener("click", function () {
+    msPagesShown = Infinity;
+    renderMsBinder();
+  });
+  $("msWorksMore").addEventListener("click", function () {
+    msWorksShown += MS_WORKS_PAGE;
+    renderMsBinder();
+  });
+
+  /* ── 最近のタスク(入力欄の下。押すと入力文と、前回の気の重さ・時間が入る。エネルギーは今日のまま) ── */
+  function renderRecent() {
+    var list = Rec.recentTasks(binder.sheets, new Date());
+    var wrap = $("recentList");
+    wrap.textContent = "";
+    $("recentTasks").hidden = !list.length;
+    list.forEach(function (r) {
+      var emoji = C.CATEGORY_EMOJI[r.category] || "";
+      var first = r.task.split(/\r?\n/)[0];
+      var label = (emoji ? emoji + " " : "") + (first.length > 18 ? first.slice(0, 18) + "…" : first);
+      var b = makeButton(label, "chip recent-btn", function () { useRecent(r); });
+      b.setAttribute("aria-label", "「" + r.task + "」を入力欄に入れる");
+      wrap.appendChild(b);
+    });
+  }
+  function useRecent(r) {
+    $("taskInput").value = r.task;
+    if (r.heaviness >= 1 && r.heaviness <= 5) {
+      state.heaviness = r.heaviness;
+      $("heaviness").value = r.heaviness;
+    }
+    if ([5, 15, 30, 60].indexOf(r.time) !== -1) {
+      state.time = r.time;
+      setChip("timeChips", r.time);
+    }
+    saveState();
+    renderGymFormHint();
+  }
+
+  /* ── 画面の切り替え(#my-rewards / #tojicho / #tojicho/記録のid / #gym-settings / #genkou-settings / #gym /
+   *    オーバーレイの #tayori/週・#genkou・#genkou/番号・#saku/番号・#iwai) ──────
    * アプリ内のボタンで開くときは history に積む。「← 戻る」や Android の戻る操作で1つ前に戻る。
    * 積んだ深さは history.state に入れておく(開き直しても、戻る操作で戻れるように)。
    * #gym はメインの画面のまま、たたんだジムの日カードをひらいた状態(戻る操作でまた畳む)。 */
@@ -4679,6 +5786,11 @@
   function viewFromHash() {
     var h = location.hash;
     if (h.indexOf("#tayori/") === 0) return "letter:" + h.slice(8);
+    if (h === "#genkou") return "genkou";
+    if (h.indexOf("#genkou/") === 0) return "genkou:" + h.slice(8);
+    if (h === "#genkou-settings") return "msset";
+    if (h.indexOf("#saku/") === 0) return "saku:" + h.slice(6);
+    if (h === "#iwai") return "iwai";
     if (h === "#my-rewards") return "my";
     if (h === "#gym-settings") return "gymset";
     if (h === "#gym") return "gym";
@@ -4689,31 +5801,54 @@
     return "main";
   }
 
-  /* #tayori/週の月曜 はたよりのオーバーレイ。下の画面(baseView)はそのままにして上に重ね、
-   * 戻る操作で閉じたら、下の画面を描き直さずにそのまま見せる */
+  /* オーバーレイ: #tayori/週の月曜(たより)・#genkou(原稿用紙)・#genkou/番号・#saku/番号(作品)・#iwai(お祝い)。
+   * 下の画面(baseView)はそのままにして上に重ね、戻る操作で閉じたら、下の画面を描き直さずにそのまま見せる。
+   * オーバーレイからオーバーレイへ移ったときは、戻る操作で1つ前のオーバーレイに戻る */
   var baseView = "main";
-  function letterOf(view) {
-    return typeof view === "string" && view.indexOf("letter:") === 0 ? view.slice(7) : null;
+  var OVERLAYS = ["letter", "genkou", "saku", "iwai"];
+  function overlayOf(view) {
+    if (typeof view !== "string") return null;
+    var i = view.indexOf(":");
+    var kind = i === -1 ? view : view.slice(0, i);
+    if (OVERLAYS.indexOf(kind) === -1) return null;
+    return { kind: kind, arg: i === -1 ? "" : view.slice(i + 1) };
+  }
+  function overlayValid(ov) {
+    return ov.kind === "letter" ? !!W.findLetter(letters, ov.arg) : msOverlayValid(ov);
+  }
+  function openOverlay(ov, switching) {
+    if (ov.kind === "letter") openLetter(ov.arg);
+    else openMsOverlay(ov, switching);
+  }
+  function closeOverlay(ov, switching) {
+    if (ov.kind === "letter") closeLetter(switching);
+    else closeMsOverlay(ov, switching);
   }
   function showView() {
     var view = viewFromHash();
     if (view === currentView) return;
-    var ws = letterOf(view);
-    if (ws !== null) {
-      if (W.findLetter(letters, ws)) {
-        if (!currentView) applyView("main");   // たよりを開いたまま開き直したときは、下にメインの画面を出す
-        if (letterOf(currentView) === null) baseView = currentView;
+    var ov = overlayOf(view);
+    if (ov) {
+      if (overlayValid(ov)) {
+        if (!currentView) applyView("main");   // オーバーレイを開いたまま開き直したときは、下にメインの画面を出す
+        var prevOv = overlayOf(currentView);
+        if (prevOv) closeOverlay(prevOv, true);
+        else baseView = currentView;
         currentView = view;
-        openLetter(ws);
+        openOverlay(ov, !!prevOv);
         return;
       }
       try { history.replaceState(history.state, "", homeUrl()); } catch (e) {}
       view = "main";
     }
-    if (letterOf(currentView) !== null) {
-      closeLetter();
+    var cur = overlayOf(currentView);
+    if (cur) {
+      closeOverlay(cur, false);
       currentView = baseView;
-      if (view === currentView) return;
+      if (view === currentView) {
+        if (view === "main" || view === "gym") resumeParty();
+        return;
+      }
     }
     applyView(view);
   }
@@ -4728,6 +5863,7 @@
       commitIfThen("weekday", true);
       commitIfThen("holiday", true);
     }
+    if (prev === "msset") commitMsReward();   // 打ちかけの「1枚ごとのご褒美」も保存する
     var detailId = view.indexOf("detail:") === 0 ? view.slice(7) : null;
     if (detailId !== null && !renderDetail(detailId)) {
       // 外した記録などで見つからないときは一覧を出す
@@ -4738,6 +5874,7 @@
     currentView = view;
     document.body.classList.toggle("view-my", view === "my");
     document.body.classList.toggle("view-gymset", view === "gymset");
+    document.body.classList.toggle("view-msset", view === "msset");
     document.body.classList.toggle("view-binder", view === "binder" || detailId !== null);
     $("binderListView").hidden = detailId !== null;
     $("binderDetailView").hidden = detailId === null;
@@ -4753,11 +5890,19 @@
       $("gymCompanionError").textContent = "";
       renderGymSettings();
       window.scrollTo(0, 0);
+    } else if (view === "msset") {
+      $("msRewardMsg").textContent = "";
+      $("msNextMsg").textContent = "";
+      my = loadMy();
+      renderMsSettings();
+      window.scrollTo(0, 0);
     } else if (view === "binder") {
       var fromDetail = !!prev && prev.indexOf("detail:") === 0;
       if (!fromDetail) {
         binderShown = BINDER_PAGE;
         lettersShown = LETTERS_PAGE;
+        msPagesShown = MS_PAGES_PAGE;
+        msWorksShown = MS_WORKS_PAGE;
       }
       renderBinderList();
       window.scrollTo(0, fromDetail ? listScrollY : 0);
@@ -4770,7 +5915,9 @@
       checkGymDay();
       updateProgress();
       renderTally();
+      renderRecent();
       renderGym();
+      resumeParty();   // ほかの画面にいる間に書き上がった作品があれば、戻ったところでお祝いする
       if (pendingPanelScroll && $("panel").classList.contains("show")) {
         pendingPanelScroll = false;
         $("panel").scrollIntoView({ block: "start" });

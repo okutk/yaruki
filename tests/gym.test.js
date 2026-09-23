@@ -138,6 +138,11 @@ function at(y, m, d, h, min) { return new Date(y, m - 1, d, h, min || 0); }
 
   var round = G.checkSheet(JSON.parse(JSON.stringify(s)));
   check(round && round.done.join() === s.done.join() && round.mainCount === 4, "保存して読み直せる");
+  check(s.gold.length === 0 && round.gold.length === 0, "金のマスを決めなければ無し");
+  var gs = G.newSheet({ id: "s2", light: true, dayType: "holiday", hasCompanion: false, score: 26, level: 2,
+    createdAt: "2026-09-24T10:00:00.000Z", gold: [5, 1, 1, 99] });
+  var gr = G.checkSheet(JSON.parse(JSON.stringify(gs)));
+  check(gs.gold.join() === "1,5" && gr.gold.join() === "1,5", "金のマス(おまけのマスも)を紙に残し、読み直しても変わらない");
 })();
 
 // ── 6. 難易度とご褒美レベル ────────────────────────

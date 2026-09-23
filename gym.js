@@ -140,6 +140,15 @@
     return v.replace(/\s+/g, " ").trim().slice(0, max);
   }
   function ifThenText(v, fallback) { return cleanText(v, TEXT_MAX) || fallback; }
+  // 金のマスの番号(0〜n-1 の整数、重複なし、小さい順)
+  function goldOf(v, n) {
+    if (!Array.isArray(v)) return [];
+    var seen = {}, out = [];
+    v.forEach(function (i) {
+      if (intIn(i, 0, n - 1) === i && !seen[i]) { seen[i] = true; out.push(i); }
+    });
+    return out.sort(function (a, b) { return a - b; });
+  }
 
   // 今日のジムの紙をそろえる。使えなければ null(カードは「始める前」に戻る)
   function checkSheet(s) {
@@ -157,6 +166,7 @@
       steps: steps,
       mainCount: MAIN_COUNT,
       done: steps.map(function (_, i) { return srcDone[i] === true; }),
+      gold: goldOf(s.gold, steps.length),
       boxRewards: steps.map(function (_, i) { return typeof srcRewards[i] === "string" ? srcRewards[i] : null; }),
       finalReward: typeof s.finalReward === "string" ? s.finalReward : "",
       rewardLocked: s.rewardLocked === true,
@@ -265,7 +275,7 @@
     return { score: score, level: C.rewardLevel(score) };
   }
 
-  // 新しいジムの紙。ご褒美(boxRewards / finalReward)は index.html が引く
+  // 新しいジムの紙。ご褒美(boxRewards / finalReward)は index.html が引く。gold: 金のマスの番号(index.html が決める)
   function newSheet(o) {
     var steps = buildSteps(o.light, o.dayType, o.hasCompanion);
     return {
@@ -275,6 +285,7 @@
       steps: steps,
       mainCount: MAIN_COUNT,
       done: steps.map(function () { return false; }),
+      gold: goldOf(o.gold, steps.length),
       boxRewards: steps.map(function () { return null; }),
       finalReward: "",
       rewardLocked: !!o.rewardLocked,
