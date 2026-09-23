@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>やる気の原稿用紙</title>
+<meta name="theme-color" content="#f4f7f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12201e" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="原稿用紙">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f4f7f1;
+    --paper-2: #e7ede4;
+    --rule: #3f8f86;
+    --rule-soft: rgba(63,143,134,0.32);
+    --ink: #262b29;
+    --ink-soft: #6c7674;
+    --hanko: #2f6b64;
+    --hanko-dark: #204a45;
+    --cta: #2f6b64;
+    --cta-hover: #204a45;
+    --gold: #ab8f4e;
+    --gold-soft: #e0d3a8;
+    --card-bg: #fbfaf3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #12201e;
+      --paper-2: #1a2b28;
+      --rule: #6fd0c4;
+      --rule-soft: rgba(111,208,196,0.32);
+      --ink: #e7ede9;
+      --ink-soft: #9db3ae;
+      --hanko: #8fe3d6;
+      --hanko-dark: #6fd0c4;
+      --cta: #2f8577;
+      --cta-hover: #24675c;
+      --gold: #d9c17a;
+      --gold-soft: #4a3f22;
+      --card-bg: #1a2b28;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #12201e;
+    --paper-2: #1a2b28;
+    --rule: #6fd0c4;
+    --rule-soft: rgba(111,208,196,0.32);
+    --ink: #e7ede9;
+    --ink-soft: #9db3ae;
+    --hanko: #8fe3d6;
+    --hanko-dark: #6fd0c4;
+    --cta: #2f8577;
+    --cta-hover: #24675c;
+    --gold: #d9c17a;
+    --gold-soft: #4a3f22;
+    --card-bg: #1a2b28;
+  }
+
+  * { box-sizing: border-box; }
+  button, .box, input, textarea {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html {
+    scroll-padding-top: env(safe-area-inset-top, 0px);
+  }
+  html, body {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Noto Sans JP", sans-serif;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background-image:
+      linear-gradient(var(--rule-soft) 1px, transparent 1px);
+    background-size: 100% 34px;
+  }
+
+  .shell {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+    display: flex;
+    gap: 18px;
+  }
+
+  .spine {
+    flex: 0 0 40px;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    font-family: "Noto Serif JP", serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.35em;
+    color: var(--rule);
+    padding-top: 6px;
+    border-right: 2px solid var(--rule);
+    user-select: none;
+  }
+
+  .main { flex: 1; min-width: 0; }
+
+  header.hero {
+    margin-bottom: 22px;
+  }
+  header.hero h1 {
+    font-family: "Noto Serif JP", serif;
+    font-weight: 900;
+    font-size: clamp(26px, 6vw, 36px);
+    margin: 0 0 6px;
+    line-height: 1.3;
+  }
+  header.hero p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--rule-soft);
+    border-radius: 2px;
+    padding: 22px;
+    margin-bottom: 18px;
+  }
+  .card h2 {
+    font-family: "Noto Serif JP", serif;
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0 0 14px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .card h2 .num {
+    color: var(--hanko);
+    font-size: 13px;
+    border: 1px solid var(--hanko);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+  }
+
+  label.field-label {
+    display: block;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+
+  textarea#taskInput {
+    width: 100%;
+    min-height: 64px;
+    resize: vertical;
+    font-family: "Noto Sans JP", sans-serif;
+    font-size: 16px;
+    padding: 10px 12px;
+    background: var(--paper-2);
+    border: 1px solid var(--rule-soft);
+    border-radius: 2px;
+    color: var(--ink);
+    line-height: 1.7;
+  }
+  textarea#taskInput:focus {
+    outline: 2px solid var(--rule);
+    outline-offset: 1px;
+  }
+
+  .qgrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-top: 16px;
+  }
+  .qrow .field-label { margin-bottom: 10px; }
+
+  .chipset {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chip {
+    border: 1px solid var(--rule-soft);
+    background: var(--paper-2);
+    color: var(--ink);
+    padding: 8px 14px;
+    border-radius: 2px;
+    font-size: 13.5px;
+    font-family: "Noto Sans JP", sans-serif;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+  .chip[aria-pressed="true"] {
+    border-color: var(--hanko);
+    color: var(--hanko);
+    font-weight: 700;
+  }
+  .chip:focus-visible {
+    outline: 2px solid var(--rule);
+    outline-offset: 2px;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--hanko);
+  }
+  .range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  button.primary {
+    width: 100%;
+    padding: 14px;
+    font-family: "Noto Serif JP", serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.08em;
+    background: var(--cta);
+    color: #fbfaf3;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  @media (hover: hover) {
+    button.primary:hover { background: var(--cta-hover); }
+  }
+  button.primary:active { background: var(--cta-hover); }
+  button.primary:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  #panel { display: none; }
+  #panel.show { display: block; }
+
+  .progress-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .progress-line strong {
+    white-space: nowrap;
+    color: var(--ink);
+    font-family: "Noto Serif JP", serif;
+    font-size: 15px;
+  }
+
+  .praise-toast {
+    display: flex;
+    align-items: center;
+    min-height: 20px;
+    margin: -4px 0 12px;
+    font-size: 13px;
+    color: var(--hanko);
+    font-family: "Noto Serif JP", serif;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .praise-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .praise-toast { transition: none; }
+  }
+
+  .boxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  .box {
+    position: relative;
+    border: 1.5px solid var(--rule);
+    background: var(--paper-2);
+    padding: 14px 12px 12px;
+    min-height: 92px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: left;
+    font-family: "Noto Sans JP", sans-serif;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  .box .label {
+    overflow-wrap: anywhere;
+  }
+  .box .idx {
+    font-family: "Noto Serif JP", serif;
+    font-size: 12px;
+    color: var(--rule);
+  }
+  .box.done {
+    background: var(--gold-soft);
+    color: var(--ink-soft);
+    text-decoration: line-through;
+    text-decoration-color: var(--rule-soft);
+  }
+  .box .stamp {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
+    border: 2px solid var(--hanko);
+    border-radius: 50%;
+    color: var(--hanko);
+    font-family: "Noto Serif JP", serif;
+    font-weight: 900;
+    font-size: 12px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-8deg);
+  }
+  .box.done .stamp { display: flex; }
+  .box:focus-visible { outline: 2px solid var(--rule); outline-offset: 2px; }
+
+  .box .box-reward {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--rule-soft);
+    font-size: 12px;
+    color: var(--hanko);
+    text-decoration: none;
+  }
+  .box.done .box-reward { display: flex; }
+  .box .box-reward-text {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .box .box-reroll {
+    flex: none;
+    border: 1px solid var(--rule-soft);
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: 12px;
+    line-height: 1;
+    padding: 3px 6px;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  .box .box-reroll:hover { color: var(--ink); border-color: var(--rule); }
+  .box .box-reroll:focus-visible { outline: 2px solid var(--rule); outline-offset: 1px; }
+
+  .reward-block {
+    margin-top: 20px;
+    border-top: 1px dashed var(--rule-soft);
+    padding-top: 16px;
+  }
+  .reward-block .field-label { margin-bottom: 10px; }
+  .reward-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: var(--paper-2);
+    border: 1px solid var(--rule-soft);
+    padding: 10px 12px;
+    border-radius: 2px;
+  }
+  .reward-row .tier {
+    font-family: "Noto Serif JP", serif;
+    font-size: 12px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 2px 8px;
+    border-radius: 20px;
+    flex: none;
+    white-space: nowrap;
+  }
+  .reward-row input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    min-width: 0;
+    color: var(--ink);
+    font-family: "Noto Sans JP", sans-serif;
+    transition: filter 0.4s ease;
+  }
+  .reward-row input:focus { outline: none; }
+  .reward-row.locked input {
+    filter: blur(6px);
+    user-select: none;
+    cursor: default;
+  }
+  .reward-row .lock-icon {
+    flex: none;
+    font-size: 14px;
+    display: none;
+  }
+  .reward-row.locked .lock-icon { display: inline; }
+  .reroll {
+    border: 1px solid var(--rule-soft);
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 2px;
+    cursor: pointer;
+    flex: none;
+  }
+  .reroll:hover { color: var(--ink); border-color: var(--rule); }
+  .reroll:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .reroll:disabled:hover { color: var(--ink-soft); border-color: var(--rule-soft); }
+  #completeBanner .unlock-note {
+    font-size: 12.5px;
+    color: var(--gold);
+    margin-top: 4px;
+  }
+
+  #completeBanner {
+    display: none;
+    margin-top: 22px;
+    text-align: center;
+    padding: 26px 18px;
+    border: 2px solid var(--hanko);
+    position: relative;
+    background: var(--card-bg);
+  }
+  #completeBanner.show {
+    display: block;
+    animation: stampIn 0.5s cubic-bezier(.2,1.4,.4,1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #completeBanner.show { animation: none; }
+  }
+  @keyframes stampIn {
+    0% { transform: scale(2.2) rotate(-14deg); opacity: 0; }
+    60% { transform: scale(0.94) rotate(-4deg); opacity: 1; }
+    100% { transform: scale(1) rotate(-4deg); opacity: 1; }
+  }
+  #completeBanner .seal {
+    display: inline-block;
+    font-family: "Noto Serif JP", serif;
+    font-weight: 900;
+    font-size: 20px;
+    color: var(--hanko);
+    border: 3px solid var(--hanko);
+    border-radius: 50%;
+    width: 74px;
+    height: 74px;
+    line-height: 68px;
+    transform: rotate(-4deg);
+    margin-bottom: 10px;
+  }
+  #completeBanner p {
+    margin: 6px 0 0;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  #completeBanner .final-reward {
+    margin-top: 10px;
+    font-family: "Noto Serif JP", serif;
+    font-size: 16px;
+    color: var(--ink);
+  }
+
+  .reset-link {
+    display: inline-block;
+    margin-top: 18px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: "Noto Sans JP", sans-serif;
+  }
+
+  @media (max-width: 480px) {
+    .spine {
+      writing-mode: horizontal-tb;
+      flex: none;
+      border-right: none;
+      border-bottom: 2px solid var(--rule);
+      padding: 0 0 8px;
+      letter-spacing: 0.2em;
+      font-size: 13px;
+    }
+    .shell {
+      flex-direction: column;
+      padding-left: 14px;
+      padding-right: 14px;
+    }
+    .card { padding: 18px 14px; }
+    .boxes {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .box {
+      padding: 12px 10px 10px;
+      font-size: 13px;
+    }
+    .box .label { padding-right: 4px; }
+    .box .stamp {
+      top: 5px;
+      right: 5px;
+      width: 22px;
+      height: 22px;
+      font-size: 11px;
+    }
+    .reward-row {
+      flex-wrap: wrap;
+      padding: 8px 10px;
+    }
+    /* 1行目に「中」と他の案、2行目にご褒美の文字を全幅で出す */
+    .reward-row .reroll { margin-left: auto; }
+    .reward-row input {
+      order: 3;
+      flex-basis: 100%;
+    }
+    .box .box-reward {
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 4px 6px;
+    }
+    .box .box-reward-text { flex-basis: 100%; }
+    .progress-line { gap: 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="spine">やる気の原稿用紙</div>
+  <div class="main">
+    <header class="hero">
+      <h1>一マスずつ、埋めていく。</h1>
+      <p>気が重いことほど、いきなり全部はやらなくていい。質問に答えると、マス目のタスクと難易度に合ったご褒美の提案ができるよ。</p>
+    </header>
+
+    <div class="card" id="formCard">
+      <h2><span class="num">1</span>何をやりたい？</h2>
+      <label class="field-label" for="taskInput">気になっていること・後回しにしていることを書いてみて</label>
+      <textarea id="taskInput" placeholder="例：部屋の掃除／家族との旅行の計画／溜まったメールの返信 など"></textarea>
+
+      <div class="qgrid">
+        <div class="qrow">
+          <div class="field-label">どのくらい気が重い？</div>
+          <input type="range" id="heaviness" min="1" max="5" value="3">
+          <div class="range-labels"><span>気楽</span><span>かなり重い</span></div>
+        </div>
+        <div class="qrow">
+          <div class="field-label">今、使えそうな時間は？</div>
+          <div class="chipset" id="timeChips" role="group" aria-label="使える時間">
+            <button type="button" class="chip" data-value="5" aria-pressed="false">5分</button>
+            <button type="button" class="chip" data-value="15" aria-pressed="true">15分</button>
+            <button type="button" class="chip" data-value="30" aria-pressed="false">30分</button>
+            <button type="button" class="chip" data-value="60" aria-pressed="false">1時間以上</button>
+          </div>
+        </div>
+        <div class="qrow">
+          <div class="field-label">今のエネルギーは？</div>
+          <div class="chipset" id="energyChips" role="group" aria-label="エネルギーレベル">
+            <button type="button" class="chip" data-value="1" aria-pressed="false">低め</button>
+            <button type="button" class="chip" data-value="2" aria-pressed="true">ふつう</button>
+            <button type="button" class="chip" data-value="3" aria-pressed="false">高め</button>
+          </div>
+        </div>
+        <div class="qrow">
+          <div class="field-label">最後のご褒美は？</div>
+          <div class="chipset" id="lockChips" role="group" aria-label="最後のご褒美の見せ方">
+            <button type="button" class="chip" data-value="show" aria-pressed="true">最初から見せる</button>
+            <button type="button" class="chip" data-value="lock" aria-pressed="false">🔒 全部埋めるまで隠す</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="primary" id="generateBtn">マス目を生成する</button>
+    </div>
+
+    <div class="card" id="panel">
+      <h2><span class="num">2</span>今日埋めるマス目</h2>
+      <div class="progress-line">
+        <span>タップして埋めると、マスの中に小さなご褒美が出てくるよ</span>
+        <strong id="progressText">0 / 0</strong>
+      </div>
+      <div class="praise-toast" id="praiseToast"></div>
+      <div class="boxes" id="boxes"></div>
+
+      <div class="reward-block">
+        <div class="field-label" id="finalRewardLabel">全部埋まったときの、少し大きめのご褒美</div>
+        <div class="reward-row" id="rewardRow">
+          <span class="tier" id="tierLabel">小</span>
+          <span class="lock-icon">🔒</span>
+          <input type="text" id="rewardInput" value="" readonly>
+          <button class="reroll" id="rerollBtn" type="button">他の案</button>
+        </div>
+      </div>
+
+      <div id="completeBanner">
+        <span class="seal">完</span>
+        <div class="unlock-note" id="unlockNote" hidden>🔓 お楽しみのご褒美、開いたよ</div>
+        <div class="final-reward" id="finalRewardText"></div>
+        <p id="completeMessage">全部埋まったよ。お疲れさま。</p>
+      </div>
+
+      <button class="reset-link" id="resetBtn">最初からやり直す</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var templates = [
+    { keys: ["掃除", "片付け", "そうじ", "片づけ"], steps: [
+      "使うもの(雑巾・ゴミ袋・洗剤)を手元に用意する",
+      "一番気になっている場所だけ手をつける",
+      "床のゴミを拾う・軽く掃除機をかける",
+      "水回り(洗面台・キッチンなど)をさっと拭く",
+      "散らかっているものを元の場所に戻す",
+      "最後に部屋全体をぐるっと見渡す"
+    ], lowSteps: [
+      "ゴミ袋を1枚だけ出しておく",
+      "目についたゴミを3つだけ捨てる",
+      "床にある物を1つだけ元の場所に戻す",
+      "机かテーブルの上だけ、1分さっと拭く",
+      "洗面台をティッシュでひと拭きだけする",
+      "「今日はここまで」と区切りをつける"
+    ]},
+    { keys: ["旅行", "旅", "お出かけ", "帰省"], steps: [
+      "行きたい候補地を思いつくまま3つ挙げる",
+      "家族やメンバーに「どこか行きたいね」と一言送ってみる",
+      "候補の中から気になる場所を1つに絞る",
+      "大まかな日程の候補を決める",
+      "交通手段・宿をざっくり調べてみる",
+      "決めた内容をみんなで最終確認する"
+    ], lowSteps: [
+      "行ってみたい場所を1つだけ思い浮かべる",
+      "その場所の写真を1枚だけ眺める",
+      "候補をスマホのメモに一言だけ書く",
+      "カレンダーで空いていそうな週末を見るだけ",
+      "家族に送る一言を下書きだけしておく",
+      "「続きは元気な日に」とメモしておく"
+    ]},
+    { keys: ["勉強", "学習", "資格", "試験"], steps: [
+      "教材やノートを机の上に開くだけ",
+      "今日やる範囲をひとつだけ決める",
+      "決めた範囲の前半に取り組む",
+      "決めた範囲の後半に取り組む",
+      "間違えた部分・気になった部分を見直す",
+      "次回やることを一言メモしておく"
+    ], lowSteps: [
+      "教材を机の上に出すだけ",
+      "今日のページを開くだけ",
+      "見出しだけ2〜3分眺める",
+      "1問だけ(または1段落だけ)やってみる",
+      "もう1問だけやってみる",
+      "次に開くページに付箋を貼っておく"
+    ]},
+    { keys: ["運動", "筋トレ", "ジョギング", "ランニング", "ヨガ"], steps: [
+      "動きやすい服に着替える",
+      "軽くストレッチで体をほぐす",
+      "決めていたメニューの半分をやる",
+      "残り半分をやる",
+      "クールダウンで呼吸を整える",
+      "今日やったことを一言記録する"
+    ], lowSteps: [
+      "動きやすい服に着替えるだけ",
+      "その場で深呼吸を3回する",
+      "首と肩をゆっくり1分回す",
+      "好きなストレッチを1つだけやる",
+      "その場で1分だけ足踏みする",
+      "「今日は動いた」と一言記録する"
+    ]},
+    { keys: ["仕事", "タスク", "資料", "メール", "作業"], steps: [
+      "関係するファイルやメールを一旦全部開く",
+      "一番小さく終わりそうな1件だけ片付ける",
+      "残っている中で一番気が重い1件に5分だけ手をつける",
+      "その続きをもう少し進める",
+      "今日やった分を軽く見直す",
+      "明日に残すことを一言メモする"
+    ], lowSteps: [
+      "関係するファイルかメールを1つだけ開く",
+      "件名や見出しを2〜3分眺めるだけ",
+      "一番小さい1件だけ片付ける",
+      "次にやることを1行だけ書き出す",
+      "その1行に2〜3分だけ手をつける",
+      "明日の自分へ一言メモを残す"
+    ]},
+    { keys: ["買い物", "買い出し"], steps: [
+      "必要な物をざっと思いつくだけ書き出す",
+      "書き出したものの優先順位をつける",
+      "上位のものから探し始める",
+      "残りのものを集める",
+      "買い忘れがないか見直す",
+      "会計・受け取りを済ませる"
+    ], lowSteps: [
+      "必要な物を1つだけメモする",
+      "思い出したら2〜3個だけ書き足す",
+      "一番急ぐもの1つに印をつける",
+      "財布やエコバッグを玄関に置いておくだけ",
+      "急ぐ1つだけネットで見てみる",
+      "残りは次の買い物に回すと決める"
+    ]}
+  ];
+
+  var fallbackSteps = function (task, low) {
+    var t = task || "そのこと";
+    if (low) return [
+      "手元のものを1つだけ片付ける",
+      "「" + t + "」に使うものを出しておくだけ",
+      "「" + t + "」に2〜3分だけ手をつける",
+      "小さなことを1つだけ終わらせる",
+      "どこまでできたか一言メモする",
+      "「今日はここまで」と区切りをつける"
+    ];
+    return [
+      "机の上や手元だけ軽く整える",
+      "「" + t + "」に5分だけ手をつけてみる",
+      "もう5分だけ続きをやってみる",
+      "気になった部分だけ仕上げる",
+      "終わったところまでを一言メモ・写真に残す",
+      "残りは次の機会に回すと決める"
+    ];
+  };
+
+  var rewardPool = {
+    // エネルギー低めのときのマスごとのご褒美(より軽いもの)
+    gentle: ["水かお茶をひと口飲む", "目を閉じて深呼吸を3回", "窓の外を30秒眺める", "肩の力を抜いて伸びをする", "お気に入りの写真を1枚見る"],
+    small: ["好きな飲み物を一杯飲む", "深呼吸して伸びをする", "好きな曲を1曲だけ聴く", "5分だけSNSやニュースを見る"],
+    medium: ["お気に入りのお菓子を食べる", "好きな動画・配信を1本見る", "何も予定を入れずゴロゴロする", "香りのいい入浴剤でお風呂に入る"],
+    large: ["好きなものを外食・デリバリーで頼む", "前から気になっていたものを1つ買う", "丸1日、予定を入れず自由に過ごす", "会いたかった人と会う約束をする"]
+  };
+
+  var praisePool = {
+    firstStep: [
+      "最初の一マス、動き出せたね",
+      "一番腰が重かったはずの最初の一歩、もう終わった",
+      "始めるまでが一番大変だった。それ、もう超えたよ"
+    ],
+    low: [
+      "いいね、その調子",
+      "着実に進んでる",
+      "順調、順調"
+    ],
+    mid: [
+      "気が重い中、ちゃんと動けてる",
+      "一歩ずつ、ちゃんと進んでるよ",
+      "面倒なことに、ちゃんと向き合えてる"
+    ],
+    high: [
+      "あんなに気が重かったのに、ちゃんと動けたね",
+      "重い腰を上げられた、それだけで十分すごいこと",
+      "気が重いことに手をつけられるのは、簡単じゃない"
+    ]
+  };
+
+  var completeMessagePool = {
+    low: ["全部埋まったよ。お疲れさま。"],
+    mid: ["気が重い中、最後までやり切ったね。お疲れさま。"],
+    high: ["あんなに気が重かったことを、ちゃんと最後までやり切ったね。それ、簡単なことじゃないよ。"]
+  };
+
+  // lockChoice: フォームの選択("show"/"lock")。rewardLocked / lowEnergyAtGen: 生成時点の値。
+  // 古い保存データにはこれらが無いので、既定値(見せる・通常エネルギー)のまま扱われる。
+  var state = { heaviness: 3, time: 15, energy: 2, lockChoice: "show", steps: [], done: [], boxRewards: [], tier: "small", heavinessAtGen: 3, rewardLocked: false, lowEnergyAtGen: false };
+  var praiseTimer = null;
+  var STORAGE_KEY = "genkouyoushi-state-v1";
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        state: state,
+        task: document.getElementById("taskInput").value,
+        reward: document.getElementById("rewardInput").value
+      }));
+    } catch (e) {}
+  }
+
+  function heavinessTier(h) {
+    if (h <= 2) return "low";
+    if (h === 3) return "mid";
+    return "high";
+  }
+
+  function showPraise(text) {
+    var toast = document.getElementById("praiseToast");
+    toast.textContent = text;
+    toast.classList.add("show");
+    if (praiseTimer) clearTimeout(praiseTimer);
+    praiseTimer = setTimeout(function () {
+      toast.classList.remove("show");
+    }, 2600);
+  }
+
+  function pickTemplate(task, low) {
+    var lower = task || "";
+    for (var i = 0; i < templates.length; i++) {
+      var keys = templates[i].keys;
+      for (var j = 0; j < keys.length; j++) {
+        if (lower.indexOf(keys[j]) !== -1) return low ? templates[i].lowSteps : templates[i].steps;
+      }
+    }
+    return fallbackSteps(task, low);
+  }
+
+  function boxRewardPool() {
+    return state.lowEnergyAtGen ? rewardPool.gentle : rewardPool.small;
+  }
+
+  function setupChips(containerId, key) {
+    var container = document.getElementById(containerId);
+    var chips = container.querySelectorAll(".chip");
+    chips.forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        chips.forEach(function (c) { c.setAttribute("aria-pressed", "false"); });
+        chip.setAttribute("aria-pressed", "true");
+        var v = chip.getAttribute("data-value");
+        state[key] = /^\d+$/.test(v) ? parseInt(v, 10) : v;
+        saveState();
+      });
+    });
+  }
+  setupChips("timeChips", "time");
+  setupChips("energyChips", "energy");
+  setupChips("lockChips", "lockChoice");
+
+  document.getElementById("heaviness").addEventListener("input", function (e) {
+    state.heaviness = parseInt(e.target.value, 10);
+    saveState();
+  });
+
+  function randomFrom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function computeDifficulty() {
+    var minutesFactor = state.time / 15;
+    var score = state.heaviness * 2 + minutesFactor - state.energy;
+    return score;
+  }
+
+  function tierFromScore(score) {
+    if (score <= 4) return "small";
+    if (score <= 8) return "medium";
+    return "large";
+  }
+
+  // エネルギー低めのときは最後のご褒美を一段軽くする(大→中、中→小、小は小のまま)
+  var lowerTier = { small: "small", medium: "small", large: "medium" };
+
+  var tierLabelText = { small: "小", medium: "中", large: "大" };
+
+  function renderBoxes() {
+    var boxes = document.getElementById("boxes");
+    boxes.innerHTML = "";
+    state.steps.forEach(function (step, i) {
+      var box = document.createElement("div");
+      box.className = "box";
+      box.setAttribute("role", "checkbox");
+      box.setAttribute("aria-checked", "false");
+      box.setAttribute("tabindex", "0");
+      box.innerHTML = '<span class="idx">' + String(i + 1).padStart(2, "0") + '</span>' +
+        '<span class="stamp">済</span>' +
+        '<span class="label"></span>' +
+        '<span class="box-reward">' +
+          '<span class="box-reward-text"></span>' +
+          '<button type="button" class="box-reroll" aria-label="このご褒美を変える">他の案</button>' +
+        '</span>';
+
+      box.querySelector(".label").textContent = step;
+      if (state.done[i]) {
+        box.classList.add("done");
+        box.setAttribute("aria-checked", "true");
+      }
+      var rewardTextEl = box.querySelector(".box-reward-text");
+      var rerollEl = box.querySelector(".box-reroll");
+
+      function refreshRewardText() {
+        rewardTextEl.textContent = "→ " + state.boxRewards[i];
+      }
+      refreshRewardText();
+
+      function toggle() {
+        var newDone = !state.done[i];
+        state.done[i] = newDone;
+        box.classList.toggle("done", newDone);
+        box.setAttribute("aria-checked", String(newDone));
+        updateProgress();
+        saveState();
+
+        if (newDone) {
+          var doneCount = state.done.filter(Boolean).length;
+          var tier = heavinessTier(state.heavinessAtGen);
+          if (doneCount === 1) {
+            showPraise(randomFrom(praisePool.firstStep));
+          } else if (doneCount < state.steps.length) {
+            showPraise(randomFrom(praisePool[tier]));
+          }
+        }
+      }
+
+      box.addEventListener("click", toggle);
+      box.addEventListener("keydown", function (e) {
+        if (e.target === rerollEl) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggle();
+        }
+      });
+
+      rerollEl.addEventListener("click", function (e) {
+        e.stopPropagation();
+        state.boxRewards[i] = randomFrom(boxRewardPool());
+        refreshRewardText();
+        saveState();
+      });
+
+      boxes.appendChild(box);
+    });
+    updateProgress();
+  }
+
+  function lockReward() {
+    var input = document.getElementById("rewardInput");
+    document.getElementById("rewardRow").classList.add("locked");
+    input.readOnly = true;
+    input.tabIndex = -1;
+    input.setAttribute("aria-hidden", "true");
+    document.getElementById("rerollBtn").disabled = true;
+    document.getElementById("finalRewardLabel").textContent = "🔒 全部埋めたら開けるお楽しみ";
+  }
+
+  function unlockReward() {
+    var input = document.getElementById("rewardInput");
+    document.getElementById("rewardRow").classList.remove("locked");
+    input.readOnly = false;
+    input.removeAttribute("tabindex");
+    input.removeAttribute("aria-hidden");
+    document.getElementById("rerollBtn").disabled = false;
+    document.getElementById("finalRewardLabel").textContent = "🎁 全部埋まったときのご褒美";
+  }
+
+  function updateProgress() {
+    var doneCount = state.done.filter(Boolean).length;
+    var complete = doneCount === state.steps.length && state.steps.length > 0;
+    document.getElementById("progressText").textContent = doneCount + " / " + state.steps.length;
+    if (state.rewardLocked && !complete) lockReward(); else unlockReward();
+    var banner = document.getElementById("completeBanner");
+    if (complete) {
+      document.getElementById("unlockNote").hidden = !state.rewardLocked;
+      document.getElementById("finalRewardText").textContent = document.getElementById("rewardInput").value;
+      var tier = heavinessTier(state.heavinessAtGen);
+      document.getElementById("completeMessage").textContent = randomFrom(completeMessagePool[tier]);
+      banner.classList.add("show");
+    } else {
+      banner.classList.remove("show");
+    }
+  }
+
+  document.getElementById("generateBtn").addEventListener("click", function () {
+    var task = document.getElementById("taskInput").value.trim();
+    var score = computeDifficulty();
+    var low = state.energy === 1;
+    // マス数は今まで通りスコアから決める(低エネルギーだと多め)。代わりに1マスを小さく、ご褒美は一段軽く。
+    var tier = low ? lowerTier[tierFromScore(score)] : tierFromScore(score);
+    var baseSteps = pickTemplate(task, low);
+    var count = Math.max(2, Math.min(6, Math.round(score / 2) + 2));
+    state.steps = baseSteps.slice(0, count);
+    state.done = state.steps.map(function () { return false; });
+    state.lowEnergyAtGen = low;
+    state.boxRewards = state.steps.map(function () { return randomFrom(boxRewardPool()); });
+    state.tier = tier;
+    state.heavinessAtGen = state.heaviness;
+    state.rewardLocked = state.lockChoice === "lock";
+
+    document.getElementById("tierLabel").textContent = tierLabelText[tier];
+    document.getElementById("rewardInput").value = randomFrom(rewardPool[tier]);
+
+    renderBoxes();
+    document.getElementById("panel").classList.add("show");
+    document.getElementById("panel").scrollIntoView({ behavior: "smooth", block: "start" });
+    saveState();
+  });
+
+  document.getElementById("rerollBtn").addEventListener("click", function () {
+    if (document.getElementById("rewardRow").classList.contains("locked")) return;
+    document.getElementById("rewardInput").value = randomFrom(rewardPool[state.tier]);
+    saveState();
+  });
+
+  document.getElementById("rewardInput").addEventListener("input", saveState);
+
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    document.getElementById("panel").classList.remove("show");
+    document.getElementById("completeBanner").classList.remove("show");
+    document.getElementById("praiseToast").classList.remove("show");
+    document.getElementById("taskInput").value = "";
+    state.steps = [];
+    state.done = [];
+    state.rewardLocked = false;
+    // マス目は消すが、フォームの選択(重さ・時間・エネルギー・ご褒美の見せ方)は残す
+    saveState();
+  });
+
+  function setChip(containerId, value) {
+    document.querySelectorAll("#" + containerId + " .chip").forEach(function (c) {
+      c.setAttribute("aria-pressed", String(c.getAttribute("data-value") === String(value)));
+    });
+  }
+
+  (function restore() {
+    var saved;
+    try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch (e) { return; }
+    if (!saved || !saved.state) return;
+    for (var k in saved.state) state[k] = saved.state[k];
+    if (state.lockChoice !== "lock") state.lockChoice = "show";
+    document.getElementById("taskInput").value = saved.task || "";
+    document.getElementById("heaviness").value = state.heaviness;
+    setChip("timeChips", state.time);
+    setChip("energyChips", state.energy);
+    setChip("lockChips", state.lockChoice);
+    if (!state.steps || !state.steps.length) return;
+    document.getElementById("tierLabel").textContent = tierLabelText[state.tier];
+    document.getElementById("rewardInput").value = saved.reward || "";
+    renderBoxes();
+    document.getElementById("panel").classList.add("show");
+  })();
+
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  }
+})();
+</script>
+</body>
+</html>
