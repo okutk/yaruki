@@ -173,6 +173,41 @@ check(p5.steps.length >= p4.steps.length, "旅行先の相談: 低めのマス�
 check(p5.level < p4.level, "旅行先の相談: 低めはご褒美レベルが下がる(" + p5.level + " / " + p4.level + ")");
 check(p3.steps.join("").indexOf("「謎のこと」") !== -1, "その他の手順に入力が入る");
 
+// ── 4b. マスごとの役割・場所・ご褒美の段階 ─────────────────
+before = failures;
+C.CATEGORIES.concat([C.FALLBACK]).forEach(function (cat) {
+  [cat.steps, cat.light].forEach(function (list) {
+    for (var n = 2; n <= 8; n++) {
+      var d = C.stepDetails(list, n, "テスト");
+      check(JSON.stringify(d.map(function (x) { return x.text; })) === JSON.stringify(C.pickSteps(list, n, "テスト")), cat.id + ": stepDetails と pickSteps の並びが同じ");
+      check(d[0].role === "start", cat.id + ": 最初のマスは start");
+      check(d.filter(function (x) { return x.role === "close"; }).length === (n >= 3 ? 1 : 0), cat.id + ": 締めのマスは3マス以上のとき1つ (" + n + "マス)");
+      d.forEach(function (x) { check(x.place === null || x.place === "out", cat.id + ": 場所は out か null"); });
+    }
+  });
+});
+for (var sl = 0; sl <= 7; sl++) {
+  ["start", "main", "close", "?"].forEach(function (role) {
+    var b = C.boxLevelFor(sl, role);
+    check(b >= 1 && b <= 6, "boxLevelFor はレベル1〜6: " + sl + " " + role + " → " + b);
+  });
+}
+check(C.boxLevelFor(3, "start") === 4 && C.boxLevelFor(3, "close") === 2 && C.boxLevelFor(3, "main") === 3, "最初 +1・締め −1・ほか ±0");
+// 1枚の紙の平均レベルは、紙のレベルとほぼ同じ(ずれるのは端で丸めたときの 1/マス数 まで)
+var shiftSum = 0, sheets = 0;
+HS.forEach(function (h) { ES.forEach(function (e) { TS.forEach(function (t) {
+  C.CATEGORIES.forEach(function (cat) {
+    var p = C.plan({ task: cat.label, heaviness: h, energy: e, time: t });
+    check(p.roles.length === p.steps.length && p.places.length === p.steps.length, "plan の roles・places の数がマスと同じ");
+    var avg = p.roles.reduce(function (a, r) { return a + C.boxLevelFor(p.level, r); }, 0) / p.roles.length;
+    check(Math.abs(avg - p.level) <= 1 / p.roles.length + 1e-9, cat.id + ": 紙の平均レベルがずれすぎ " + avg + " / " + p.level);
+    shiftSum += avg - p.level; sheets++;
+  });
+}); }); });
+var outCats = C.CATEGORIES.filter(function (cat) { return cat.steps.concat(cat.light).some(function (s) { return /^\d+o\|/.test(s); }); }).map(function (c) { return c.id; });
+console.log("マスごとの段階: " + (failures === before ? "範囲・並び OK" : "NG あり") + "  紙の平均のずれ(全組み合わせの平均) " +
+  (Math.round(shiftSum / sheets * 1000) / 1000) + "  外のマスがあるカテゴリ: " + outCats.join(", "));
+
 // ── 5. スコアの分布(係数を調整するときの参考) ───────────
 var dist = [0, 0, 0, 0, 0, 0], lightCount = 0, total = 0;
 HS.forEach(function (h) { ES.forEach(function (e) { TS.forEach(function (t) {
