@@ -1,9 +1,11 @@
 // オフライン用。常にネットワークを優先し、つながらないときだけキャッシュを使う。
 // そのため更新を push すれば、次にオンラインで開いたときに最新版が表示される。
-var CACHE = "genkouyoushi-v1";
+var CACHE = "genkouyoushi-v2";
 var ASSETS = [
   "./",
   "./index.html",
+  "./classify.js",
+  "./rewards.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",

@@ -1,0 +1,163 @@
+// 分類と難易度スコアのテスト。実行: node tests/classify.test.js
+"use strict";
+var path = require("path");
+var C = require(path.join(__dirname, "..", "classify.js"));
+
+var failures = 0;
+function check(ok, msg) {
+  if (!ok) { failures++; console.log("  NG  " + msg); }
+}
+
+// ── 1. 代表的な入力 → 期待するカテゴリ ─────────────────
+var CASES = [
+  // 掃除
+  ["部屋の掃除", "souji"], ["トイレ掃除", "souji"], ["お風呂を洗う", "souji"], ["換気扇のそうじ", "souji"],
+  ["ソウジ", "souji"], ["窓ふきと網戸", "souji"], ["キッチンのシンクを磨く", "souji"],
+  // 片付け・整理
+  ["部屋の片付け", "katazuke"], ["クローゼットの整理", "katazuke"], ["断捨離したい", "katazuke"],
+  ["衣替え", "katazuke"], ["いらない服をメルカリに出品", "katazuke"], ["机の上がカオス", "katazuke"],
+  // 料理
+  ["夕飯を作る", "ryouri"], ["作り置きをする", "ryouri"], ["自炊", "ryouri"], ["お弁当づくり", "ryouri"],
+  ["夕飯の支度", "ryouri"], ["献立を考える", "ryouri"],
+  // 洗濯
+  ["洗濯物をたたむ", "sentaku"], ["洗濯", "sentaku"], ["シャツにアイロン", "sentaku"], ["布団を干す", "sentaku"],
+  // 家事
+  ["皿洗い", "kaji"], ["ゴミ出し", "kaji"], ["洗い物がたまってる", "kaji"], ["家事全般", "kaji"], ["草むしり", "kaji"],
+  // 書類・手続き
+  ["確定申告", "shorui"], ["役所の手続き", "shorui"], ["住所変更の届け出", "shorui"], ["パスポートの申請", "shorui"],
+  ["保険の書類を書く", "shorui"], ["スマホの解約", "shorui"],
+  // 支払い・お金
+  ["公共料金の支払い", "okane"], ["家計簿をつける", "okane"], ["税金の振込", "okane"], ["クレジットカードの明細を見る", "okane"],
+  // 連絡・返信
+  ["溜まったメールの返信", "renraku"], ["LINEの返信", "renraku"], ["ラインを返す", "renraku"], ["友達にLINE返信", "renraku"],
+  ["問い合わせの電話", "renraku"], ["メールを読む", "renraku"],
+  // 仕事
+  ["会議の資料作り", "shigoto"], ["報告書を書く", "shigoto"], ["仕事のタスク", "shigoto"], ["経費精算", "shigoto"],
+  ["上司に相談", "shigoto"], ["プレゼンのスライド", "shigoto"],
+  // 勉強
+  ["資格の勉強", "benkyou"], ["英単語の暗記", "benkyou"], ["レポートの締め切り", "benkyou"], ["TOEICの勉強", "benkyou"],
+  ["宿題", "benkyou"], ["課題の提出", "benkyou"],
+  // 読書
+  ["積読を崩す", "dokusho"], ["本を読む", "dokusho"], ["読みかけの小説", "dokusho"], ["図書館に本を返す", "dokusho"],
+  // 創作
+  ["イラストを描く", "sousaku"], ["小説を書く", "sousaku"], ["ブログを更新", "sousaku"], ["動画編集", "sousaku"],
+  ["日記を書く", "sousaku"], ["編み物", "sousaku"],
+  // 趣味の練習
+  ["ギターの練習", "shumi"], ["ピアノ", "shumi"], ["書道", "shumi"], ["ボイトレ", "shumi"],
+  // 運動
+  ["筋トレ", "undou"], ["ジョギング", "undou"], ["ヨガをする", "undou"], ["ジムに行く", "undou"], ["ウォーキング", "undou"],
+  // 通院
+  ["歯医者の予約", "tsuuin"], ["病院に電話する", "tsuuin"], ["健康診断", "tsuuin"], ["皮膚科に行く", "tsuuin"],
+  ["親知らずを抜く", "tsuuin"],
+  // 健康習慣
+  ["早く寝る", "kenkou"], ["体重を測る", "kenkou"], ["禁煙", "kenkou"], ["薬を飲む習慣", "kenkou"],
+  // 身支度
+  ["お風呂に入る", "mijitaku"], ["着替える", "mijitaku"], ["メイクする", "mijitaku"], ["歯磨き", "mijitaku"],
+  ["美容院の予約", "mijitaku"], ["出かける準備", "mijitaku"],
+  // 買い物
+  ["買い物", "kaimono"], ["夕飯の買い物", "kaimono"], ["日用品の買い出し", "kaimono"], ["彼女へのプレゼントを買う", "kaimono"],
+  ["ネットで注文", "kaimono"],
+  // 旅行・お出かけ
+  ["家族との旅行の計画", "ryokou"], ["帰省の準備", "ryokou"], ["旅行の荷造り", "ryokou"], ["温泉に行きたい", "ryokou"],
+  // お楽しみの準備
+  ["映画のチケットを取る", "goraku"], ["ライブの準備", "goraku"], ["美術館に行く", "goraku"], ["推し活", "goraku"],
+  // 人付き合い
+  ["友達を飲み会に誘う", "hitozukiai"], ["お礼の手紙", "hitozukiai"], ["同窓会の幹事", "hitozukiai"], ["年賀状", "hitozukiai"],
+  ["親戚にあいさつ", "hitozukiai"],
+  // 就活・転職
+  ["履歴書を書く", "shukatsu"], ["転職活動", "shukatsu"], ["面接の準備", "shukatsu"], ["エントリーシート", "shukatsu"],
+  ["仕事を辞めたい", "shukatsu"],
+  // プログラミング
+  ["アプリのバグを直す", "programming"], ["プログラミングの勉強", "programming"], ["Pythonでスクリプト", "programming"],
+  ["GitHubにpush", "programming"],
+  // 引っ越し
+  ["引っ越しの準備", "hikkoshi"], ["引越し", "hikkoshi"], ["物件探し", "hikkoshi"], ["引っ越しの荷造り", "hikkoshi"],
+  // その他(当たらない・誤判定しやすい語)
+  ["", "other"], ["なんとなくやる気が出ない", "other"], ["ゲーム", "other"],
+  ["オンラインで何かする", "other"], ["日本を知る", "other"], ["本当にやる", "other"]
+];
+
+CASES.forEach(function (c) {
+  var r = C.classify(c[0]);
+  check(r.id === c[1], "「" + c[0] + "」→ " + r.id + "(" + r.label + ") 期待: " + c[1] +
+    "  当たった語: " + r.matched.join(",") + "  候補: " + JSON.stringify(r.candidates));
+});
+console.log("分類: " + (CASES.length - failures) + " / " + CASES.length + " 件が期待どおり");
+
+// ── 2. カテゴリのデータ ──────────────────────────
+var before = failures;
+function priorities(list) {
+  return list.map(function (s) { return parseInt(s.split("|")[0], 10); }).sort(function (a, b) { return a - b; }).join(",");
+}
+C.CATEGORIES.concat([C.FALLBACK]).forEach(function (cat) {
+  check(cat.steps.length === 8 && priorities(cat.steps) === "1,2,3,4,5,6,7,8", cat.id + ": steps は優先順1〜8の8個");
+  check(cat.light.length === 6 && priorities(cat.light) === "1,2,3,4,5,6", cat.id + ": light は優先順1〜6の6個");
+  check(cat.base >= 0 && cat.base <= 100, cat.id + ": base は0〜100");
+});
+var ids = {};
+C.CATEGORIES.forEach(function (cat) { check(!ids[cat.id], "id の重複: " + cat.id); ids[cat.id] = true; });
+console.log("カテゴリ数: " + C.CATEGORIES.length + "(+その他)" + (failures === before ? "  データOK" : ""));
+
+// ── 3. 難易度スコア ───────────────────────────
+before = failures;
+var HS = [1, 2, 3, 4, 5], ES = [1, 2, 3], TS = [5, 15, 30, 60];
+var bases = C.CATEGORIES.map(function (c) { return c.base; }).concat([C.FALLBACK.base, 0, 100]);
+HS.forEach(function (h) {
+  ES.forEach(function (e) {
+    TS.forEach(function (t) {
+      bases.forEach(function (b) {
+        var s = C.difficultyScore({ heaviness: h, energy: e, time: t, base: b });
+        check(s >= 0 && s <= 100, "スコアは0〜100: " + s);
+        if (e === 1) check(C.isLight(s), "エネルギー低めは必ず軽い手順: h" + h + " t" + t + " b" + b + " → " + s);
+        var n = C.stepCount(s);
+        check(n >= 2 && n <= 8, "マス数は2〜8: " + n);
+        var lv = C.rewardLevel(s);
+        check(lv >= 1 && lv <= 6, "レベルは1〜6: " + lv);
+        // 単調性: どの入力を上げてもスコアは下がらない
+        if (h < 5) check(C.difficultyScore({ heaviness: h + 1, energy: e, time: t, base: b }) >= s, "気の重さで単調");
+        if (e < 3) check(C.difficultyScore({ heaviness: h, energy: e + 1, time: t, base: b }) >= s, "エネルギーで単調");
+      });
+    });
+  });
+});
+// 以前の「低めならご褒美を下げる」の向き: 同じ条件なら低めの方がレベルが低い
+HS.forEach(function (h) {
+  TS.forEach(function (t) {
+    var low = C.rewardLevel(C.difficultyScore({ heaviness: h, energy: 1, time: t, base: 45 }));
+    var mid = C.rewardLevel(C.difficultyScore({ heaviness: h, energy: 2, time: t, base: 45 }));
+    check(low < mid, "低めはふつうよりご褒美が小さい: h" + h + " t" + t + " (" + low + " / " + mid + ")");
+  });
+});
+console.log("難易度スコア: " + (failures === before ? "範囲・単調性・低エネルギーの規則 OK" : "NG あり"));
+
+// ── 4. 計画(plan)の例 ─────────────────────────
+function show(label, input) {
+  var p = C.plan(input);
+  console.log("  " + label + " → " + p.categoryLabel + " / スコア" + p.score + " / Lv" + p.level +
+    "(" + C.LEVEL_NAMES[p.level - 1] + ") / " + p.steps.length + "マス" + (p.light ? "(軽い手順)" : ""));
+  return p;
+}
+console.log("例:");
+var p1 = show("部屋の掃除 重さ3 15分 ふつう", { task: "部屋の掃除", heaviness: 3, time: 15, energy: 2 });
+var p2 = show("部屋の掃除 重さ3 15分 低め  ", { task: "部屋の掃除", heaviness: 3, time: 15, energy: 1 });
+show("確定申告   重さ5 60分 高め  ", { task: "確定申告", heaviness: 5, time: 60, energy: 3 });
+show("歯磨き     重さ1 5分  ふつう", { task: "歯磨き", heaviness: 1, time: 5, energy: 2 });
+show("転職活動   重さ4 30分 ふつう", { task: "転職活動", heaviness: 4, time: 30, energy: 2 });
+var p3 = show("謎のこと   重さ3 15分 ふつう", { task: "謎のこと", heaviness: 3, time: 15, energy: 2 });
+check(p2.light && !p1.light, "低めは軽い手順、ふつうは通常の手順");
+check(p3.steps.join("").indexOf("「謎のこと」") !== -1, "その他の手順に入力が入る");
+
+// ── 5. スコアの分布(係数を調整するときの参考) ───────────
+var dist = [0, 0, 0, 0, 0, 0], lightCount = 0, total = 0;
+HS.forEach(function (h) { ES.forEach(function (e) { TS.forEach(function (t) {
+  C.CATEGORIES.forEach(function (cat) {
+    var s = C.difficultyScore({ heaviness: h, energy: e, time: t, base: cat.base });
+    dist[C.rewardLevel(s) - 1]++; total++; if (C.isLight(s)) lightCount++;
+  });
+}); }); });
+console.log("全組み合わせ(" + total + "通り)のレベル分布: " + dist.map(function (n, i) {
+  return "Lv" + (i + 1) + " " + Math.round(n * 100 / total) + "%";
+}).join(" / ") + "  軽い手順 " + Math.round(lightCount * 100 / total) + "%");
+
+if (failures) { console.log("\n失敗: " + failures + " 件"); process.exit(1); }
+console.log("\nすべて成功");

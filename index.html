@@ -31,6 +31,7 @@
     --gold: #ab8f4e;
     --gold-soft: #e0d3a8;
     --card-bg: #fbfaf3;
+    --danger: #b3261e;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -47,6 +48,7 @@
       --gold: #d9c17a;
       --gold-soft: #4a3f22;
       --card-bg: #1a2b28;
+      --danger: #ffb4ab;
     }
   }
   :root[data-theme="dark"] {
@@ -63,6 +65,7 @@
     --gold: #d9c17a;
     --gold-soft: #4a3f22;
     --card-bg: #1a2b28;
+    --danger: #ffb4ab;
   }
 
   * { box-sizing: border-box; }
@@ -398,18 +401,23 @@
     flex: none;
     white-space: nowrap;
   }
-  .reward-row input {
+  .reward-row textarea {
     flex: 1;
     border: none;
     background: transparent;
     font-size: 16px;
+    line-height: 1.5;
     min-width: 0;
+    padding: 0;
+    resize: none;
+    overflow: hidden;
     color: var(--ink);
     font-family: "Noto Sans JP", sans-serif;
     transition: filter 0.4s ease;
   }
-  .reward-row input:focus { outline: none; }
-  .reward-row.locked input {
+  .reward-row textarea:focus { outline: none; }
+  .reward-row.locked textarea,
+  .reward-row.secret textarea {
     filter: blur(6px);
     user-select: none;
     cursor: default;
@@ -502,6 +510,221 @@
     font-family: "Noto Sans JP", sans-serif;
   }
 
+  .plan-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    margin: -6px 0 12px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .plan-meta span { white-space: nowrap; }
+
+  #completeBanner .final-reward.secret {
+    filter: blur(6px);
+    user-select: none;
+    cursor: pointer;
+  }
+  #completeBanner .secret-hint {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .link-btn {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    margin-top: 10px;
+    padding: 10px 0;
+    background: none;
+    border: none;
+    color: var(--hanko);
+    font-family: "Noto Sans JP", sans-serif;
+    font-size: 14px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .link-btn:focus-visible { outline: 2px solid var(--rule); outline-offset: 2px; }
+
+  /* 自分のご褒美の画面(#my-rewards) */
+  #myRewardsCard { display: none; }
+  body.view-my #myRewardsCard { display: block; }
+  body.view-my header.hero,
+  body.view-my #formCard,
+  body.view-my #panel,
+  body.view-my #panel.show { display: none; }
+  .my-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .my-head h2 { margin: 0; }
+  .back-btn {
+    flex: none;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--rule-soft);
+    background: var(--paper-2);
+    color: var(--ink);
+    font-family: "Noto Sans JP", sans-serif;
+    font-size: 14px;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  .privacy-note {
+    margin: 0 0 18px;
+    padding: 10px 12px;
+    border-left: 3px solid var(--rule);
+    background: var(--paper-2);
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+  }
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 44px;
+    font-size: 14px;
+  }
+  .switch {
+    flex: none;
+    position: relative;
+    width: 56px;
+    height: 32px;
+    border: 1px solid var(--rule);
+    border-radius: 16px;
+    background: var(--paper-2);
+    cursor: pointer;
+    padding: 0;
+  }
+  .switch .knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--ink-soft);
+    transition: left 0.2s ease;
+  }
+  .switch[aria-checked="true"] { background: var(--cta); border-color: var(--cta); }
+  .switch[aria-checked="true"] .knob { left: 27px; background: #fbfaf3; }
+  .switch:focus-visible { outline: 2px solid var(--rule); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    .switch .knob { transition: none; }
+  }
+  .my-section { margin-top: 22px; }
+  #myRewardsCard .field-label {
+    margin-bottom: 10px;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .my-card-hint {
+    margin: 8px 0 0;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+  }
+  #myRewardsCard .chip { min-height: 44px; }
+  .my-input {
+    width: 100%;
+    min-height: 48px;
+    padding: 10px 12px;
+    background: var(--paper-2);
+    border: 1px solid var(--rule-soft);
+    border-radius: 2px;
+    color: var(--ink);
+    font-family: "Noto Sans JP", sans-serif;
+    font-size: 16px;
+  }
+  .my-input:focus { outline: 2px solid var(--rule); outline-offset: 1px; }
+  #myRewardsCard.masking .secret-input { -webkit-text-security: disc; }
+  @supports not (-webkit-text-security: disc) {
+    #myRewardsCard.masking .secret-input { filter: blur(5px); }
+  }
+  .lv-label { margin-top: 14px; }
+  .legend {
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--ink-soft);
+  }
+  .my-item .form-error:empty { display: none; }
+  .form-error {
+    min-height: 1.4em;
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--danger);
+  }
+  #myAddForm button.primary { margin-top: 6px; }
+  .my-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+  .my-item {
+    display: grid;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--paper-2);
+    border: 1px solid var(--rule-soft);
+  }
+  .my-item-text {
+    font-size: 15px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+  .my-item-text.masked { color: var(--ink-soft); letter-spacing: 0.15em; }
+  .my-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .lv-badge {
+    font-family: "Noto Serif JP", serif;
+    font-size: 12px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    border-radius: 20px;
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+  .my-item-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+  }
+  .small-btn {
+    min-height: 44px;
+    min-width: 64px;
+    padding: 0 12px;
+    border: 1px solid var(--rule-soft);
+    background: var(--card-bg);
+    color: var(--ink);
+    font-family: "Noto Sans JP", sans-serif;
+    font-size: 14px;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  .small-btn.strong { background: var(--cta); border-color: var(--cta); color: #fbfaf3; }
+  .small-btn.danger { color: var(--danger); }
+  .small-btn.danger.confirming { border-color: var(--danger); font-weight: 700; }
+  .small-btn:focus-visible,
+  .back-btn:focus-visible { outline: 2px solid var(--rule); outline-offset: 2px; }
+  [hidden] { display: none !important; }
+
   @media (max-width: 480px) {
     .spine {
       writing-mode: horizontal-tb;
@@ -540,7 +763,7 @@
     }
     /* 1行目に「中」と他の案、2行目にご褒美の文字を全幅で出す */
     .reward-row .reroll { margin-left: auto; }
-    .reward-row input {
+    .reward-row textarea {
       order: 3;
       flex-basis: 100%;
     }
@@ -601,10 +824,14 @@
       </div>
 
       <button class="primary" id="generateBtn">マス目を生成する</button>
+      <button type="button" class="link-btn" id="openMyBtn">🎁 自分のご褒美を登録・編集する</button>
     </div>
 
     <div class="card" id="panel">
       <h2><span class="num">2</span>今日埋めるマス目</h2>
+      <div class="plan-meta" id="planMeta" hidden>
+        <span id="metaCategory"></span><span id="metaScore"></span><span id="metaLevel"></span>
+      </div>
       <div class="progress-line">
         <span>タップして埋めると、マスの中に小さなご褒美が出てくるよ</span>
         <strong id="progressText">0 / 0</strong>
@@ -617,7 +844,8 @@
         <div class="reward-row" id="rewardRow">
           <span class="tier" id="tierLabel">小</span>
           <span class="lock-icon">🔒</span>
-          <input type="text" id="rewardInput" value="" readonly>
+          <textarea id="rewardInput" rows="1" readonly aria-label="全部埋まったときのご褒美"></textarea>
+          <button class="reroll peek-btn" id="peekBtn" type="button" aria-pressed="false" hidden>見る</button>
           <button class="reroll" id="rerollBtn" type="button">他の案</button>
         </div>
       </div>
@@ -626,136 +854,62 @@
         <span class="seal">完</span>
         <div class="unlock-note" id="unlockNote" hidden>🔓 お楽しみのご褒美、開いたよ</div>
         <div class="final-reward" id="finalRewardText"></div>
+        <div class="secret-hint" id="secretHint" hidden>伏せています。タップで表示</div>
         <p id="completeMessage">全部埋まったよ。お疲れさま。</p>
       </div>
 
       <button class="reset-link" id="resetBtn">最初からやり直す</button>
     </div>
+
+    <div class="card" id="myRewardsCard" aria-labelledby="myTitle">
+      <div class="my-head">
+        <h2 id="myTitle"><span class="num">★</span>自分のご褒美</h2>
+        <button type="button" class="back-btn" id="myBackBtn">← 戻る</button>
+      </div>
+      <p class="privacy-note">ここに登録したご褒美は、この端末のブラウザの中にだけ保存されます。GitHub などの外部には送られません。（ブラウザのデータを消すと、登録も消えます）</p>
+
+      <div class="toggle-row">
+        <span id="maskLabel">内容を伏せて表示する</span>
+        <button type="button" class="switch" id="maskToggle" role="switch" aria-checked="false" aria-labelledby="maskLabel"><span class="knob"></span></button>
+      </div>
+
+      <div class="my-section">
+        <div class="field-label">全部埋めたときのご褒美に、自分のご褒美が出る割合</div>
+        <div class="chipset" id="ratioChips" role="group" aria-label="自分のご褒美が出る割合">
+          <button type="button" class="chip" data-value="0" aria-pressed="false">出さない</button>
+          <button type="button" class="chip" data-value="0.25" aria-pressed="false">4回に1回</button>
+          <button type="button" class="chip" data-value="0.3333" aria-pressed="true">3回に1回</button>
+          <button type="button" class="chip" data-value="0.5" aria-pressed="false">2回に1回</button>
+          <button type="button" class="chip" data-value="1" aria-pressed="false">必ず</button>
+        </div>
+        <p class="my-card-hint">そのときのご褒美レベルに合うものを登録しているときだけ出ます。マスごとの小さなご褒美には出ません。</p>
+      </div>
+
+      <form class="my-section" id="myAddForm" autocomplete="off" novalidate>
+        <label class="field-label" for="myAddInput">ご褒美を追加する</label>
+        <input type="text" id="myAddInput" class="my-input secret-input" autocomplete="off" enterkeyhint="done">
+        <div class="field-label lv-label">どのレベルのときに出す？（いくつでも選べる）</div>
+        <div class="chipset" id="myAddLevels" role="group" aria-label="出すレベル"></div>
+        <ul class="legend" id="levelLegend"></ul>
+        <div class="form-error" id="myAddError" aria-live="polite"></div>
+        <button type="submit" class="primary">追加する</button>
+      </form>
+
+      <div class="my-section">
+        <div class="field-label" id="myCount">登録したご褒美</div>
+        <ul class="my-list" id="myList"></ul>
+        <p class="my-card-hint" id="myEmpty">まだ登録はありません。</p>
+      </div>
+    </div>
   </div>
 </div>
 
+<script src="classify.js"></script>
+<script src="rewards.js"></script>
 <script>
 (function () {
-  var templates = [
-    { keys: ["掃除", "片付け", "そうじ", "片づけ"], steps: [
-      "使うもの(雑巾・ゴミ袋・洗剤)を手元に用意する",
-      "一番気になっている場所だけ手をつける",
-      "床のゴミを拾う・軽く掃除機をかける",
-      "水回り(洗面台・キッチンなど)をさっと拭く",
-      "散らかっているものを元の場所に戻す",
-      "最後に部屋全体をぐるっと見渡す"
-    ], lowSteps: [
-      "ゴミ袋を1枚だけ出しておく",
-      "目についたゴミを3つだけ捨てる",
-      "床にある物を1つだけ元の場所に戻す",
-      "机かテーブルの上だけ、1分さっと拭く",
-      "洗面台をティッシュでひと拭きだけする",
-      "「今日はここまで」と区切りをつける"
-    ]},
-    { keys: ["旅行", "旅", "お出かけ", "帰省"], steps: [
-      "行きたい候補地を思いつくまま3つ挙げる",
-      "家族やメンバーに「どこか行きたいね」と一言送ってみる",
-      "候補の中から気になる場所を1つに絞る",
-      "大まかな日程の候補を決める",
-      "交通手段・宿をざっくり調べてみる",
-      "決めた内容をみんなで最終確認する"
-    ], lowSteps: [
-      "行ってみたい場所を1つだけ思い浮かべる",
-      "その場所の写真を1枚だけ眺める",
-      "候補をスマホのメモに一言だけ書く",
-      "カレンダーで空いていそうな週末を見るだけ",
-      "家族に送る一言を下書きだけしておく",
-      "「続きは元気な日に」とメモしておく"
-    ]},
-    { keys: ["勉強", "学習", "資格", "試験"], steps: [
-      "教材やノートを机の上に開くだけ",
-      "今日やる範囲をひとつだけ決める",
-      "決めた範囲の前半に取り組む",
-      "決めた範囲の後半に取り組む",
-      "間違えた部分・気になった部分を見直す",
-      "次回やることを一言メモしておく"
-    ], lowSteps: [
-      "教材を机の上に出すだけ",
-      "今日のページを開くだけ",
-      "見出しだけ2〜3分眺める",
-      "1問だけ(または1段落だけ)やってみる",
-      "もう1問だけやってみる",
-      "次に開くページに付箋を貼っておく"
-    ]},
-    { keys: ["運動", "筋トレ", "ジョギング", "ランニング", "ヨガ"], steps: [
-      "動きやすい服に着替える",
-      "軽くストレッチで体をほぐす",
-      "決めていたメニューの半分をやる",
-      "残り半分をやる",
-      "クールダウンで呼吸を整える",
-      "今日やったことを一言記録する"
-    ], lowSteps: [
-      "動きやすい服に着替えるだけ",
-      "その場で深呼吸を3回する",
-      "首と肩をゆっくり1分回す",
-      "好きなストレッチを1つだけやる",
-      "その場で1分だけ足踏みする",
-      "「今日は動いた」と一言記録する"
-    ]},
-    { keys: ["仕事", "タスク", "資料", "メール", "作業"], steps: [
-      "関係するファイルやメールを一旦全部開く",
-      "一番小さく終わりそうな1件だけ片付ける",
-      "残っている中で一番気が重い1件に5分だけ手をつける",
-      "その続きをもう少し進める",
-      "今日やった分を軽く見直す",
-      "明日に残すことを一言メモする"
-    ], lowSteps: [
-      "関係するファイルかメールを1つだけ開く",
-      "件名や見出しを2〜3分眺めるだけ",
-      "一番小さい1件だけ片付ける",
-      "次にやることを1行だけ書き出す",
-      "その1行に2〜3分だけ手をつける",
-      "明日の自分へ一言メモを残す"
-    ]},
-    { keys: ["買い物", "買い出し"], steps: [
-      "必要な物をざっと思いつくだけ書き出す",
-      "書き出したものの優先順位をつける",
-      "上位のものから探し始める",
-      "残りのものを集める",
-      "買い忘れがないか見直す",
-      "会計・受け取りを済ませる"
-    ], lowSteps: [
-      "必要な物を1つだけメモする",
-      "思い出したら2〜3個だけ書き足す",
-      "一番急ぐもの1つに印をつける",
-      "財布やエコバッグを玄関に置いておくだけ",
-      "急ぐ1つだけネットで見てみる",
-      "残りは次の買い物に回すと決める"
-    ]}
-  ];
-
-  var fallbackSteps = function (task, low) {
-    var t = task || "そのこと";
-    if (low) return [
-      "手元のものを1つだけ片付ける",
-      "「" + t + "」に使うものを出しておくだけ",
-      "「" + t + "」に2〜3分だけ手をつける",
-      "小さなことを1つだけ終わらせる",
-      "どこまでできたか一言メモする",
-      "「今日はここまで」と区切りをつける"
-    ];
-    return [
-      "机の上や手元だけ軽く整える",
-      "「" + t + "」に5分だけ手をつけてみる",
-      "もう5分だけ続きをやってみる",
-      "気になった部分だけ仕上げる",
-      "終わったところまでを一言メモ・写真に残す",
-      "残りは次の機会に回すと決める"
-    ];
-  };
-
-  var rewardPool = {
-    // エネルギー低めのときのマスごとのご褒美(より軽いもの)
-    gentle: ["水かお茶をひと口飲む", "目を閉じて深呼吸を3回", "窓の外を30秒眺める", "肩の力を抜いて伸びをする", "お気に入りの写真を1枚見る"],
-    small: ["好きな飲み物を一杯飲む", "深呼吸して伸びをする", "好きな曲を1曲だけ聴く", "5分だけSNSやニュースを見る"],
-    medium: ["お気に入りのお菓子を食べる", "好きな動画・配信を1本見る", "何も予定を入れずゴロゴロする", "香りのいい入浴剤でお風呂に入る"],
-    large: ["好きなものを外食・デリバリーで頼む", "前から気になっていたものを1つ買う", "丸1日、予定を入れず自由に過ごす", "会いたかった人と会う約束をする"]
-  };
+  var C = window.YarukiClassify;
+  var R = window.YarukiRewards;
 
   var praisePool = {
     firstStep: [
@@ -787,19 +941,94 @@
   };
 
   // lockChoice: フォームの選択("show"/"lock")。rewardLocked / lowEnergyAtGen: 生成時点の値。
-  // 古い保存データにはこれらが無いので、既定値(見せる・通常エネルギー)のまま扱われる。
-  var state = { heaviness: 3, time: 15, energy: 2, lockChoice: "show", steps: [], done: [], boxRewards: [], tier: "small", heavinessAtGen: 3, rewardLocked: false, lowEnergyAtGen: false };
+  // level: ご褒美レベル(1〜6)。score: 難易度スコア。finalUserId: 全完了ご褒美が自分のご褒美ならそのID。
+  // 古い保存データにはこれらが無いので、既定値のまま扱われる(level は tier から読み替える)。
+  var state = {
+    heaviness: 3, time: 15, energy: 2, lockChoice: "show", steps: [], done: [], boxRewards: [],
+    heavinessAtGen: 3, rewardLocked: false, lowEnergyAtGen: false,
+    level: 3, score: null, category: "", categoryLabel: "", finalUserId: null
+  };
   var praiseTimer = null;
   var STORAGE_KEY = "genkouyoushi-state-v1";
+  var HISTORY_KEY = "genkouyoushi-reward-history-v1";
+  var MY_KEY = "genkouyoushi-my-rewards-v1";
+  // 以前の3段階(小・中・大)で保存されたデータを、6段階のレベルに読み替える
+  var LEGACY_TIER_LEVEL = { small: 2, medium: 4, large: 5 };
+  var LEVEL_HINTS = ["15分・手元のもの", "30分・数百円", "1時間・千円くらい", "2〜3時間・3千円くらい", "半日・5千円くらい", "1日・1万円くらい"];
+
+  var $ = function (id) { return document.getElementById(id); };
 
   function saveState() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         state: state,
-        task: document.getElementById("taskInput").value,
-        reward: document.getElementById("rewardInput").value
+        task: $("taskInput").value,
+        reward: $("rewardInput").value
       }));
     } catch (e) {}
+  }
+
+  /* ── ご褒美の抽選(履歴は端末の localStorage に保存) ── */
+  var rewardHistory = null;
+  function loadHistory() {
+    if (rewardHistory) return rewardHistory;
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem(HISTORY_KEY)); } catch (e) {}
+    saved = saved && typeof saved === "object" ? saved : {};
+    rewardHistory = { box: R.checkHistory("box", saved.box), final: R.checkHistory("final", saved.final) };
+    return rewardHistory;
+  }
+  function saveHistory() {
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(rewardHistory)); } catch (e) {}
+  }
+  function drawBoxReward(level) {
+    var r = R.draw("box", level, loadHistory().box);
+    saveHistory();
+    return r.text;
+  }
+
+  /* ── 自分のご褒美(端末の localStorage にだけ保存。内容には手を加えない) ── */
+  var RATIO_DEFAULT = 1 / 3;
+  function validItem(it) {
+    return it && typeof it === "object" && typeof it.id === "string" && typeof it.text === "string" && Array.isArray(it.levels);
+  }
+  function loadMy() {
+    var d = null;
+    try { d = JSON.parse(localStorage.getItem(MY_KEY)); } catch (e) {}
+    d = d && typeof d === "object" ? d : {};
+    return {
+      items: Array.isArray(d.items) ? d.items.filter(validItem) : [],
+      ratio: typeof d.ratio === "number" && d.ratio >= 0 && d.ratio <= 1 ? d.ratio : RATIO_DEFAULT,
+      masked: d.masked === true,
+      bag: Array.isArray(d.bag) ? d.bag : [],
+      lastId: typeof d.lastId === "string" ? d.lastId : null,
+      nextId: typeof d.nextId === "number" ? d.nextId : 1
+    };
+  }
+  var my = loadMy();
+  function saveMy() {
+    try { localStorage.setItem(MY_KEY, JSON.stringify(my)); } catch (e) {}
+  }
+
+  // 全部埋まったときのご褒美。レベルに合う自分のご褒美があれば、設定した割合でそちらを出す。
+  // 自分のご褒美も、合うものを一巡するまでは同じものを出さない。
+  function drawFinalReward(level) {
+    var fits = my.items.filter(function (it) { return it.levels.indexOf(level) !== -1; });
+    if (fits.length && Math.random() < my.ratio) {
+      var fresh = fits.filter(function (it) { return my.bag.indexOf(it.id) === -1; });
+      if (!fresh.length) {
+        my.bag = my.bag.filter(function (id) { return !fits.some(function (it) { return it.id === id; }); });
+        fresh = fits.length > 1 ? fits.filter(function (it) { return it.id !== my.lastId; }) : fits;
+      }
+      var pick = fresh[Math.floor(Math.random() * fresh.length)];
+      my.bag.push(pick.id);
+      my.lastId = pick.id;
+      saveMy();
+      return { text: pick.text, userId: pick.id };
+    }
+    var r = R.draw("final", level, loadHistory().final);
+    saveHistory();
+    return { text: r.text, userId: null };
   }
 
   function heavinessTier(h) {
@@ -809,7 +1038,7 @@
   }
 
   function showPraise(text) {
-    var toast = document.getElementById("praiseToast");
+    var toast = $("praiseToast");
     toast.textContent = text;
     toast.classList.add("show");
     if (praiseTimer) clearTimeout(praiseTimer);
@@ -818,23 +1047,8 @@
     }, 2600);
   }
 
-  function pickTemplate(task, low) {
-    var lower = task || "";
-    for (var i = 0; i < templates.length; i++) {
-      var keys = templates[i].keys;
-      for (var j = 0; j < keys.length; j++) {
-        if (lower.indexOf(keys[j]) !== -1) return low ? templates[i].lowSteps : templates[i].steps;
-      }
-    }
-    return fallbackSteps(task, low);
-  }
-
-  function boxRewardPool() {
-    return state.lowEnergyAtGen ? rewardPool.gentle : rewardPool.small;
-  }
-
   function setupChips(containerId, key) {
-    var container = document.getElementById(containerId);
+    var container = $(containerId);
     var chips = container.querySelectorAll(".chip");
     chips.forEach(function (chip) {
       chip.addEventListener("click", function () {
@@ -850,7 +1064,7 @@
   setupChips("energyChips", "energy");
   setupChips("lockChips", "lockChoice");
 
-  document.getElementById("heaviness").addEventListener("input", function (e) {
+  $("heaviness").addEventListener("input", function (e) {
     state.heaviness = parseInt(e.target.value, 10);
     saveState();
   });
@@ -859,25 +1073,27 @@
     return arr[Math.floor(Math.random() * arr.length)];
   }
 
-  function computeDifficulty() {
-    var minutesFactor = state.time / 15;
-    var score = state.heaviness * 2 + minutesFactor - state.energy;
-    return score;
+  function levelName(level) {
+    return C.LEVEL_NAMES[Math.max(1, Math.min(C.LEVEL_NAMES.length, level)) - 1];
   }
 
-  function tierFromScore(score) {
-    if (score <= 4) return "small";
-    if (score <= 8) return "medium";
-    return "large";
+  function renderPlanMeta() {
+    var meta = $("planMeta");
+    if (state.score == null) { meta.hidden = true; return; }
+    meta.hidden = false;
+    $("metaCategory").textContent = state.categoryLabel || "その他";
+    $("metaScore").textContent = "難易度 " + state.score;
+    $("metaLevel").textContent = "ご褒美 Lv" + state.level + " " + levelName(state.level);
   }
 
-  // エネルギー低めのときは最後のご褒美を一段軽くする(大→中、中→小、小は小のまま)
-  var lowerTier = { small: "small", medium: "small", large: "medium" };
-
-  var tierLabelText = { small: "小", medium: "中", large: "大" };
+  function fitRewardInput() {
+    var el = $("rewardInput");
+    el.style.height = "auto";
+    if (el.scrollHeight) el.style.height = el.scrollHeight + "px";
+  }
 
   function renderBoxes() {
-    var boxes = document.getElementById("boxes");
+    var boxes = $("boxes");
     boxes.innerHTML = "";
     state.steps.forEach(function (step, i) {
       var box = document.createElement("div");
@@ -901,6 +1117,7 @@
       var rewardTextEl = box.querySelector(".box-reward-text");
       var rerollEl = box.querySelector(".box-reroll");
 
+      if (typeof state.boxRewards[i] !== "string") state.boxRewards[i] = drawBoxReward(state.level);
       function refreshRewardText() {
         rewardTextEl.textContent = "→ " + state.boxRewards[i];
       }
@@ -936,7 +1153,7 @@
 
       rerollEl.addEventListener("click", function (e) {
         e.stopPropagation();
-        state.boxRewards[i] = randomFrom(boxRewardPool());
+        state.boxRewards[i] = drawBoxReward(state.level);
         refreshRewardText();
         saveState();
       });
@@ -946,84 +1163,119 @@
     updateProgress();
   }
 
-  function lockReward() {
-    var input = document.getElementById("rewardInput");
-    document.getElementById("rewardRow").classList.add("locked");
-    input.readOnly = true;
-    input.tabIndex = -1;
-    input.setAttribute("aria-hidden", "true");
-    document.getElementById("rerollBtn").disabled = true;
-    document.getElementById("finalRewardLabel").textContent = "🔒 全部埋めたら開けるお楽しみ";
-  }
-
-  function unlockReward() {
-    var input = document.getElementById("rewardInput");
-    document.getElementById("rewardRow").classList.remove("locked");
-    input.readOnly = false;
-    input.removeAttribute("tabindex");
-    input.removeAttribute("aria-hidden");
-    document.getElementById("rerollBtn").disabled = false;
-    document.getElementById("finalRewardLabel").textContent = "🎁 全部埋まったときのご褒美";
+  // 全部埋まったときのご褒美の見え方: 🔒(全部埋めるまで隠す)と、自分のご褒美を伏せる設定
+  var peeking = false;
+  function applyRewardView(complete) {
+    var input = $("rewardInput");
+    var row = $("rewardRow");
+    var locked = state.rewardLocked && !complete;
+    var secret = my.masked && !!state.finalUserId;
+    if (!secret) peeking = false;
+    row.classList.toggle("locked", locked);
+    row.classList.toggle("secret", secret && !peeking);
+    input.readOnly = locked || (secret && !peeking);
+    if (locked) {
+      input.tabIndex = -1;
+      input.setAttribute("aria-hidden", "true");
+    } else {
+      input.removeAttribute("tabindex");
+      input.removeAttribute("aria-hidden");
+    }
+    $("rerollBtn").disabled = locked;
+    var peekBtn = $("peekBtn");
+    peekBtn.hidden = !secret || locked;
+    peekBtn.textContent = peeking ? "隠す" : "見る";
+    peekBtn.setAttribute("aria-pressed", String(peeking));
+    $("finalRewardLabel").textContent = locked ? "🔒 全部埋めたら開けるお楽しみ" : "🎁 全部埋まったときのご褒美";
+    var finalText = $("finalRewardText");
+    finalText.classList.toggle("secret", secret && !peeking);
+    $("secretHint").hidden = !(secret && !peeking);
+    fitRewardInput();
   }
 
   function updateProgress() {
     var doneCount = state.done.filter(Boolean).length;
     var complete = doneCount === state.steps.length && state.steps.length > 0;
-    document.getElementById("progressText").textContent = doneCount + " / " + state.steps.length;
-    if (state.rewardLocked && !complete) lockReward(); else unlockReward();
-    var banner = document.getElementById("completeBanner");
+    $("progressText").textContent = doneCount + " / " + state.steps.length;
+    applyRewardView(complete);
+    var banner = $("completeBanner");
     if (complete) {
-      document.getElementById("unlockNote").hidden = !state.rewardLocked;
-      document.getElementById("finalRewardText").textContent = document.getElementById("rewardInput").value;
+      $("unlockNote").hidden = !state.rewardLocked;
+      $("finalRewardText").textContent = $("rewardInput").value;
       var tier = heavinessTier(state.heavinessAtGen);
-      document.getElementById("completeMessage").textContent = randomFrom(completeMessagePool[tier]);
+      $("completeMessage").textContent = randomFrom(completeMessagePool[tier]);
       banner.classList.add("show");
     } else {
       banner.classList.remove("show");
     }
   }
 
-  document.getElementById("generateBtn").addEventListener("click", function () {
-    var task = document.getElementById("taskInput").value.trim();
-    var score = computeDifficulty();
-    var low = state.energy === 1;
-    // マス数は今まで通りスコアから決める(低エネルギーだと多め)。代わりに1マスを小さく、ご褒美は一段軽く。
-    var tier = low ? lowerTier[tierFromScore(score)] : tierFromScore(score);
-    var baseSteps = pickTemplate(task, low);
-    var count = Math.max(2, Math.min(6, Math.round(score / 2) + 2));
-    state.steps = baseSteps.slice(0, count);
+  function setFinalReward(f) {
+    $("rewardInput").value = f.text;
+    state.finalUserId = f.userId;
+    peeking = false;
+  }
+
+  $("generateBtn").addEventListener("click", function () {
+    var task = $("taskInput").value.trim();
+    // 分類 → 難易度スコア → マス数・手順の軽さ・ご褒美レベル(classify.js)
+    var plan = C.plan({ task: task, heaviness: state.heaviness, time: state.time, energy: state.energy });
+    state.steps = plan.steps;
     state.done = state.steps.map(function () { return false; });
-    state.lowEnergyAtGen = low;
-    state.boxRewards = state.steps.map(function () { return randomFrom(boxRewardPool()); });
-    state.tier = tier;
+    state.score = plan.score;
+    state.level = plan.level;
+    state.category = plan.category;
+    state.categoryLabel = plan.categoryLabel;
+    state.lowEnergyAtGen = plan.light;
+    state.boxRewards = state.steps.map(function () { return drawBoxReward(plan.level); });
     state.heavinessAtGen = state.heaviness;
     state.rewardLocked = state.lockChoice === "lock";
+    delete state.tier;
 
-    document.getElementById("tierLabel").textContent = tierLabelText[tier];
-    document.getElementById("rewardInput").value = randomFrom(rewardPool[tier]);
+    $("tierLabel").textContent = levelName(plan.level);
+    setFinalReward(drawFinalReward(plan.level));
+    renderPlanMeta();
 
     renderBoxes();
-    document.getElementById("panel").classList.add("show");
-    document.getElementById("panel").scrollIntoView({ behavior: "smooth", block: "start" });
+    $("panel").classList.add("show");
+    fitRewardInput();
+    $("panel").scrollIntoView({ behavior: "smooth", block: "start" });
     saveState();
   });
 
-  document.getElementById("rerollBtn").addEventListener("click", function () {
-    if (document.getElementById("rewardRow").classList.contains("locked")) return;
-    document.getElementById("rewardInput").value = randomFrom(rewardPool[state.tier]);
+  $("rerollBtn").addEventListener("click", function () {
+    if ($("rewardRow").classList.contains("locked")) return;
+    setFinalReward(drawFinalReward(state.level));
+    updateProgress();
     saveState();
   });
 
-  document.getElementById("rewardInput").addEventListener("input", saveState);
+  $("peekBtn").addEventListener("click", function () {
+    peeking = !peeking;
+    updateProgress();
+  });
+  $("finalRewardText").addEventListener("click", function () {
+    if (!(my.masked && state.finalUserId)) return;
+    peeking = !peeking;
+    updateProgress();
+  });
 
-  document.getElementById("resetBtn").addEventListener("click", function () {
-    document.getElementById("panel").classList.remove("show");
-    document.getElementById("completeBanner").classList.remove("show");
-    document.getElementById("praiseToast").classList.remove("show");
-    document.getElementById("taskInput").value = "";
+  $("rewardInput").addEventListener("input", function () {
+    fitRewardInput();
+    saveState();
+  });
+  window.addEventListener("resize", fitRewardInput);
+
+  $("resetBtn").addEventListener("click", function () {
+    $("panel").classList.remove("show");
+    $("completeBanner").classList.remove("show");
+    $("praiseToast").classList.remove("show");
+    $("taskInput").value = "";
     state.steps = [];
     state.done = [];
     state.rewardLocked = false;
+    state.finalUserId = null;
+    state.score = null;
     // マス目は消すが、フォームの選択(重さ・時間・エネルギー・ご褒美の見せ方)は残す
     saveState();
   });
@@ -1040,17 +1292,244 @@
     if (!saved || !saved.state) return;
     for (var k in saved.state) state[k] = saved.state[k];
     if (state.lockChoice !== "lock") state.lockChoice = "show";
-    document.getElementById("taskInput").value = saved.task || "";
-    document.getElementById("heaviness").value = state.heaviness;
+    // 6段階のレベルが無い古いデータは、小・中・大から読み替える
+    var savedLevel = saved.state.level;
+    if (!(savedLevel >= 1 && savedLevel <= 6)) state.level = LEGACY_TIER_LEVEL[saved.state.tier] || 3;
+    if (!Array.isArray(state.boxRewards)) state.boxRewards = [];
+    if (typeof state.finalUserId !== "string") state.finalUserId = null;
+    $("taskInput").value = saved.task || "";
+    $("heaviness").value = state.heaviness;
     setChip("timeChips", state.time);
     setChip("energyChips", state.energy);
     setChip("lockChips", state.lockChoice);
     if (!state.steps || !state.steps.length) return;
-    document.getElementById("tierLabel").textContent = tierLabelText[state.tier];
-    document.getElementById("rewardInput").value = saved.reward || "";
+    $("tierLabel").textContent = levelName(state.level);
+    $("rewardInput").value = saved.reward || "";
+    var missingRewards = state.steps.some(function (_, i) { return typeof state.boxRewards[i] !== "string"; });
+    renderPlanMeta();
     renderBoxes();
-    document.getElementById("panel").classList.add("show");
+    $("panel").classList.add("show");
+    fitRewardInput();
+    if (missingRewards) saveState();
   })();
+
+  /* ── 自分のご褒美の画面(#my-rewards) ───────────────── */
+  var editingId = null;
+  var pendingDeleteId = null;
+  var pendingDeleteTimer = null;
+  var openedFromApp = false;
+
+  function levelChips(container, selected) {
+    container.innerHTML = "";
+    C.LEVEL_NAMES.forEach(function (name, i) {
+      var lv = i + 1;
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip";
+      chip.setAttribute("data-level", String(lv));
+      chip.setAttribute("aria-pressed", String(selected.indexOf(lv) !== -1));
+      chip.textContent = lv + " " + name;
+      chip.addEventListener("click", function () {
+        chip.setAttribute("aria-pressed", String(chip.getAttribute("aria-pressed") !== "true"));
+      });
+      container.appendChild(chip);
+    });
+  }
+  function selectedLevels(container) {
+    var out = [];
+    container.querySelectorAll(".chip").forEach(function (c) {
+      if (c.getAttribute("aria-pressed") === "true") out.push(parseInt(c.getAttribute("data-level"), 10));
+    });
+    return out;
+  }
+  function levelsText(levels) {
+    var sorted = levels.slice().sort(function (a, b) { return a - b; });
+    if (sorted.length === 1) return "Lv" + sorted[0] + " " + levelName(sorted[0]);
+    return "Lv" + sorted.join("・");
+  }
+
+  function makeButton(text, cls, onClick) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = cls;
+    b.textContent = text;
+    b.addEventListener("click", onClick);
+    return b;
+  }
+
+  function renderMyList() {
+    var list = $("myList");
+    list.innerHTML = "";
+    $("myEmpty").hidden = my.items.length > 0;
+    $("myCount").textContent = "登録したご褒美(" + my.items.length + "件)";
+    my.items.forEach(function (it) {
+      var li = document.createElement("li");
+      li.className = "my-item";
+      if (it.id === editingId) {
+        var input = document.createElement("input");
+        input.type = "text";
+        input.className = "my-input secret-input";
+        input.autocomplete = "off";
+        input.value = it.text;
+        input.setAttribute("aria-label", "ご褒美の内容");
+        var chips = document.createElement("div");
+        chips.className = "chipset lv-chips";
+        levelChips(chips, it.levels);
+        var err = document.createElement("div");
+        err.className = "form-error";
+        err.setAttribute("aria-live", "polite");
+        var actions = document.createElement("div");
+        actions.className = "my-item-actions";
+        actions.appendChild(makeButton("保存", "small-btn strong", function () {
+          var levels = selectedLevels(chips);
+          if (!input.value.trim()) { err.textContent = "ご褒美を入力してね"; return; }
+          if (!levels.length) { err.textContent = "レベルを1つ以上選んでね"; return; }
+          it.text = input.value;
+          it.levels = levels;
+          editingId = null;
+          saveMy();
+          renderMyList();
+        }));
+        actions.appendChild(makeButton("やめる", "small-btn", function () {
+          editingId = null;
+          renderMyList();
+        }));
+        li.appendChild(input);
+        li.appendChild(chips);
+        li.appendChild(err);
+        li.appendChild(actions);
+        list.appendChild(li);
+        return;
+      }
+      var text = document.createElement("div");
+      text.className = "my-item-text";
+      if (my.masked) {
+        text.textContent = "●●●●●●";
+        text.classList.add("masked");
+        text.setAttribute("aria-label", "伏せています");
+      } else {
+        text.textContent = it.text;
+      }
+      var meta = document.createElement("div");
+      meta.className = "my-item-meta";
+      var badge = document.createElement("span");
+      badge.className = "lv-badge";
+      badge.textContent = levelsText(it.levels);
+      meta.appendChild(badge);
+      var acts = document.createElement("div");
+      acts.className = "my-item-actions";
+      acts.appendChild(makeButton("編集", "small-btn", function () {
+        editingId = it.id;
+        pendingDeleteId = null;
+        renderMyList();
+        var el = list.querySelector(".my-input");
+        if (el) el.focus();
+      }));
+      var confirming = pendingDeleteId === it.id;
+      acts.appendChild(makeButton(confirming ? "本当に削除" : "削除", "small-btn danger" + (confirming ? " confirming" : ""), function () {
+        if (pendingDeleteId !== it.id) {
+          pendingDeleteId = it.id;
+          if (pendingDeleteTimer) clearTimeout(pendingDeleteTimer);
+          pendingDeleteTimer = setTimeout(function () { pendingDeleteId = null; renderMyList(); }, 4000);
+          renderMyList();
+          return;
+        }
+        pendingDeleteId = null;
+        my.items = my.items.filter(function (x) { return x.id !== it.id; });
+        my.bag = my.bag.filter(function (id) { return id !== it.id; });
+        saveMy();
+        renderMyList();
+      }));
+      meta.appendChild(acts);
+      li.appendChild(text);
+      li.appendChild(meta);
+      list.appendChild(li);
+    });
+  }
+
+  function renderMy() {
+    $("myRewardsCard").classList.toggle("masking", my.masked);
+    var sw = $("maskToggle");
+    sw.setAttribute("aria-checked", String(my.masked));
+    var ratioChip = null;
+    document.querySelectorAll("#ratioChips .chip").forEach(function (c) {
+      var v = parseFloat(c.getAttribute("data-value"));
+      if (!ratioChip || Math.abs(v - my.ratio) < Math.abs(parseFloat(ratioChip.getAttribute("data-value")) - my.ratio)) ratioChip = c;
+    });
+    document.querySelectorAll("#ratioChips .chip").forEach(function (c) {
+      c.setAttribute("aria-pressed", String(c === ratioChip));
+    });
+    renderMyList();
+  }
+
+  levelChips($("myAddLevels"), [3]);
+  (function renderLegend() {
+    var ul = $("levelLegend");
+    C.LEVEL_NAMES.forEach(function (name, i) {
+      var li = document.createElement("li");
+      li.textContent = (i + 1) + " " + name + ": " + LEVEL_HINTS[i];
+      ul.appendChild(li);
+    });
+  })();
+
+  $("myAddForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var input = $("myAddInput");
+    var levels = selectedLevels($("myAddLevels"));
+    var err = $("myAddError");
+    if (!input.value.trim()) { err.textContent = "ご褒美を入力してね"; return; }
+    if (!levels.length) { err.textContent = "レベルを1つ以上選んでね"; return; }
+    err.textContent = "";
+    my.items.push({ id: "m" + my.nextId++, text: input.value, levels: levels });
+    saveMy();
+    input.value = "";
+    renderMyList();
+    input.focus();
+  });
+
+  $("maskToggle").addEventListener("click", function () {
+    my.masked = !my.masked;
+    saveMy();
+    renderMy();
+    updateProgress();
+  });
+
+  document.querySelectorAll("#ratioChips .chip").forEach(function (chip) {
+    chip.addEventListener("click", function () {
+      my.ratio = parseFloat(chip.getAttribute("data-value"));
+      saveMy();
+      renderMy();
+    });
+  });
+
+  function showView() {
+    var mine = location.hash === "#my-rewards";
+    document.body.classList.toggle("view-my", mine);
+    if (mine) {
+      my = loadMy();
+      editingId = null;
+      pendingDeleteId = null;
+      renderMy();
+      window.scrollTo(0, 0);
+    } else {
+      updateProgress();
+    }
+  }
+  $("openMyBtn").addEventListener("click", function () {
+    openedFromApp = true;
+    location.hash = "#my-rewards";
+  });
+  $("myBackBtn").addEventListener("click", function () {
+    // アプリ内のボタンで開いたときはブラウザの「戻る」と同じ動きにする
+    if (openedFromApp) {
+      openedFromApp = false;
+      history.back();
+    } else {
+      location.hash = "";
+    }
+  });
+  window.addEventListener("hashchange", showView);
+  showView();
 
   if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
     navigator.serviceWorker.register("sw.js").catch(function () {});
