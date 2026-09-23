@@ -304,7 +304,7 @@
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     text-align: left;
     font-family: "Noto Sans JP", sans-serif;
     font-size: 13.5px;
@@ -345,11 +345,12 @@
   .box.done .stamp { display: flex; }
   .box:focus-visible { outline: 2px solid var(--rule); outline-offset: 2px; }
 
+  .box.done .label { margin-bottom: 8px; }
   .box .box-reward {
     display: none;
     align-items: center;
     gap: 6px;
-    margin-top: 8px;
+    margin-top: auto;
     padding-top: 8px;
     border-top: 1px dashed var(--rule-soft);
     font-size: 12px;
@@ -1169,11 +1170,13 @@
     var input = $("rewardInput");
     var row = $("rewardRow");
     var locked = state.rewardLocked && !complete;
+    // 🔒を選んでいたときは、全部埋めて開けたご褒美をそのまま確定にする(引き直し・編集はできない)
+    var settled = state.rewardLocked && complete;
     var secret = my.masked && !!state.finalUserId;
     if (!secret) peeking = false;
     row.classList.toggle("locked", locked);
     row.classList.toggle("secret", secret && !peeking);
-    input.readOnly = locked || (secret && !peeking);
+    input.readOnly = locked || settled || (secret && !peeking);
     if (locked) {
       input.tabIndex = -1;
       input.setAttribute("aria-hidden", "true");
@@ -1182,11 +1185,13 @@
       input.removeAttribute("aria-hidden");
     }
     $("rerollBtn").disabled = locked;
+    $("rerollBtn").hidden = settled;
     var peekBtn = $("peekBtn");
     peekBtn.hidden = !secret || locked;
     peekBtn.textContent = peeking ? "隠す" : "見る";
     peekBtn.setAttribute("aria-pressed", String(peeking));
-    $("finalRewardLabel").textContent = locked ? "🔒 全部埋めたら開けるお楽しみ" : "🎁 全部埋まったときのご褒美";
+    $("finalRewardLabel").textContent = locked ? "🔒 全部埋めたら開けるお楽しみ" :
+      settled ? "🎁 開けたご褒美(確定)" : "🎁 全部埋まったときのご褒美";
     var finalText = $("finalRewardText");
     finalText.classList.toggle("secret", secret && !peeking);
     $("secretHint").hidden = !(secret && !peeking);
@@ -1244,7 +1249,7 @@
   });
 
   $("rerollBtn").addEventListener("click", function () {
-    if ($("rewardRow").classList.contains("locked")) return;
+    if ($("rerollBtn").disabled || $("rerollBtn").hidden) return;
     setFinalReward(drawFinalReward(state.level));
     updateProgress();
     saveState();
@@ -1262,6 +1267,8 @@
 
   $("rewardInput").addEventListener("input", function () {
     fitRewardInput();
+    // 全部埋まったあとに書き換えたら、完成バナーのご褒美も同じ内容にする
+    $("finalRewardText").textContent = $("rewardInput").value;
     saveState();
   });
   window.addEventListener("resize", fitRewardInput);
