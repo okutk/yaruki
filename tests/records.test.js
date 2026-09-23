@@ -114,7 +114,46 @@ function rec(over) {
   check(n && n.note === "新しい一言" && n.id === "n2", "同じ種類の一番新しい一言を出す");
   check(Rec.latestNote(notes, "c:souji", "n2").note === "古い一言", "今の紙の一言は出さない");
   check(Rec.latestNote(notes, "c:shorui") === null, "別の種類の一言は出さない");
-  check(Rec.latestNote(notes, "c:undou").note === "行けば気分いい", "ジムの一言はジムのときに出る");
+  check(Rec.latestNote(notes, "c:undou").note === "行けば気分いい", "普段のタスクの「運動」の一言は「運動」のときに出る");
+})();
+
+// ── 3b. ジムの紙(kind: gym)と普段のタスク(kind: task)を混ぜない ──
+(function () {
+  check(Rec.kindKey({ kind: "gym", category: "undou", task: "ジム" }) === Rec.GYM_KIND_KEY, "ジムの紙はジムどうしで比べる");
+  check(Rec.kindKey({ kind: "task", category: "undou", task: "ジム" }) === "c:undou", "普段のタスクの運動は運動で比べる");
+  function s(id, kind, before, after, note, at) {
+    return { id: id, kind: kind, category: "undou", task: "ジム", moodBefore: before, moodAfter: after,
+      note: note || null, completedAt: at || "2026-09-10T10:00:00Z" };
+  }
+  var sheets = [
+    s("g1", "gym", 1, 4, "準備運動を先に", "2026-09-20T10:00:00Z"), s("g2", "gym", 2, 5), s("g3", "gym", 2, 4),
+    s("t1", "task", 1, 2, "水を持っていく", "2026-09-22T10:00:00Z"), s("t2", "task", 3, 2), s("t3", "task", 4, 3)
+  ];
+  check(Rec.latestNote(sheets, Rec.GYM_KIND_KEY).note === "準備運動を先に", "ジムのカードにはジムの一言だけ(普段の新しい一言は出ない)");
+  check(Rec.latestNote(sheets, "c:undou").note === "水を持っていく", "普段のタスクにはジムの一言が出ない");
+  var gt = Rec.moodTrend(sheets, Rec.GYM_KIND_KEY);
+  check(gt && gt.count === 3 && gt.up === 3, "気分の傾向はジムの記録どうしで(3回中3回)");
+  check(Rec.moodTrend(sheets, "c:undou") === null, "普段のタスクの傾向にジムの記録は入らない");
+})();
+
+// ── 3c. kind の補い(ジムの日カードより前の記録) ──────
+(function () {
+  var old = { version: 1, celebratedPages: 0, sheets: [
+    { id: "o1", task: "掃除", category: "souji", steps: ["a", "b"], done: [true, true], createdAt: T0, updatedAt: T1 }
+  ] };
+  check(Rec.lacksKind(old), "kind の無い記録に気づく");
+  var b = Rec.checkBinder(old);
+  var o = b.sheets[0];
+  check(o.kind === "task" && o.mainCount === null && o.light === null && o.dayType === null && o.completedAt === T1,
+    "古い記録は kind: task になり、ジムの項目は null、仕上がりもそのまま");
+  check(!Rec.lacksKind(JSON.parse(JSON.stringify(b))), "そろえて保存し直せば目印は消える");
+  check(Rec.checkSheet({ id: "x", kind: "妙な値", steps: ["a"], done: [true], createdAt: T0 }).kind === "task",
+    "知らない kind も task として読む");
+  var gym = Rec.checkSheet({ id: "g", kind: "gym", steps: ["1", "2", "3", "4", "5"], done: [true, true, true, true, false],
+    createdAt: T0, updatedAt: T1, dayType: "変な値" });
+  check(gym.kind === "gym" && gym.mainCount === 5 && gym.completedAt === null && gym.dayType === "weekday",
+    "ジムの紙に mainCount が無ければ全部を本体として扱う");
+  check(Object.keys(gym).join(",") === Rec.FIELDS.join(","), "ジムの紙も保存する項目がそろっている");
 })();
 
 // ── 4. 並び順と月の区切り(ローカル時刻) ─────────────
@@ -143,19 +182,24 @@ function rec(over) {
     "genkouyoushi-state-v1": JSON.stringify({ state: { steps: [] }, task: "" }),
     "genkouyoushi-my-rewards-v1": JSON.stringify({ items: [{ id: "m1", text: "ケーキ", levels: [3] }] }),
     "genkouyoushi-reward-history-v1": JSON.stringify({ box: {}, final: {} }),
+    "genkouyoushi-gym-v1": JSON.stringify({ version: 1, enabled: true, days: [1, 3, 5], companions: ["ラジオ"],
+      today: { date: "2026-09-01", hidden: false, sheet: null } }),
     "other-app-key": "秘密",
     "kakeibo-data": "{}"
   };
   var backup = Rec.buildBackup(entries, T3);
   var keys = Object.keys(backup.data);
-  check(keys.every(Rec.isOwnKey) && keys.length === 4, "書き出しに他のアプリのキーは入らない");
+  check(keys.every(Rec.isOwnKey) && keys.length === 5, "書き出しに他のアプリのキーは入らない");
+  check(backup.data["genkouyoushi-gym-v1"] && backup.data["genkouyoushi-gym-v1"].days.join() === "1,3,5",
+    "書き出しにジムの日カードの設定(genkouyoushi-gym-v1)が入る");
   check(backup.app === Rec.BACKUP_APP && backup.exportedAt === T3, "書き出しの見出し");
   var text = JSON.stringify(backup);
 
   var p = Rec.parseBackup(text);
   check(p.ok && p.sheetCount === 2 && p.skipped === 0, "書き出したものを読み込める(2枚)");
-  check(Object.keys(p.others).length === 3 && JSON.parse(p.others["genkouyoushi-my-rewards-v1"]).items[0].text === "ケーキ",
+  check(Object.keys(p.others).length === 4 && JSON.parse(p.others["genkouyoushi-my-rewards-v1"]).items[0].text === "ケーキ",
     "綴じ帳以外のキー(自分のご褒美など)も入っている");
+  check(JSON.parse(p.others["genkouyoushi-gym-v1"]).companions[0] === "ラジオ", "読み込みでジムの日カードの設定も戻せる");
 
   // 全部消した状態に読み込む → 元に戻る
   var fresh = Rec.emptyBinder();

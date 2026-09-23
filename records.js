@@ -1,5 +1,5 @@
 /*
- * やる気の原稿用紙: 綴じ帳(書いた原稿用紙の記録)・累計マス・気分の傾向・バックアップ
+ * やる気の原稿用紙: 綴じ帳(書いた原稿用紙の記録。普段のマス目とジムの紙)・累計マス・気分の傾向・バックアップ
  *
  * ブラウザでは window.YarukiRecords、node では require("./records.js") で使う。
  * 画面(DOM)と localStorage には触らない(読み書きは index.html が行う)。
@@ -30,9 +30,11 @@
   ];
 
   // 1枚の記録の項目(この順で保存する)
+  //  kind: "task"(普段のマス目) / "gym"(ジムの日カード)。kind が無い古い記録は "task" として読む。
+  //  mainCount / light / dayType はジムの紙だけ(本体のマスの数・軽めで始めたか・平日/休日)。普段の紙では null。
   var FIELDS = [
-    "id", "task", "category", "difficulty", "heaviness", "time", "energy", "lowEnergy", "level",
-    "steps", "done", "finalReward", "rewardLocked", "finalUserId",
+    "id", "kind", "task", "category", "difficulty", "heaviness", "time", "energy", "lowEnergy", "level",
+    "steps", "done", "mainCount", "light", "dayType", "finalReward", "rewardLocked", "finalUserId",
     "createdAt", "firstFilledAt", "updatedAt", "completedAt",
     "moodBefore", "moodAfter", "note"
   ];
@@ -64,6 +66,12 @@
     return v.slice(0, NOTE_MAX);
   }
 
+  // 仕上がったか。ジムの紙は本体(最初の mainCount マス)がそろえば仕上がり(おまけは埋めなくてよい)
+  function isComplete(done, mainCount) {
+    var n = mainCount || done.length;
+    return countDone(done.slice(0, n)) === n;
+  }
+
   // 保存・読み込み用に1枚をそろえる。使えない記録(id や手順が無い、1マスも埋まっていない)は null。
   function checkSheet(s) {
     if (!s || typeof s !== "object") return null;
@@ -77,9 +85,12 @@
     var updatedAt = isoOrNull(s.updatedAt);
     var createdAt = isoOrNull(s.createdAt) || isoOrNull(s.firstFilledAt) || updatedAt;
     if (!createdAt) return null;
-    var complete = n === steps.length;
+    var gym = s.kind === "gym";
+    var mainCount = gym ? (intIn(s.mainCount, 1, steps.length) || steps.length) : null;
+    var complete = isComplete(done, mainCount);
     var out = {
       id: s.id,
+      kind: gym ? "gym" : "task",
       task: typeof s.task === "string" ? s.task : "",
       category: typeof s.category === "string" && s.category ? s.category : null,
       difficulty: intIn(s.difficulty, 0, 100),
@@ -90,6 +101,9 @@
       level: intIn(s.level, 1, 6),
       steps: steps,
       done: done,
+      mainCount: mainCount,
+      light: gym ? s.light === true : null,
+      dayType: gym ? (s.dayType === "holiday" ? "holiday" : "weekday") : null,
       finalReward: typeof s.finalReward === "string" ? s.finalReward : "",
       rewardLocked: s.rewardLocked === true,
       finalUserId: typeof s.finalUserId === "string" && s.finalUserId ? s.finalUserId : null,
@@ -145,8 +159,16 @@
     return true;
   }
 
+  // kind が無い記録(ジムの日カードより前に保存したもの)があれば true。読み込むと "task" が補われるので、保存し直す目印にする
+  function lacksKind(raw) {
+    return !!raw && Array.isArray(raw.sheets) && raw.sheets.some(function (s) {
+      return s && typeof s === "object" && s.kind !== "task" && s.kind !== "gym";
+    });
+  }
+
   /* 今の原稿用紙の状態を綴じ帳に反映する。binder を書き換える。
    *  1マス以上: 同じ id の記録を入れる/更新する。全部埋まったら completedAt、1マスでも外せば null。
+   *            (ジムの紙は本体の mainCount マスがそろえば completedAt。おまけのマスは関係ない)
    *  0マス   : 綴じ帳から外す(誤タップ対策)。
    * 戻り値: "added" / "updated" / "same"(変化なし) / "removed" / "none"(0マスで元々無い) */
   function putSheet(binder, rec, nowIso) {
@@ -198,8 +220,11 @@
   }
 
   /* ── 同じ種類のタスク・気分の傾向・前のあなたより ── */
-  // カテゴリがあれば(「その他」以外)カテゴリで、無ければ前後の空白を除いた入力文で比べる
+  // ジムの紙はジムの紙どうしで比べる(普段のタスクの「運動」とも混ぜない)。
+  // 普段のタスクは、カテゴリがあれば(「その他」以外)カテゴリで、無ければ前後の空白を除いた入力文で比べる
+  var GYM_KIND_KEY = "gym";
   function kindKey(s) {
+    if (s && s.kind === "gym") return GYM_KIND_KEY;
     if (s && s.category && s.category !== "other") return "c:" + s.category;
     var t = String((s && s.task) || "").trim();
     return t ? "t:" + t : null;
@@ -338,10 +363,13 @@
     TREND_MIN: TREND_MIN,
     MOODS: MOODS,
     FIELDS: FIELDS,
+    GYM_KIND_KEY: GYM_KIND_KEY,
     isOwnKey: isOwnKey,
     newId: newId,
     countDone: countDone,
+    isComplete: isComplete,
     checkSheet: checkSheet,
+    lacksKind: lacksKind,
     emptyBinder: emptyBinder,
     checkBinder: checkBinder,
     findSheet: findSheet,

@@ -98,10 +98,33 @@ function request(sw, url, mode) {
   r = await request(f, "https://example.test/rewards.js");
   check(r.res.ok === false, "オフラインでキャッシュも無いファイル: エラーを返す(固まらない)");
 
+  // ホーム画面の「ジムに行く」ショートカット(./?start=gym)は、オフラインでも index.html を開く
+  var g = setup({ delay: 5, fail: true });
+  g.store["https://example.test/"] = new FakeResponse("cached-root");
+  g.store[URL1] = new FakeResponse("cached-index");
+  r = await request(g, "https://example.test/?start=gym", "navigate");
+  check(r.res.body === "cached-root" || r.res.body === "cached-index", "オフライン: ?start=gym で開いても、保存済みの画面を表示する");
+
   var src = fs.readFileSync(path.join(__dirname, "..", "sw.js"), "utf8");
-  ["./classify.js", "./rewards.js", "./index.html"].forEach(function (f) {
+  ["./classify.js", "./rewards.js", "./records.js", "./gym.js", "./index.html", "./icons/shortcut-gym-96.png"].forEach(function (f) {
     check(src.indexOf('"' + f + '"') !== -1, "最初からキャッシュするファイルに " + f + " がある");
   });
+  var ctx = { self: { addEventListener: function () {} } };
+  vm.createContext(ctx);
+  vm.runInContext(src, ctx);
+  var missing = ctx.ASSETS.filter(function (a) {
+    return a !== "./" && !fs.existsSync(path.join(__dirname, "..", a));
+  });
+  check(!missing.length, "最初からキャッシュするファイルが全部ある" + (missing.length ? ": " + missing.join(", ") : ""));
+  check(/genkouyoushi-v5/.test(ctx.CACHE), "キャッシュ名の番号を上げた(" + ctx.CACHE + ")");
+
+  // manifest のショートカット
+  var manifest = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "manifest.webmanifest"), "utf8"));
+  var sc = (manifest.shortcuts || [])[0];
+  check(sc && sc.name === "ジムに行く" && sc.short_name === "ジム" && sc.url === "./?start=gym",
+    "manifest に「ジムに行く」のショートカットがある");
+  check(sc && sc.icons && sc.icons[0].sizes === "96x96" && ctx.ASSETS.indexOf("./" + sc.icons[0].src) !== -1,
+    "ショートカットのアイコン(96×96)もキャッシュする");
 
   if (failures) { console.log("\n失敗: " + failures + " 件"); process.exit(1); }
   console.log("\nすべて成功");

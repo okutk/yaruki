@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>やる気の原稿用紙</title>
+<meta name="robots" content="noindex">
 <meta name="theme-color" content="#f4f7f1" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#12201e" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -255,6 +256,12 @@
 
   #panel { display: none; }
   #panel.show { display: block; }
+  /* 完成バナーの判子(stampIn は 2.2 倍から始まる)がカードの外にはみ出して、横スクロールが広がらないように切る */
+  #panel,
+  #gymCard {
+    overflow: hidden;
+    overflow: clip;
+  }
 
   .progress-line {
     display: flex;
@@ -446,13 +453,15 @@
     cursor: not-allowed;
   }
   .reroll:disabled:hover { color: var(--ink-soft); border-color: var(--rule-soft); }
-  #completeBanner .unlock-note {
+  #completeBanner .unlock-note,
+  #gymBanner .unlock-note {
     font-size: 12.5px;
     color: var(--gold);
     margin-top: 4px;
   }
 
-  #completeBanner {
+  #completeBanner,
+  #gymBanner {
     display: none;
     margin-top: 22px;
     text-align: center;
@@ -461,19 +470,21 @@
     position: relative;
     background: var(--card-bg);
   }
-  #completeBanner.show {
+  #completeBanner.show,
+  #gymBanner.show {
     display: block;
     animation: stampIn 0.5s cubic-bezier(.2,1.4,.4,1);
   }
   @media (prefers-reduced-motion: reduce) {
-    #completeBanner.show { animation: none; }
+    #completeBanner.show, #gymBanner.show { animation: none; }
   }
   @keyframes stampIn {
     0% { transform: scale(2.2) rotate(-14deg); opacity: 0; }
     60% { transform: scale(0.94) rotate(-4deg); opacity: 1; }
     100% { transform: scale(1) rotate(-4deg); opacity: 1; }
   }
-  #completeBanner .seal {
+  #completeBanner .seal,
+  #gymBanner .seal {
     display: inline-block;
     font-family: "Noto Serif JP", serif;
     font-weight: 900;
@@ -487,12 +498,14 @@
     transform: rotate(-4deg);
     margin-bottom: 10px;
   }
-  #completeBanner p {
+  #completeBanner p,
+  #gymBanner p {
     margin: 6px 0 0;
     font-size: 14px;
     color: var(--ink-soft);
   }
-  #completeBanner .final-reward {
+  #completeBanner .final-reward,
+  #gymBanner .final-reward {
     margin-top: 10px;
     font-family: "Noto Serif JP", serif;
     font-size: 16px;
@@ -523,12 +536,14 @@
   }
   .plan-meta span { white-space: nowrap; }
 
-  #completeBanner .final-reward.secret {
+  #completeBanner .final-reward.secret,
+  #gymBanner .final-reward.secret {
     filter: blur(6px);
     user-select: none;
     cursor: pointer;
   }
-  #completeBanner .secret-hint {
+  #completeBanner .secret-hint,
+  #gymBanner .secret-hint {
     margin-top: 6px;
     font-size: 12px;
     color: var(--ink-soft);
@@ -615,6 +630,15 @@
     border-radius: 50%;
     background: var(--ink-soft);
     transition: left 0.2s ease;
+  }
+  /* 見た目は 32px のまま、押せる範囲を上下に広げて 44px 以上にする */
+  .switch::before {
+    content: "";
+    position: absolute;
+    top: -7px;
+    bottom: -7px;
+    left: -4px;
+    right: -4px;
   }
   .switch[aria-checked="true"] { background: var(--cta); border-color: var(--cta); }
   .switch[aria-checked="true"] .knob { left: 27px; background: #fbfaf3; }
@@ -826,8 +850,8 @@
     padding-top: 14px;
     border-top: 1px dashed var(--rule-soft);
   }
-  #completeBanner .mood-q,
-  #completeBanner .mood-faces { justify-content: center; }
+  #completeBanner .mood-q, #gymBanner .mood-q,
+  #completeBanner .mood-faces, #gymBanner .mood-faces { justify-content: center; }
   .note-label {
     display: block;
     margin: 16px 0 8px;
@@ -841,6 +865,235 @@
     font-size: 12.5px;
     color: var(--hanko);
   }
+
+  /* ジムの日カード(ヒーローの直後。普段のフォームの上) */
+  .gym-card { border: 2px solid var(--hanko); }
+  body.view-my #gymCard,
+  body.view-binder #gymCard,
+  body.view-gymset #gymCard,
+  body.view-my #gymUndo,
+  body.view-binder #gymUndo,
+  body.view-gymset #gymUndo { display: none; }
+  .gym-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .gym-head h2 {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    flex-wrap: wrap;
+    column-gap: 10px;
+  }
+  .gym-bonus-count {
+    font-family: "Noto Sans JP", sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--gold);
+  }
+  .gym-head .small-btn { min-width: 44px; padding: 0 10px; flex: none; }
+  .gym-unfold {
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0;
+    background: none;
+    border: none;
+    color: var(--ink);
+    font-family: "Noto Serif JP", serif;
+    font-size: 17px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+  }
+  .gym-unfold .gym-bonus-count { margin-left: 8px; }
+  .gym-unfold:focus-visible { outline: 2px solid var(--rule); outline-offset: 2px; }
+  .gym-unfold-mark { flex: none; color: var(--hanko); font-size: 13px; }
+  .gym-body { margin-top: 14px; }
+  .gym-daytype {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    margin-bottom: 12px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .seg { display: inline-flex; border: 1px solid var(--rule-soft); border-radius: 2px; }
+  .seg button {
+    min-height: 44px;
+    min-width: 64px;
+    padding: 0 12px;
+    border: none;
+    background: var(--paper-2);
+    color: var(--ink-soft);
+    font-family: "Noto Sans JP", sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .seg button + button { border-left: 1px solid var(--rule-soft); }
+  .seg button[aria-pressed="true"] { background: var(--cta); color: #fbfaf3; font-weight: 700; }
+  .seg button:focus-visible { outline: 2px solid var(--rule); outline-offset: 2px; }
+  .gym-plan-label { font-size: 12px; color: var(--ink-soft); }
+  .gym-ifthen {
+    margin: 2px 0 12px;
+    padding: 10px 12px;
+    background: var(--paper-2);
+    border-left: 3px solid var(--hanko);
+    font-family: "Noto Serif JP", serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+  .gym-companion {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+  .gym-companion-text { min-width: 0; overflow-wrap: anywhere; }
+  .gym-companion .small-btn { min-width: 0; font-size: 13px; }
+  a.small-btn {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+  }
+  .secondary-btn {
+    display: block;
+    width: 100%;
+    min-height: 48px;
+    margin-top: 10px;
+    padding: 10px;
+    background: transparent;
+    border: 1.5px solid var(--cta);
+    border-radius: 2px;
+    color: var(--hanko);
+    font-family: "Noto Serif JP", serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .secondary-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .gym-card .primary { margin-top: 6px; }
+  .gym-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0 12px;
+  }
+  .gym-month {
+    margin: 10px 0 0;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .gym-month strong {
+    margin-left: 2px;
+    font-family: "Noto Serif JP", serif;
+    font-size: 16px;
+    color: var(--ink);
+  }
+  #gymBanner .gym-month { margin-top: 10px; }
+  #gymBanner .gym-arrive {
+    margin-top: 10px;
+    font-family: "Noto Serif JP", serif;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.6;
+    color: var(--hanko);
+  }
+  .box.goal { border-width: 2.5px; border-color: var(--hanko); }
+  .box .goal-tag {
+    margin-left: 6px;
+    font-family: "Noto Serif JP", serif;
+    font-size: 11px;
+    color: var(--hanko);
+  }
+  .box.bonus {
+    border-style: dashed;
+    border-color: var(--rule-soft);
+    background: transparent;
+  }
+  .box.bonus.done { background: var(--gold-soft); }
+  .bonus-tag {
+    display: inline-block;
+    flex: none;
+    margin-left: 6px;
+    padding: 0 6px;
+    border: 1px dashed var(--gold);
+    border-radius: 20px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--gold);
+    text-decoration: none;
+  }
+  .after-block.invite {
+    margin-left: -8px;
+    margin-right: -8px;
+    padding: 14px 8px 8px;
+    border: 1.5px solid var(--gold);
+    background: var(--paper-2);
+    transition: background 0.6s ease, border-color 0.6s ease;
+  }
+  #gymBanner .invite-note {
+    margin: 0 0 8px;
+    font-size: 13.5px;
+    color: var(--hanko);
+  }
+  .gym-run-actions { margin-top: 8px; }
+  .gym-undo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 12px;
+    margin-bottom: 18px;
+    padding: 6px 6px 6px 14px;
+    background: var(--card-bg);
+    border: 1px dashed var(--rule-soft);
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .form-hint {
+    margin: 10px 0 0;
+    font-size: 12.5px;
+    color: var(--hanko);
+  }
+
+  /* ジムの日カードの設定(#gym-settings) */
+  #gymSettingsCard { display: none; }
+  body.view-gymset #gymSettingsCard { display: block; }
+  body.view-gymset header.hero,
+  body.view-gymset #formCard,
+  body.view-gymset #panel,
+  body.view-gymset #panel.show { display: none; }
+  #gymSettingsCard .field-label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .gym-days {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .gym-days .chip { padding: 8px 0; font-size: 15px; }
+  .gym-ifthen-input + .field-label { margin-top: 14px; }
+  .companion-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .companion-item .my-item-text { flex: 1; min-width: 0; font-size: 14.5px; }
+  .gym-shortcut-note { margin-top: 22px; }
 
   /* 綴じ帳の画面(#tojicho) */
   #binderCard { display: none; }
@@ -938,6 +1191,10 @@
     border: 1px solid var(--rule);
   }
   .mini-boxes i.on { background: var(--gold); border-color: var(--gold); }
+  .mini-boxes i.bonus { border-style: dashed; border-color: var(--gold); }
+  .mini-boxes i.bonus-first { margin-left: 4px; }
+  .sheet-bonus { font-size: 12px; color: var(--gold); white-space: nowrap; }
+  .detail-steps li.bonus { border-style: dashed; }
   .sheet-mood {
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
     white-space: nowrap;
@@ -1237,6 +1494,97 @@
       </div>
     </header>
 
+    <section class="card gym-card" id="gymCard" aria-labelledby="gymTitle" hidden>
+      <div class="gym-head">
+        <h2 id="gymTitle"><span id="gymTitleText">🏋 今日はジムの日</span><span class="gym-bonus-count" id="gymBonusCount" hidden></span></h2>
+        <button type="button" class="gym-unfold" id="gymUnfoldBtn" aria-expanded="false" aria-controls="gymBody" hidden>
+          <span><span id="gymUnfoldText"></span><span class="gym-bonus-count" id="gymUnfoldBonus" hidden></span></span>
+          <span class="gym-unfold-mark" aria-hidden="true">▼ ひらく</span>
+        </button>
+        <button type="button" class="small-btn" id="gymFoldBtn" aria-expanded="true" aria-controls="gymBody" hidden>たたむ ▲</button>
+        <button type="button" class="small-btn" id="gymSettingsBtn" aria-label="ジムの日カードの設定">⚙</button>
+      </div>
+      <div class="gym-body" id="gymBody">
+        <div id="gymPre">
+          <div class="gym-daytype">
+            <div class="seg" id="gymDayTypeSeg" role="group" aria-label="今日は平日？休日？">
+              <button type="button" data-type="weekday" aria-pressed="true">平日</button>
+              <button type="button" data-type="holiday" aria-pressed="false">休日</button>
+            </div>
+            <span id="gymDayTypeNote"></span>
+          </div>
+          <div class="gym-plan-label">いつ・どうする</div>
+          <p class="gym-ifthen" id="gymIfThen"></p>
+        </div>
+        <div class="gym-companion" id="gymCompanionRow" hidden>
+          <span class="gym-companion-text">今日のお供：<span id="gymCompanionName"></span></span>
+          <a class="small-btn" id="gymCompanionPlay" target="_blank" rel="noopener" hidden>▶ 開く</a>
+          <button type="button" class="small-btn" id="gymCompanionNext" hidden>他のお供</button>
+        </div>
+        <div class="nudge" id="gymNudge" hidden>
+          <div id="gymNudgeNote" hidden>
+            <div class="nudge-from" id="gymNudgeFrom"></div>
+            <div class="nudge-text" id="gymNudgeText"></div>
+          </div>
+          <div class="nudge-trend" id="gymNudgeTrend" hidden></div>
+          <div id="gymMoodBeforeRow" hidden>
+            <div class="mood-q"><span id="gymMoodBeforeQ">始める前の気分は？</span><span class="mood-picked" id="gymMoodBeforePicked"></span></div>
+            <div class="mood-faces" id="gymMoodBeforeFaces" role="group" aria-labelledby="gymMoodBeforeQ"></div>
+          </div>
+          <div class="mood-summary" id="gymMoodBeforeSummary" hidden></div>
+        </div>
+        <div id="gymPreActions">
+          <p class="gym-month" id="gymMonth" hidden></p>
+          <button type="button" class="primary" id="gymStartBtn">始める</button>
+          <button type="button" class="secondary-btn" id="gymLightBtn">軽めで始める</button>
+          <button type="button" class="reset-link" id="gymSkipBtn">今日はなし</button>
+        </div>
+        <div id="gymRun" hidden>
+          <div class="gym-links" id="gymRunActions" hidden>
+            <button type="button" class="reset-link" id="gymSwitchBtn">軽めに切り替える</button>
+            <button type="button" class="reset-link" id="gymSkipBtn2">今日はなし</button>
+          </div>
+          <div class="progress-line">
+            <span>4マス目「ジムに着いた」で完。その先はおまけ</span>
+            <strong id="gymProgressText">0 / 4</strong>
+          </div>
+          <div class="praise-toast" id="gymPraise"></div>
+          <div class="boxes" id="gymBoxes"></div>
+          <div class="reward-block">
+            <div class="field-label" id="gymRewardLabel">🎁 着いたときのご褒美</div>
+            <div class="reward-row" id="gymRewardRow">
+              <span class="tier" id="gymTier">小</span>
+              <span class="lock-icon">🔒</span>
+              <textarea id="gymRewardInput" rows="1" readonly aria-label="ジムに着いたときのご褒美"></textarea>
+              <button class="reroll" id="gymPeekBtn" type="button" aria-pressed="false" hidden>見る</button>
+              <button class="reroll" id="gymRerollBtn" type="button">他の案</button>
+            </div>
+          </div>
+          <div id="gymBanner">
+            <span class="seal">完</span>
+            <div class="unlock-note" id="gymUnlockNote" hidden>🔓 お楽しみのご褒美、開いたよ</div>
+            <div class="final-reward" id="gymFinalText"></div>
+            <div class="secret-hint" id="gymSecretHint" hidden>伏せています。タップで表示</div>
+            <p class="gym-arrive" id="gymArriveMain"></p>
+            <p id="gymArriveSub"></p>
+            <p class="gym-month" id="gymMonthDone" hidden></p>
+            <div class="after-block" id="gymAfter">
+              <p class="invite-note" id="gymInvite" hidden>おかえり。よかったら、今の気分と一言をどうぞ</p>
+              <div class="mood-q"><span id="gymMoodAfterQ">終わった今の気分は？</span><span class="mood-picked" id="gymMoodAfterPicked"></span></div>
+              <div class="mood-faces" id="gymMoodAfterFaces" role="group" aria-labelledby="gymMoodAfterQ"></div>
+              <label class="note-label" for="gymNoteInput">次にジムに行く自分へ、一言残す？（なくてもOK）</label>
+              <input type="text" id="gymNoteInput" class="my-input" maxlength="100" autocomplete="off" enterkeyhint="done" placeholder="例：準備運動を先にすると、体が楽">
+              <div class="note-hint" id="gymNoteHint" aria-live="polite"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div class="gym-undo" id="gymUndo" role="status" hidden>
+      <span>今日はジムなしで。</span>
+      <button type="button" class="small-btn" id="gymUndoBtn">元に戻す</button>
+    </div>
+
     <div class="card" id="formCard">
       <h2><span class="num">1</span>何をやりたい？</h2>
       <label class="field-label" for="taskInput">気になっていること・後回しにしていることを書いてみて</label>
@@ -1275,7 +1623,9 @@
       </div>
 
       <button class="primary" id="generateBtn">マス目を生成する</button>
+      <p class="form-hint" id="gymFormHint" hidden>🏋 ジムは上のカードからも始められるよ</p>
       <button type="button" class="link-btn" id="openMyBtn">🎁 自分のご褒美を登録・編集する</button>
+      <button type="button" class="link-btn" id="openGymSetBtn">🏋 ジムの日カードの設定</button>
     </div>
 
     <div class="card" id="panel">
@@ -1373,6 +1723,53 @@
       </div>
     </div>
 
+    <div class="card" id="gymSettingsCard" aria-labelledby="gymSetTitle">
+      <div class="my-head">
+        <h2 id="gymSetTitle"><span class="num">⚙</span>ジムの日カード</h2>
+        <button type="button" class="back-btn" id="gymSetBackBtn">← 戻る</button>
+      </div>
+      <p class="privacy-note">ここでの設定とお供は、この端末のブラウザの中にだけ保存されます。GitHub などの外部には送られません。</p>
+
+      <div class="toggle-row">
+        <span id="gymEnabledLabel">ジムの日カードを出す</span>
+        <button type="button" class="switch" id="gymEnabledToggle" role="switch" aria-checked="true" aria-labelledby="gymEnabledLabel"><span class="knob"></span></button>
+      </div>
+      <div class="my-section" id="gymShowAgainRow" hidden>
+        <p class="my-card-hint">今日のカードは「今日はなし」にしてあります。</p>
+        <button type="button" class="small-btn" id="gymShowAgainBtn">今日のカードをもう一度出す</button>
+      </div>
+
+      <div class="my-section">
+        <div class="field-label" id="gymDaysLabel">カードを出す曜日</div>
+        <div class="gym-days" id="gymDayChips" role="group" aria-labelledby="gymDaysLabel"></div>
+        <p class="my-card-hint">土日は「休日」、それ以外は「平日」として扱います。祝日や休みの日は、カードの「平日／休日」で今日だけ切り替えられます。</p>
+      </div>
+
+      <div class="my-section">
+        <label class="field-label" for="gymIfWeekday">いつ・どうする（平日）</label>
+        <input type="text" class="my-input gym-ifthen-input" id="gymIfWeekday" maxlength="60" autocomplete="off" enterkeyhint="done">
+        <label class="field-label" for="gymIfHoliday">いつ・どうする（休日）</label>
+        <input type="text" class="my-input gym-ifthen-input" id="gymIfHoliday" maxlength="60" autocomplete="off" enterkeyhint="done">
+        <p class="my-card-hint">前もって決めておくと、その場で迷わずにすむよ。空にすると最初の文に戻ります。</p>
+        <div class="note-hint" id="gymIfMsg" aria-live="polite"></div>
+      </div>
+
+      <div class="my-section">
+        <div class="field-label">お供（ジムのときだけ聴くもの）</div>
+        <p class="my-card-hint">ポッドキャストや音楽など。いくつか登録すると、日替わりで順番に出ます。https:// で始まるリンクなら、カードの「▶ 開く」から開けます（Spotify や YouTube のアプリが開くこともあります）。</p>
+        <ul class="my-list" id="gymCompanionList"></ul>
+        <p class="my-card-hint" id="gymCompanionEmpty">まだ登録はありません。</p>
+        <form id="gymCompanionForm" autocomplete="off" novalidate>
+          <label class="field-label lv-label" for="gymCompanionInput">お供を追加する</label>
+          <input type="text" id="gymCompanionInput" class="my-input" maxlength="200" autocomplete="off" enterkeyhint="done" placeholder="例：いつものポッドキャスト">
+          <div class="form-error" id="gymCompanionError" aria-live="polite"></div>
+          <button type="submit" class="primary">追加する</button>
+        </form>
+      </div>
+
+      <p class="privacy-note gym-shortcut-note">📱 ホーム画面のアイコンを長押しすると「ジムに行く」が出ます。押すと、すぐにジムの紙が始まります。<br>出てこないときは、少し時間をおくか、ホーム画面に追加し直してください。</p>
+    </div>
+
     <div class="card" id="binderCard" aria-labelledby="binderTitle">
       <div class="my-head">
         <h2 id="binderTitle"><span class="num">綴</span>綴じ帳</h2>
@@ -1453,11 +1850,13 @@
 <script src="classify.js"></script>
 <script src="rewards.js"></script>
 <script src="records.js"></script>
+<script src="gym.js"></script>
 <script>
 (function () {
   var C = window.YarukiClassify;
   var R = window.YarukiRewards;
   var Rec = window.YarukiRecords;
+  var G = window.YarukiGym;
 
   var praisePool = {
     firstStep: [
@@ -1821,6 +2220,12 @@
     binderSaveFailed = !store(BINDER_KEY, JSON.stringify(binder));
   }
   refreshBinder();
+  // ジムの日カードより前の記録には kind が無い。読み込むと "task" が補われるので、そのまま保存し直す
+  (function fillKind() {
+    var raw = null;
+    try { raw = JSON.parse(localStorage.getItem(BINDER_KEY)); } catch (e) {}
+    if (Rec.lacksKind(raw)) saveBinder();
+  })();
 
   function nowIso() { return new Date().toISOString(); }
   function doneCount() { return state.done.filter(Boolean).length; }
@@ -1828,6 +2233,7 @@
   function currentRecord() {
     return {
       id: state.sheetId,
+      kind: "task",
       task: state.task || "",
       category: state.category || null,
       difficulty: state.score,
@@ -2384,7 +2790,14 @@
     if (text != null) e.textContent = text;
     return e;
   }
-  function sheetTitle(s) { return s.task.trim() || "（名前のない原稿用紙）"; }
+  function sheetTitle(s) {
+    if (s.kind === "gym") return "🏋 ジム" + (s.light ? "（軽め）" : "");
+    return s.task.trim() || "（名前のない原稿用紙）";
+  }
+  function bonusOf(s) {
+    return s.kind === "gym" ? { done: Rec.countDone(s.done.slice(s.mainCount)), total: s.steps.length - s.mainCount } : null;
+  }
+  function todayGymId() { return gym && gym.today.sheet ? gym.today.sheet.id : null; }
   function moodPair(s) {
     var a = Rec.mood(s.moodBefore), b = Rec.mood(s.moodAfter);
     if (!a && !b) return "";
@@ -2416,18 +2829,27 @@
       var btn = el("button", "sheet-item");
       btn.type = "button";
       // button の中は span だけにする(見た目は CSS でブロックにする)
+      var isGym = s.kind === "gym";
       var top = el("span", "sheet-top");
       top.appendChild(el("span", null, Rec.dayLabel(s.createdAt)));
-      if (!s.completedAt) top.appendChild(el("span", "tag", "書きかけ"));
-      if (s.id === state.sheetId) top.appendChild(el("span", "tag now", "いまの原稿用紙"));
+      // ジムの紙は、着く前で終わっていても「動き出した」日として残す
+      if (!s.completedAt) top.appendChild(el("span", "tag", isGym ? "動き出した" : "書きかけ"));
+      if (!isGym && s.id === state.sheetId) top.appendChild(el("span", "tag now", "いまの原稿用紙"));
+      if (isGym && s.id === todayGymId()) top.appendChild(el("span", "tag now", "今日のジム"));
       btn.appendChild(top);
       btn.appendChild(el("span", "sheet-task", sheetTitle(s)));
       var row = el("span", "sheet-row");
       var mini = el("span", "mini-boxes");
       mini.setAttribute("role", "img");
-      mini.setAttribute("aria-label", Rec.countDone(s.done) + " / " + s.steps.length + "マス");
-      s.done.forEach(function (d) { mini.appendChild(el("i", d ? "on" : null)); });
+      mini.setAttribute("aria-label", isGym ? Rec.countDone(s.done) + "マス" : Rec.countDone(s.done) + " / " + s.steps.length + "マス");
+      s.done.forEach(function (d, i) {
+        var cls = d ? ["on"] : [];
+        if (isGym && i >= s.mainCount) cls.push(i === s.mainCount ? "bonus bonus-first" : "bonus");
+        mini.appendChild(el("i", cls.join(" ") || null));
+      });
       row.appendChild(mini);
+      var bonus = bonusOf(s);
+      if (bonus && bonus.done) row.appendChild(el("span", "sheet-bonus", "おまけ " + bonus.done + "/" + bonus.total));
       var mp = moodPair(s);
       if (mp) row.appendChild(el("span", "sheet-mood", mp));
       btn.appendChild(row);
@@ -2465,17 +2887,23 @@
     openSheetId = id;
     $("dDate").textContent = Rec.dayLabel(s.createdAt) + " " + Rec.timeLabel(s.createdAt);
     $("dTask").textContent = sheetTitle(s);
+    var isGym = s.kind === "gym";
     var meta = $("dMeta");
     meta.innerHTML = "";
-    var cat = categoryLabelOf(s.category);
+    var cat = isGym ? (s.dayType === "holiday" ? "休日" : "平日") : categoryLabelOf(s.category);
     if (cat) meta.appendChild(el("span", null, cat));
     if (s.difficulty != null) meta.appendChild(el("span", null, "難易度 " + s.difficulty));
     meta.hidden = !meta.childNodes.length;
     var status = $("dStatus");
     status.innerHTML = "";
+    var bonus = bonusOf(s);
     if (s.completedAt) {
       status.appendChild(el("span", "seal-sm", "完"));
-      status.appendChild(el("span", null, "仕上がった（" + Rec.shortDay(s.completedAt) + "）"));
+      status.appendChild(el("span", null, (isGym ? "ジムに着いた（" : "仕上がった（") + Rec.shortDay(s.completedAt) + "）" +
+        (bonus && bonus.done ? "　おまけ " + bonus.done + "/" + bonus.total : "")));
+    } else if (isGym) {
+      status.appendChild(el("span", "tag", "動き出した"));
+      status.appendChild(el("span", null, "ここまで " + Rec.countDone(s.done) + "マス動けた"));
     } else {
       status.appendChild(el("span", "tag", "書きかけ"));
       status.appendChild(el("span", null, "ここまで " + Rec.countDone(s.done) + " / " + s.steps.length + "マス"));
@@ -2483,9 +2911,12 @@
     var ol = $("dSteps");
     ol.innerHTML = "";
     s.steps.forEach(function (step, i) {
-      var li = el("li", s.done[i] ? "on" : null);
-      li.appendChild(el("span", "step-mark", s.done[i] ? "済" : ""));
-      li.appendChild(el("span", null, step));
+      var extra = isGym && i >= s.mainCount;
+      var li = el("li", [s.done[i] ? "on" : "", extra ? "bonus" : ""].join(" ").trim() || null);
+      li.appendChild(el("span", "step-mark", s.done[i] ? (isGym && i === s.mainCount - 1 ? "着" : "済") : ""));
+      var text = el("span", null, step);
+      if (extra) text.appendChild(el("span", "bonus-tag", "おまけ"));
+      li.appendChild(text);
       ol.appendChild(li);
     });
     // 最後のご褒美: 🔒(全部埋めるまで隠す)なら書きかけの間は伏せたまま。自分のご褒美を伏せる設定なら「見る」で表示
@@ -2506,7 +2937,8 @@
     ].filter(Boolean).join("\n");
     if (document.activeElement !== $("dNote")) $("dNote").value = s.note || "";
     $("dNoteClear").hidden = !s.note;
-    $("dContinue").hidden = !!s.completedAt || s.id === state.sheetId;
+    // ジムの紙はその日のカードで進めるので、「続きを書く」は出さない
+    $("dContinue").hidden = isGym || !!s.completedAt || s.id === state.sheetId;
     return true;
   }
 
@@ -2526,6 +2958,11 @@
       state.note = s.note;
       saveState();
       $("noteInput").value = s.note || "";
+    }
+    if (s.id === todayGymId()) {    // 今日のジムの紙なら、カードの一言もそろえる
+      gym.today.sheet.note = s.note;
+      saveGym();
+      $("gymNoteInput").value = s.note || "";
     }
     $("dNote").value = s.note || "";
     $("dNoteMsg").textContent = s.note ? "保存したよ" : "一言を消したよ";
@@ -2574,7 +3011,7 @@
   }
   $("dContinue").addEventListener("click", function () {
     var s = openSheet();
-    if (!s || s.completedAt) return;
+    if (!s || s.completedAt || s.kind === "gym") return;
     commitNote();
     // 今の紙に1マス以上埋まっていれば、それは綴じ帳に残したまま入れ替える
     var shelved = !!state.sheetId && doneCount() > 0;
@@ -2588,14 +3025,20 @@
     var s = openSheet();
     if (!s) return;
     var current = s.id === state.sheetId;
+    var gymToday = s.id === todayGymId();
     ask("この1枚を綴じ帳から外す？\n外した記録は元に戻せないよ。" +
-      (current ? "\n（いま書いている原稿用紙なので、画面のマス目も片付けるよ）" : ""), "外す", "やめる", true)
+      (current ? "\n（いま書いている原稿用紙なので、画面のマス目も片付けるよ）" : "") +
+      (gymToday ? "\n（今日のジムの紙なので、カードも始める前に戻すよ）" : ""), "外す", "やめる", true)
       .then(function (yes) {
         if (!yes) return;
         refreshBinder();
         Rec.removeSheet(binder, s.id);
         saveBinder();
         if (current) clearCurrentSheet();
+        if (gymToday && s.id === todayGymId()) {
+          gym.today.sheet = null;
+          saveGym();
+        }
         renderTally();
         navBack("#tojicho");
       });
@@ -2607,6 +3050,7 @@
   KEY_NAMES[STORAGE_KEY] = "今の原稿用紙と、入力欄の選択";
   KEY_NAMES[MY_KEY] = "自分のご褒美とその設定";
   KEY_NAMES[HISTORY_KEY] = "ご褒美の出方の記録（同じご褒美を続けて出さないためのもの）";
+  KEY_NAMES[G.KEY] = "ジムの日カードの設定（曜日・いつ・どうする・お供）と、今日のジムの紙";
   var IMPORT_ERRORS = {
     broken: "読み込めなかったよ。ファイルが途中で切れているか、形が違うみたい。データは何も変えていないよ",
     other: "このアプリで書き出したファイルではないみたい。データは何も変えていないよ",
@@ -2638,10 +3082,12 @@
     out[STORAGE_KEY] = stateJson();
     out[MY_KEY] = JSON.stringify(my);
     if (rewardHistory) out[HISTORY_KEY] = JSON.stringify(rewardHistory);
+    out[G.KEY] = JSON.stringify(gym);
     return out;
   }
   function backupText() {
     commitNote();
+    commitGymNote();
     refreshBinder();
     return JSON.stringify(Rec.buildBackup(collectEntries(), nowIso()), null, 1);
   }
@@ -2741,9 +3187,14 @@
     }
     if (replaceKeys.indexOf(MY_KEY) !== -1) my = loadMy();
     if (replaceKeys.indexOf(HISTORY_KEY) !== -1) rewardHistory = null;
+    if (replaceKeys.indexOf(G.KEY) !== -1) {
+      gym = loadGym();
+      gymBoxesKey = null;
+    }
     renderBinderList();
     renderTally();
     updateProgress();
+    renderGym();
     backupMsg(msg, !ok);
   }
 
@@ -2792,9 +3243,690 @@
     if (m) backupMsg(m);
   })();
 
-  /* ── 画面の切り替え(#my-rewards / #tojicho / #tojicho/記録のid) ──────
+  /* ── ジムの日カード(genkouyoushi-gym-v1。決まりごとは gym.js) ──────────
+   * 普段のマス目(state)とは別に持ち、別に進める。ジムの紙も1マス以上埋まったら綴じ帳に入れ、
+   * マスが変わるたびに同じ id の記録を更新する(0マスに戻れば外す)。「今日はなし」は何も記録しない。 */
+  function loadGym() {
+    var raw = null;
+    try { raw = JSON.parse(localStorage.getItem(G.KEY)); } catch (e) {}
+    return G.check(raw, new Date());
+  }
+  var gym = loadGym();
+  var gymBoxesKey = null;   // いま並べているマスがどの紙のものか(変わったときだけ作り直す)
+  var gymPeeking = false;
+  function saveGym() { store(G.KEY, JSON.stringify(gym)); }
+  function gymSheet() { return gym.today.sheet; }
+  function reduceMotion() {
+    try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; }
+  }
+
+  function gymRecord(s) {
+    return {
+      id: s.id, kind: "gym", task: "ジム", category: G.PLAN.category, difficulty: s.score,
+      heaviness: G.PLAN.heaviness, time: G.PLAN.time, energy: s.light ? 1 : 2, lowEnergy: s.light, level: s.level,
+      steps: s.steps, done: s.done, mainCount: s.mainCount, light: s.light, dayType: s.dayType,
+      finalReward: s.finalReward, rewardLocked: s.rewardLocked, finalUserId: s.finalUserId,
+      createdAt: s.createdAt, moodBefore: s.moodBefore, moodAfter: s.moodAfter, note: s.note
+    };
+  }
+  // 今日のジムの紙を綴じ帳に写す
+  function syncGym() {
+    var s = gymSheet();
+    if (!s) return;
+    refreshBinder();
+    var r = Rec.putSheet(binder, gymRecord(s), nowIso());
+    if (r !== "same" && r !== "none") saveBinder();
+    renderTally();
+  }
+
+  // マスごとの小さなご褒美。おまけのマスはいちばん小さいレベルから
+  function gymBoxLevel(s, i) { return G.isBonus(s, i) ? 1 : s.level; }
+  function fillGymBoxRewards(s) {
+    var changed = false;
+    s.steps.forEach(function (_, i) {
+      if (typeof s.boxRewards[i] === "string") return;
+      s.boxRewards[i] = drawBoxReward(gymBoxLevel(s, i));
+      changed = true;
+    });
+    return changed;
+  }
+
+  // 始める。light: 軽めで始めるか。keep: 引き継ぐもの(軽め/ふつうの切り替えのとき)
+  function startGym(light, keep) {
+    var p = G.plan(C, light);
+    var s = G.newSheet({
+      id: keep ? keep.id : Rec.newId(new Date()), light: light, dayType: keep ? keep.dayType : G.dayType(gym),
+      hasCompanion: !!G.companionFor(gym), score: p.score, level: p.level,
+      // 最後のご褒美の見せ方は、フォームで今選んでいるもの
+      rewardLocked: state.lockChoice === "lock", createdAt: keep ? keep.createdAt : nowIso()
+    });
+    if (keep) s.moodBefore = keep.moodBefore;
+    fillGymBoxRewards(s);
+    // 休日は「ジムの後のお昼ごはん」を最初の候補にする(「他の案」で変えられる)
+    var f = s.dayType === "holiday" ? { text: G.HOLIDAY_LUNCH, userId: null } : drawFinalReward(s.level);
+    s.finalReward = f.text;
+    s.finalUserId = f.userId;
+    gym.today.sheet = s;
+    gym.today.hidden = false;
+    gym.folded = false;
+    gymPeeking = false;
+    $("gymNoteHint").textContent = "";
+    saveGym();
+    renderGym();
+  }
+
+  var gymPraiseTimer = null;
+  function gymPraise(text) {
+    var t = $("gymPraise");
+    t.textContent = text;
+    t.classList.add("show");
+    if (gymPraiseTimer) clearTimeout(gymPraiseTimer);
+    gymPraiseTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+
+  // 要素がまだ画面の下の方(または外)にあれば、そっとそこまで動かす
+  function revealBelow(elm) {
+    var y = 0, n = elm;
+    while (n) { y += n.offsetTop; n = n.offsetParent; }   // 判子のアニメーション中でも位置がずれないように offsetTop で測る
+    var top = window.scrollY, h = window.innerHeight;
+    if (y > top + 40 && y < top + h * 0.6) return;
+    window.scrollTo({ top: Math.max(0, y - 80), behavior: reduceMotion() ? "auto" : "smooth" });
+  }
+
+  function toggleGymBox(i) {
+    var s = gymSheet();
+    if (!s) return;
+    var wasArrived = G.arrived(s);
+    var next = !s.done[i];
+    if (next && i === s.mainCount - 1) {
+      // 「ジムに着いた」= そこまでのマスも済んでいる。本体をまとめて埋める
+      for (var k = 0; k < s.mainCount; k++) s.done[k] = true;
+    } else {
+      s.done[i] = next;
+    }
+    saveGym();
+    syncGym();
+    celebratePage();
+    renderGym();
+    if (!next) return;
+    if (!wasArrived && G.arrived(s)) {
+      revealBelow($("gymBanner"));
+      return;
+    }
+    var p = G.praiseFor(s, i);
+    if (p) gymPraise(p);
+    // 最後のおまけ(帰ってからのマス)を埋めたら、気分と一言の欄をそっと見せる
+    if (i === s.steps.length - 1 && G.arrived(s)) revealBelow($("gymAfter"));
+  }
+
+  function renderGymBoxes(s) {
+    var wrap = $("gymBoxes");
+    wrap.innerHTML = "";
+    s.steps.forEach(function (step, i) {
+      var goal = i === s.mainCount - 1;
+      var extra = G.isBonus(s, i);
+      var box = document.createElement("div");
+      box.className = "box" + (goal ? " goal" : "") + (extra ? " bonus" : "");
+      box.setAttribute("role", "checkbox");
+      box.setAttribute("tabindex", "0");
+      box.innerHTML = '<span class="idx"></span>' +
+        '<span class="stamp"></span>' +
+        '<span class="label"></span>' +
+        '<span class="box-reward">' +
+          '<span class="box-reward-text"></span>' +
+          '<button type="button" class="box-reroll" aria-label="このご褒美を変える">他の案</button>' +
+        '</span>';
+      var idx = box.querySelector(".idx");
+      idx.textContent = String(i + 1).padStart(2, "0");
+      if (goal) idx.appendChild(el("span", "goal-tag", "ここで完"));
+      if (extra) idx.appendChild(el("span", "bonus-tag", "おまけ"));
+      box.querySelector(".stamp").textContent = goal ? "着" : "済";
+      box.querySelector(".label").textContent = step;
+      var rewardText = box.querySelector(".box-reward-text");
+      var reroll = box.querySelector(".box-reroll");
+      rewardText.textContent = "→ " + s.boxRewards[i];
+      box.addEventListener("click", function () { toggleGymBox(i); });
+      box.addEventListener("keydown", function (e) {
+        if (e.target === reroll) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleGymBox(i);
+        }
+      });
+      reroll.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var cur = gymSheet();
+        if (!cur) return;
+        cur.boxRewards[i] = drawBoxReward(gymBoxLevel(cur, i));
+        rewardText.textContent = "→ " + cur.boxRewards[i];
+        saveGym();
+      });
+      wrap.appendChild(box);
+    });
+  }
+  function paintGymBoxes(s) {
+    $("gymBoxes").querySelectorAll(".box").forEach(function (box, i) {
+      var d = !!s.done[i];
+      box.classList.toggle("done", d);
+      box.setAttribute("aria-checked", String(d));
+    });
+  }
+
+  function fitGymReward() {
+    var elm = $("gymRewardInput");
+    elm.style.height = "auto";
+    if (elm.scrollHeight) elm.style.height = elm.scrollHeight + "px";
+  }
+  window.addEventListener("resize", fitGymReward);
+
+  // 着いたときのご褒美の見え方(普段のマス目の applyRewardView と同じ決まり)
+  function renderGymReward(s, arrived) {
+    var input = $("gymRewardInput");
+    var row = $("gymRewardRow");
+    var locked = s.rewardLocked && !arrived;
+    var settled = s.rewardLocked && arrived;
+    var secret = my.masked && !!s.finalUserId;
+    if (!secret) gymPeeking = false;
+    $("gymTier").textContent = levelName(s.level);
+    if (document.activeElement !== input) input.value = s.finalReward;
+    row.classList.toggle("locked", locked);
+    row.classList.toggle("secret", secret && !gymPeeking);
+    input.readOnly = locked || settled || (secret && !gymPeeking);
+    if (locked) {
+      input.tabIndex = -1;
+      input.setAttribute("aria-hidden", "true");
+    } else {
+      input.removeAttribute("tabindex");
+      input.removeAttribute("aria-hidden");
+    }
+    $("gymRerollBtn").disabled = locked;
+    $("gymRerollBtn").hidden = settled;
+    var peek = $("gymPeekBtn");
+    peek.hidden = !secret || locked;
+    peek.textContent = gymPeeking ? "隠す" : "見る";
+    peek.setAttribute("aria-pressed", String(gymPeeking));
+    $("gymRewardLabel").textContent = locked ? "🔒 着いたら開けるお楽しみ" :
+      settled ? "🎁 開けたご褒美(確定)" : "🎁 着いたときのご褒美";
+    $("gymFinalText").textContent = s.finalReward;
+    $("gymFinalText").classList.toggle("secret", secret && !gymPeeking);
+    $("gymSecretHint").hidden = !(secret && !gymPeeking);
+    fitGymReward();
+  }
+
+  function gymMonthText(n) {
+    return "今月ジムに着いた日：<strong>" + n + "</strong>日";
+  }
+
+  /* 気分(始める前・終わった後)。普段のマス目と同じく、選ばなくてもよい */
+  function buildGymMoods(container, key) {
+    Rec.MOODS.forEach(function (m) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "mood-btn";
+      b.textContent = m.face;
+      b.title = m.label;
+      b.setAttribute("aria-label", m.label);
+      b.setAttribute("aria-pressed", "false");
+      b.setAttribute("data-mood", String(m.v));
+      b.addEventListener("click", function () {
+        var s = gymSheet();
+        if (!s) return;
+        s[key] = s[key] === m.v ? null : m.v;
+        saveGym();
+        syncGym();
+        renderGym();
+      });
+      container.appendChild(b);
+    });
+  }
+  buildGymMoods($("gymMoodBeforeFaces"), "moodBefore");
+  buildGymMoods($("gymMoodAfterFaces"), "moodAfter");
+  function paintGymMoods(s) {
+    [["gymMoodBeforeFaces", "gymMoodBeforePicked", "moodBefore"],
+     ["gymMoodAfterFaces", "gymMoodAfterPicked", "moodAfter"]].forEach(function (x) {
+      var v = s ? s[x[2]] : null;
+      $(x[0]).querySelectorAll(".mood-btn").forEach(function (b) {
+        b.setAttribute("aria-pressed", String(Number(b.getAttribute("data-mood")) === v));
+      });
+      var m = Rec.mood(v);
+      $(x[1]).textContent = m ? m.label : "";
+    });
+  }
+
+  // 前のあなたより・気分の傾向(ジムの記録どうしだけ)・始める前の気分(最初のマスを埋めたら畳む)
+  function renderGymNudge(s) {
+    var note = Rec.latestNote(binder.sheets, Rec.GYM_KIND_KEY, s ? s.id : null);
+    var trend = Rec.moodTrend(binder.sheets, Rec.GYM_KIND_KEY, s ? s.id : null);
+    var asking = !!s && G.doneCount(s) === 0;
+    var before = s ? Rec.mood(s.moodBefore) : null;
+    var summary = !!s && !asking && !!before;
+    $("gymNudgeNote").hidden = !note;
+    if (note) {
+      $("gymNudgeFrom").textContent = "📮 前のあなたより（" + Rec.shortDay(note.at) + "）";
+      $("gymNudgeText").textContent = note.note;
+    }
+    $("gymNudgeTrend").hidden = !trend;
+    if (trend) {
+      $("gymNudgeTrend").textContent = "ジムは、終わった後に気分が上がることが多いよ（" +
+        trend.count + "回中" + trend.up + "回）";
+    }
+    $("gymMoodBeforeRow").hidden = !asking;
+    $("gymMoodBeforeSummary").hidden = !summary;
+    if (summary) $("gymMoodBeforeSummary").textContent = "始める前の気分：" + before.face + " " + before.label;
+    $("gymNudge").hidden = !(note || trend || asking || summary);
+  }
+
+  function renderGymCompanion(s) {
+    var c = G.companionFor(gym);
+    var row = $("gymCompanionRow");
+    row.hidden = !c || (!!s && G.arrived(s));
+    if (row.hidden) return;
+    var url = G.isUrl(c);
+    var name = c;
+    if (url) {
+      try {
+        var u = new URL(c.trim());
+        name = u.host + (u.pathname.length > 1 || u.search ? "/…" : "");
+      } catch (e) {}
+    }
+    $("gymCompanionName").textContent = name;
+    var play = $("gymCompanionPlay");
+    play.hidden = !url;
+    if (url) play.href = c.trim();
+    else play.removeAttribute("href");
+    $("gymCompanionNext").hidden = gym.companions.length < 2;
+  }
+
+  function gymTitleParts(s) {
+    if (!s) return { text: "🏋 今日はジムの日", bonus: "" };
+    var b = G.bonus(s);
+    var bonusText = b.done ? "おまけ " + b.done + "/" + b.total : "";
+    if (G.arrived(s)) return { text: "🏋 今日は着いた ✓", bonus: bonusText };
+    return { text: "🏋 ジム " + G.mainDone(s) + "/" + s.mainCount, bonus: bonusText };
+  }
+
+  function renderGymFormHint() {
+    var hint = $("gymFormHint");
+    hint.hidden = !($("taskInput").value.indexOf("ジム") !== -1 && !$("gymCard").hidden);
+  }
+  $("taskInput").addEventListener("input", renderGymFormHint);
+
+  function renderGym() {
+    var card = $("gymCard");
+    var visible = G.cardVisible(gym);
+    card.hidden = !visible;
+    renderGymFormHint();
+    if (!visible) return;
+    var s = gymSheet();
+    var folded = !!s && gym.folded;
+    var t = gymTitleParts(s);
+    $("gymTitle").hidden = folded;
+    $("gymTitleText").textContent = t.text;
+    $("gymBonusCount").textContent = t.bonus;
+    $("gymBonusCount").hidden = !t.bonus;
+    $("gymUnfoldBtn").hidden = !folded;
+    $("gymUnfoldText").textContent = t.text;
+    $("gymUnfoldBonus").textContent = t.bonus;
+    $("gymUnfoldBonus").hidden = !t.bonus;
+    $("gymFoldBtn").hidden = !s || folded;
+    $("gymBody").hidden = folded;
+    if (folded) return;
+
+    refreshBinder();
+    var monthDays = G.arrivedDaysThisMonth(binder.sheets, new Date());
+    $("gymPre").hidden = !!s;
+    $("gymPreActions").hidden = !!s;
+    $("gymRun").hidden = !s;
+    renderGymCompanion(s);
+    renderGymNudge(s);
+    if (!s) {
+      var type = G.dayType(gym);
+      $("gymDayTypeSeg").querySelectorAll("button").forEach(function (b) {
+        b.setAttribute("aria-pressed", String(b.getAttribute("data-type") === type));
+      });
+      $("gymDayTypeNote").textContent = gym.today.dayTypeOverride ? "今日だけ" + (type === "holiday" ? "休日" : "平日") + "にしています" : "";
+      $("gymIfThen").textContent = gym.ifThen[type];
+      // 分母は出さない。0日のときは出さない
+      $("gymMonth").hidden = !monthDays;
+      if (monthDays) $("gymMonth").innerHTML = gymMonthText(monthDays);
+      return;
+    }
+
+    var arrived = G.arrived(s);
+    $("gymRunActions").hidden = G.doneCount(s) > 0;
+    $("gymSwitchBtn").textContent = s.light ? "ふつうに切り替える" : "軽めに切り替える";
+    var key = s.id + (s.light ? ":light" : ":normal");
+    if (fillGymBoxRewards(s)) saveGym();
+    if (gymBoxesKey !== key) {
+      renderGymBoxes(s);
+      gymBoxesKey = key;
+    }
+    paintGymBoxes(s);
+    $("gymProgressText").textContent = arrived ? "着いた ✓" : G.mainDone(s) + " / " + s.mainCount;
+    renderGymReward(s, arrived);
+    var banner = $("gymBanner");
+    if (arrived) {
+      var w = G.arriveWords(s.id);
+      $("gymUnlockNote").hidden = !s.rewardLocked;
+      $("gymArriveMain").textContent = w.main;
+      $("gymArriveSub").textContent = w.sub;
+      $("gymMonthDone").hidden = !monthDays;
+      if (monthDays) $("gymMonthDone").innerHTML = gymMonthText(monthDays);
+      banner.classList.add("show");
+      var input = $("gymNoteInput");
+      if (document.activeElement !== input) input.value = s.note || "";
+      // 帰ってからのマスまで埋めて、気分も一言もまだなら、そっと目立たせる
+      var invite = !!s.done[s.steps.length - 1] && s.moodAfter == null && !s.note;
+      $("gymAfter").classList.toggle("invite", invite);
+      $("gymInvite").hidden = !invite;
+    } else {
+      banner.classList.remove("show");
+    }
+    paintGymMoods(s);
+  }
+
+  /* ── カードの操作 ── */
+  // 今日の紙がもうあるときは何もしない(二度押しなどで、進めている紙を置き換えない)
+  $("gymStartBtn").addEventListener("click", function () {
+    if (gymSheet()) return;
+    startGym(false);
+    gymPraise("始めた。もう動き出してる");
+  });
+  $("gymLightBtn").addEventListener("click", function () {
+    if (gymSheet()) return;
+    startGym(true);
+    gymPraise("軽めでいい。着けば今日は達成");
+  });
+  $("gymSwitchBtn").addEventListener("click", function () {
+    var s = gymSheet();
+    if (!s || G.doneCount(s)) return;
+    startGym(!s.light, s);
+  });
+  $("gymDayTypeSeg").querySelectorAll("button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var type = b.getAttribute("data-type");
+      // 土日なら休日・それ以外は平日。違う方を選んだときだけ「今日だけ」の切り替えにする
+      gym.today.dayTypeOverride = type === G.defaultDayType(gym.today.date) ? null : type;
+      saveGym();
+      renderGym();
+    });
+  });
+  $("gymCompanionNext").addEventListener("click", function () {
+    if (!G.nextCompanion(gym)) return;
+    saveGym();
+    renderGym();
+  });
+
+  $("gymRerollBtn").addEventListener("click", function () {
+    var s = gymSheet();
+    if (!s || $("gymRerollBtn").disabled || $("gymRerollBtn").hidden) return;
+    var f = drawFinalReward(s.level);
+    s.finalReward = f.text;
+    s.finalUserId = f.userId;
+    gymPeeking = false;
+    $("gymRewardInput").value = f.text;
+    saveGym();
+    syncGym();
+    renderGym();
+  });
+  $("gymRewardInput").addEventListener("input", function () {
+    var s = gymSheet();
+    if (!s) return;
+    s.finalReward = $("gymRewardInput").value;
+    $("gymFinalText").textContent = s.finalReward;
+    fitGymReward();
+    saveGym();
+    syncGym();
+  });
+  $("gymPeekBtn").addEventListener("click", function () {
+    gymPeeking = !gymPeeking;
+    renderGym();
+  });
+  $("gymFinalText").addEventListener("click", function () {
+    var s = gymSheet();
+    if (!(s && my.masked && s.finalUserId)) return;
+    gymPeeking = !gymPeeking;
+    renderGym();
+  });
+
+  /* 次にジムに行く自分への一言(その日のうちはいつでも書き直せる) */
+  var gymNoteTimer = null;
+  function commitGymNote() {
+    if (gymNoteTimer) { clearTimeout(gymNoteTimer); gymNoteTimer = null; }
+    var s = gymSheet();
+    if (!s || reloading || !G.arrived(s)) return;
+    var v = $("gymNoteInput").value.trim();
+    var next = v ? v.slice(0, Rec.NOTE_MAX) : null;
+    if (next === s.note) return;
+    s.note = next;
+    saveGym();
+    syncGym();
+    $("gymNoteHint").textContent = next ? "📒 綴じ帳に残したよ。次のジムの日に届けるね" : "";
+    var invite = !!s.done[s.steps.length - 1] && s.moodAfter == null && !s.note;
+    $("gymAfter").classList.toggle("invite", invite);
+    $("gymInvite").hidden = !invite;
+  }
+  $("gymNoteInput").addEventListener("input", function () {
+    if (gymNoteTimer) clearTimeout(gymNoteTimer);
+    gymNoteTimer = setTimeout(commitGymNote, 600);
+  });
+  $("gymNoteInput").addEventListener("change", commitGymNote);
+  $("gymNoteInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.isComposing && e.keyCode !== 229) {
+      e.preventDefault();
+      $("gymNoteInput").blur();
+    }
+  });
+  window.addEventListener("pagehide", commitGymNote);
+
+  /* 今日はなし: その日(朝4時まで)はカードを隠すだけ。何も記録しない。5秒だけ「元に戻す」を出す */
+  var gymUndoTimer = null;
+  var gymUndoData = null;
+  function hideGymUndo() {
+    if (gymUndoTimer) { clearTimeout(gymUndoTimer); gymUndoTimer = null; }
+    gymUndoData = null;
+    $("gymUndo").hidden = true;
+  }
+  function skipGymToday() {
+    var s = gymSheet();
+    if (s && G.doneCount(s)) return;   // 1マス以上埋めた紙は綴じ帳に入っているので、なしにはしない(ボタンも出ない)
+    gymUndoData = { sheet: s, folded: gym.folded };
+    gym.today.sheet = null;
+    gym.today.hidden = true;
+    saveGym();
+    renderGym();
+    $("gymUndo").hidden = false;
+    $("gymUndoBtn").focus({ preventScroll: true });
+    if (gymUndoTimer) clearTimeout(gymUndoTimer);
+    gymUndoTimer = setTimeout(hideGymUndo, 5000);
+  }
+  $("gymSkipBtn").addEventListener("click", skipGymToday);
+  $("gymSkipBtn2").addEventListener("click", skipGymToday);
+  $("gymUndoBtn").addEventListener("click", function () {
+    if (!gymUndoData) { hideGymUndo(); return; }
+    gym.today.hidden = false;
+    gym.today.sheet = gymUndoData.sheet;
+    gym.folded = gymUndoData.folded;
+    hideGymUndo();
+    saveGym();
+    renderGym();
+    var back = gymSheet() ? $("gymTitle") : $("gymStartBtn");
+    if (back.tabIndex < 0) back.tabIndex = -1;
+    back.focus({ preventScroll: true });
+  });
+
+  /* たたむ・ひらく。ひらくときは history に積むので、Android の戻る操作でまた畳める */
+  $("gymFoldBtn").addEventListener("click", function () {
+    if (currentView === "gym") { navBack(); return; }   // 戻る操作と同じ(showView で畳む)
+    gym.folded = true;
+    saveGym();
+    renderGym();
+  });
+  $("gymUnfoldBtn").addEventListener("click", function () {
+    gym.folded = false;
+    saveGym();
+    if (currentView === "main") navTo("#gym");
+    else renderGym();
+  });
+  $("gymSettingsBtn").addEventListener("click", function () { navTo("#gym-settings"); });
+  $("openGymSetBtn").addEventListener("click", function () { navTo("#gym-settings"); });
+
+  // 朝4時を過ぎたら新しい日にする(開きっぱなしのときも)。前の日の紙は、1マス以上ならもう綴じ帳にある
+  function checkGymDay() {
+    if (gym.today.date === G.dayKey(new Date())) return;
+    commitGymNote();
+    G.rollover(gym, new Date());
+    gymPeeking = false;
+    $("gymNoteInput").value = "";
+    $("gymNoteHint").textContent = "";
+    hideGymUndo();
+    saveGym();
+    if (currentView === "main" || currentView === "gym") renderGym();
+  }
+  setInterval(checkGymDay, 60000);
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden") commitGymNote();
+    else checkGymDay();
+  });
+
+  /* ── ジムの日カードの設定(#gym-settings) ── */
+  var GYM_DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];   // 月〜日
+  (function buildDayChips() {
+    var wrap = $("gymDayChips");
+    GYM_DAY_ORDER.forEach(function (d) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip";
+      chip.setAttribute("data-day", String(d));
+      chip.textContent = G.WEEK[d];
+      chip.addEventListener("click", function () {
+        var i = gym.days.indexOf(d);
+        if (i === -1) gym.days.push(d);
+        else gym.days.splice(i, 1);
+        gym.days.sort();
+        saveGym();
+        renderGymSettings();
+      });
+      wrap.appendChild(chip);
+    });
+  })();
+
+  function renderGymCompanions() {
+    var list = $("gymCompanionList");
+    list.innerHTML = "";
+    $("gymCompanionEmpty").hidden = gym.companions.length > 0;
+    gym.companions.forEach(function (c) {
+      var li = el("li", "my-item companion-item");
+      li.appendChild(el("span", "my-item-text", (G.isUrl(c) ? "🔗 " : "") + c));
+      li.appendChild(makeButton("削除", "small-btn danger", function () {
+        var label = c.length > 30 ? c.slice(0, 30) + "…" : c;
+        ask("「" + label + "」をお供から外す？", "外す", "やめる", true).then(function (yes) {
+          if (!yes) return;
+          var i = gym.companions.indexOf(c);
+          if (i === -1) return;
+          gym.companions.splice(i, 1);
+          saveGym();
+          renderGymCompanions();
+        });
+      }));
+      list.appendChild(li);
+    });
+  }
+
+  function renderGymSettings() {
+    $("gymEnabledToggle").setAttribute("aria-checked", String(gym.enabled));
+    $("gymShowAgainRow").hidden = !gym.today.hidden;
+    $("gymDayChips").querySelectorAll(".chip").forEach(function (chip) {
+      var d = Number(chip.getAttribute("data-day"));
+      chip.setAttribute("aria-pressed", String(gym.days.indexOf(d) !== -1));
+    });
+    if (document.activeElement !== $("gymIfWeekday")) $("gymIfWeekday").value = gym.ifThen.weekday;
+    if (document.activeElement !== $("gymIfHoliday")) $("gymIfHoliday").value = gym.ifThen.holiday;
+    renderGymCompanions();
+  }
+
+  $("gymEnabledToggle").addEventListener("click", function () {
+    gym.enabled = !gym.enabled;
+    saveGym();
+    renderGymSettings();
+  });
+  $("gymShowAgainBtn").addEventListener("click", function () {
+    gym.today.hidden = false;
+    saveGym();
+    renderGymSettings();
+    toast("今日のジムの日カードを戻したよ");
+  });
+
+  // いつ・どうする: 打つそばから保存する。空のまま離れたら最初の文に戻す
+  var ifThenTimers = {};
+  function commitIfThen(type, leaving) {
+    if (ifThenTimers[type]) { clearTimeout(ifThenTimers[type]); ifThenTimers[type] = null; }
+    var input = $(type === "weekday" ? "gymIfWeekday" : "gymIfHoliday");
+    var v = G.cleanText(input.value, G.TEXT_MAX);
+    var next = v || G.DEFAULT_IF_THEN[type];
+    if (leaving && !v) input.value = next;
+    if (gym.ifThen[type] === next) return;
+    gym.ifThen[type] = next;
+    saveGym();
+    $("gymIfMsg").textContent = "保存したよ";
+  }
+  ["weekday", "holiday"].forEach(function (type) {
+    var input = $(type === "weekday" ? "gymIfWeekday" : "gymIfHoliday");
+    input.addEventListener("input", function () {
+      if (ifThenTimers[type]) clearTimeout(ifThenTimers[type]);
+      ifThenTimers[type] = setTimeout(function () { commitIfThen(type, false); }, 500);
+    });
+    input.addEventListener("change", function () { commitIfThen(type, true); });
+    input.addEventListener("blur", function () { commitIfThen(type, true); });
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && !e.isComposing && e.keyCode !== 229) {
+        e.preventDefault();
+        input.blur();
+      }
+    });
+  });
+
+  $("gymCompanionForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var input = $("gymCompanionInput");
+    var err = $("gymCompanionError");
+    var v = G.cleanText(input.value, G.COMPANION_MAX);
+    if (!v) { err.textContent = "お供を入力してね"; return; }
+    if (gym.companions.indexOf(v) !== -1) { err.textContent = "もう登録してあるよ"; return; }
+    if (gym.companions.length >= G.COMPANIONS_LIMIT) { err.textContent = "お供は" + G.COMPANIONS_LIMIT + "件まで登録できるよ"; return; }
+    err.textContent = "";
+    gym.companions.push(v);
+    saveGym();
+    input.value = "";
+    renderGymCompanions();
+    input.focus();
+  });
+
+  /* ── ホーム画面の「ジムに行く」ショートカット(./?start=gym) ──
+   * 今日のジムの紙がまだなければ、カードを出して(今日はなし・曜日の設定より優先)ふつうのマスですぐ始める。
+   * 今日の紙がもうあるときは、進み具合には触らない(カードを開いて、そこまで動かすだけ)。 */
+  var gymFromShortcut = false;
+  (function startFromShortcut() {
+    var param = null;
+    try { param = new URLSearchParams(location.search).get("start"); } catch (e) {}
+    if (param !== "gym") return;
+    // 開き直しで二重に始めないよう、先に URL から ?start=gym を消す
+    try { history.replaceState(history.state, "", location.pathname + location.hash); } catch (e) {}
+    gymFromShortcut = true;
+    hideGymUndo();
+    gym.today.hidden = false;
+    gym.folded = false;
+    if (!gymSheet()) {
+      startGym(false);
+    } else {
+      saveGym();
+    }
+  })();
+
+  /* ── 画面の切り替え(#my-rewards / #tojicho / #tojicho/記録のid / #gym-settings / #gym) ──────
    * アプリ内のボタンで開くときは history に積む。「← 戻る」や Android の戻る操作で1つ前に戻る。
-   * 積んだ深さは history.state に入れておく(開き直しても、戻る操作で戻れるように)。 */
+   * 積んだ深さは history.state に入れておく(開き直しても、戻る操作で戻れるように)。
+   * #gym はメインの画面のまま、たたんだジムの日カードをひらいた状態(戻る操作でまた畳む)。 */
   var currentView = null;
   var pendingPanelScroll = false;
   // 画面ごとのスクロール位置はこちらで戻すので、ブラウザには戻させない
@@ -2827,6 +3959,8 @@
   function viewFromHash() {
     var h = location.hash;
     if (h === "#my-rewards") return "my";
+    if (h === "#gym-settings") return "gymset";
+    if (h === "#gym") return "gym";
     if (h === "#tojicho") return "binder";
     if (h.indexOf("#tojicho/") === 0) {
       try { return "detail:" + decodeURIComponent(h.slice(9)); } catch (e) { return "binder"; }
@@ -2839,8 +3973,13 @@
     if (view === currentView) return;
     var prev = currentView;
     closeAsk(false);
-    if (prev === "main") mainScrollY = window.scrollY;
+    var fromMain = prev === "main" || prev === "gym";
+    if (fromMain) mainScrollY = window.scrollY;
     if (prev === "binder") listScrollY = window.scrollY;
+    if (prev === "gymset") {   // 設定を離れるときは、打ちかけのいつ・どうするも保存する
+      commitIfThen("weekday", true);
+      commitIfThen("holiday", true);
+    }
     var detailId = view.indexOf("detail:") === 0 ? view.slice(7) : null;
     if (detailId !== null && !renderDetail(detailId)) {
       // 外した記録などで見つからないときは一覧を出す
@@ -2850,6 +3989,7 @@
     }
     currentView = view;
     document.body.classList.toggle("view-my", view === "my");
+    document.body.classList.toggle("view-gymset", view === "gymset");
     document.body.classList.toggle("view-binder", view === "binder" || detailId !== null);
     $("binderListView").hidden = detailId !== null;
     $("binderDetailView").hidden = detailId === null;
@@ -2860,6 +4000,11 @@
       pendingDeleteId = null;
       renderMy();
       window.scrollTo(0, 0);
+    } else if (view === "gymset") {
+      $("gymIfMsg").textContent = "";
+      $("gymCompanionError").textContent = "";
+      renderGymSettings();
+      window.scrollTo(0, 0);
     } else if (view === "binder") {
       var fromDetail = !!prev && prev.indexOf("detail:") === 0;
       if (!fromDetail) binderShown = BINDER_PAGE;
@@ -2868,11 +4013,21 @@
     } else if (detailId !== null) {
       window.scrollTo(0, 0);
     } else {
+      // #gym に来たらカードをひらき、#gym から戻ったら(Android の戻る操作・たたむ)畳む
+      if (view === "gym" && gym.folded) { gym.folded = false; saveGym(); }
+      if (view === "main" && prev === "gym" && gymSheet() && !gym.folded) { gym.folded = true; saveGym(); }
+      checkGymDay();
       updateProgress();
       renderTally();
+      renderGym();
       if (pendingPanelScroll && $("panel").classList.contains("show")) {
         pendingPanelScroll = false;
         $("panel").scrollIntoView({ block: "start" });
+      } else if (fromMain) {
+        // 同じ画面の中でカードをひらいた・畳んだだけ。畳んでカードの上が見えなくなったら、カードの頭まで戻す
+        if (prev === "gym" && !$("gymCard").hidden && $("gymCard").getBoundingClientRect().top < 0) {
+          $("gymCard").scrollIntoView({ block: "start" });
+        }
       } else if (prev) {
         window.scrollTo(0, mainScrollY);
       }
@@ -2884,9 +4039,15 @@
   $("binderBackBtn").addEventListener("click", function () {
     navBack(currentView === "binder" ? "" : "#tojicho");
   });
+  $("gymSetBackBtn").addEventListener("click", function () { navBack(); });
   window.addEventListener("popstate", showView);
   window.addEventListener("hashchange", showView);
   showView();
+  // ショートカットから開いたときは、ジムの日カードまで動かす
+  if (gymFromShortcut && currentView === "main" && !$("gymCard").hidden) {
+    $("gymCard").scrollIntoView({ block: "start" });
+    gymPraise("開いた時点で、もう動き出してる");
+  }
 
   // 対応しているブラウザでは、データを消されにくくしてもらう(断られても何もしない)
   try {
