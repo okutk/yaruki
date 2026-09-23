@@ -39,6 +39,25 @@ TYPES.forEach(function (type) {
   console.log(type + ": レベル1〜6 = " + sizes.join(" / ") + " 件(合計 " + Object.keys(all).length + ")");
 });
 
+// ── 1b. 合わない組み合わせが混じっていない(レビューで見つかった型) ─────────
+var AVOID = [
+  [/報告|終わった！/, "報告する相手がいる前提の文(ひとりで使うアプリなので入れない)"],
+  [/ストレッチ動画|スクワット|足踏み|ジャンプ|つま先立ち|ラジオ体操|体操をする/, "運動そのもので、ご褒美にならない"],
+  [/(寝る前に|今夜).*(外で|天気)/, "夜に外・天気"],
+  [/(明日|次の休み|今週|今月|連休|近いうち).*(パジャマ|明日の予定|おつかれ|拍手|宣言|スクショ)/, "先の日付に「今すぐやること」"],
+  [/こっそり.*(書|メモ|スタンプ|シール)/, "こっそり + 書く"],
+  [/頑張った自分を連れて/, "外した部品"],
+  [/今日.*今日/, "「今日」が重なる"],
+  [/窓.*ベランダ/, "窓とベランダが重なる"]
+];
+TYPES.forEach(function (type) {
+  for (var lv = 1; lv <= R.LEVELS; lv++) {
+    R.pool(type, lv).forEach(function (text) {
+      AVOID.forEach(function (a) { check(!a[0].test(text), type + " に入れない文(" + a[1] + "): 「" + text + "」"); });
+    });
+  }
+});
+
 // ── 2. 1000回連続で引いて重複がない ─────────────────────
 function run(type, n, levelOf, rng, roundTrip) {
   var hist = R.emptyHistory(type), texts = [];

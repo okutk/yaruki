@@ -58,7 +58,7 @@ var CASES = [
   ["買い物", "kaimono"], ["夕飯の買い物", "kaimono"], ["日用品の買い出し", "kaimono"], ["彼女へのプレゼントを買う", "kaimono"],
   ["ネットで注文", "kaimono"],
   // 旅行・お出かけ
-  ["家族との旅行の計画", "ryokou"], ["帰省の準備", "ryokou"], ["旅行の荷造り", "ryokou"], ["温泉に行きたい", "ryokou"],
+  ["家族との旅行の計画", "ryokou"], ["実家の家族と旅行先の相談", "ryokou"], ["帰省の準備", "ryokou"], ["旅行の荷造り", "ryokou"], ["温泉に行きたい", "ryokou"],
   // お楽しみの準備
   ["映画のチケットを取る", "goraku"], ["ライブの準備", "goraku"], ["美術館に行く", "goraku"], ["推し活", "goraku"],
   // 人付き合い
@@ -91,7 +91,7 @@ function priorities(list) {
 }
 C.CATEGORIES.concat([C.FALLBACK]).forEach(function (cat) {
   check(cat.steps.length === 8 && priorities(cat.steps) === "1,2,3,4,5,6,7,8", cat.id + ": steps は優先順1〜8の8個");
-  check(cat.light.length === 6 && priorities(cat.light) === "1,2,3,4,5,6", cat.id + ": light は優先順1〜6の6個");
+  check(cat.light.length === 8 && priorities(cat.light) === "1,2,3,4,5,6,7,8", cat.id + ": light は優先順1〜8の8個");
   check(cat.base >= 0 && cat.base <= 100, cat.id + ": base は0〜100");
 });
 var ids = {};
@@ -109,8 +109,14 @@ HS.forEach(function (h) {
         var s = C.difficultyScore({ heaviness: h, energy: e, time: t, base: b });
         check(s >= 0 && s <= 100, "スコアは0〜100: " + s);
         if (e === 1) check(C.isLight(s), "エネルギー低めは必ず軽い手順: h" + h + " t" + t + " b" + b + " → " + s);
-        var n = C.stepCount(s);
+        var o = { heaviness: h, energy: e, time: t, base: b };
+        var n = C.stepCount(C.countScore(o), e === 1);
         check(n >= 2 && n <= 8, "マス数は2〜8: " + n);
+        // エネルギー低めでもマスは減らさない(ふつう以上。ふつう+1、最大8)
+        if (e === 1) {
+          var normal = C.stepCount(C.countScore({ heaviness: h, energy: 2, time: t, base: b }), false);
+          check(n >= normal && n === Math.min(8, normal + 1), "低めのマス数はふつう+1: h" + h + " t" + t + " b" + b + " → " + n + " / ふつう " + normal);
+        }
         var lv = C.rewardLevel(s);
         check(lv >= 1 && lv <= 6, "レベルは1〜6: " + lv);
         // 単調性: どの入力を上げてもスコアは下がらない
@@ -130,6 +136,19 @@ HS.forEach(function (h) {
 });
 console.log("難易度スコア: " + (failures === before ? "範囲・単調性・低エネルギーの規則 OK" : "NG あり"));
 
+// どのカテゴリ・どの組み合わせでも、必要なマス数ぶんの手順がそろう(軽い手順が足りなくならない)
+before = failures;
+C.CATEGORIES.concat([C.FALLBACK]).forEach(function (cat) {
+  HS.forEach(function (h) { ES.forEach(function (e) { TS.forEach(function (t) {
+    var o = { heaviness: h, energy: e, time: t, base: cat.base };
+    var s = C.difficultyScore(o);
+    var n = C.stepCount(C.countScore(o), e === 1);
+    var steps = C.pickSteps(C.isLight(s) ? cat.light : cat.steps, n, "テスト");
+    check(steps.length === n, cat.id + ": " + n + "マス必要なのに手順が " + steps.length + " 個 (h" + h + " e" + e + " t" + t + ")");
+  }); }); });
+});
+console.log("手順の数: " + (failures === before ? "どの組み合わせでも足りる" : "足りない組み合わせあり"));
+
 // ── 4. 計画(plan)の例 ─────────────────────────
 function show(label, input) {
   var p = C.plan(input);
@@ -145,6 +164,11 @@ show("歯磨き     重さ1 5分  ふつう", { task: "歯磨き", heaviness: 1,
 show("転職活動   重さ4 30分 ふつう", { task: "転職活動", heaviness: 4, time: 30, energy: 2 });
 var p3 = show("謎のこと   重さ3 15分 ふつう", { task: "謎のこと", heaviness: 3, time: 15, energy: 2 });
 check(p2.light && !p1.light, "低めは軽い手順、ふつうは通常の手順");
+check(p2.steps.length >= p1.steps.length, "部屋の掃除: 低めのマス数(" + p2.steps.length + ")はふつう(" + p1.steps.length + ")以上");
+var p4 = show("実家の家族と旅行先の相談 重さ4 15分 ふつう", { task: "実家の家族と旅行先の相談", heaviness: 4, time: 15, energy: 2 });
+var p5 = show("実家の家族と旅行先の相談 重さ4 15分 低め  ", { task: "実家の家族と旅行先の相談", heaviness: 4, time: 15, energy: 1 });
+check(p5.steps.length >= p4.steps.length, "旅行先の相談: 低めのマス数(" + p5.steps.length + ")はふつう(" + p4.steps.length + ")以上");
+check(p5.level < p4.level, "旅行先の相談: 低めはご褒美レベルが下がる(" + p5.level + " / " + p4.level + ")");
 check(p3.steps.join("").indexOf("「謎のこと」") !== -1, "その他の手順に入力が入る");
 
 // ── 5. スコアの分布(係数を調整するときの参考) ───────────

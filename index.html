@@ -200,6 +200,7 @@
     gap: 8px;
   }
   .chip {
+    min-height: 44px;
     border: 1px solid var(--rule-soft);
     background: var(--paper-2);
     color: var(--ink);
@@ -632,7 +633,6 @@
     line-height: 1.7;
     color: var(--ink-soft);
   }
-  #myRewardsCard .chip { min-height: 44px; }
   .my-input {
     width: 100%;
     min-height: 48px;
@@ -883,7 +883,7 @@
           <button type="button" class="chip" data-value="0.5" aria-pressed="false">2回に1回</button>
           <button type="button" class="chip" data-value="1" aria-pressed="false">必ず</button>
         </div>
-        <p class="my-card-hint">そのときのご褒美レベルに合うものを登録しているときだけ出ます。マスごとの小さなご褒美には出ません。</p>
+        <p class="my-card-hint">そのときのご褒美レベルに合うものが出ます。合うものが無いときは、前後1つのレベルのものがたまに(この割合の3分の1くらい)出ます。マスごとの小さなご褒美には出ません。</p>
       </div>
 
       <form class="my-section" id="myAddForm" autocomplete="off" novalidate>
@@ -892,6 +892,7 @@
         <div class="field-label lv-label">どのレベルのときに出す？（いくつでも選べる）</div>
         <div class="chipset" id="myAddLevels" role="group" aria-label="出すレベル"></div>
         <ul class="legend" id="levelLegend"></ul>
+        <p class="my-card-hint" id="lastLevelHint"></p>
         <div class="form-error" id="myAddError" aria-live="polite"></div>
         <button type="submit" class="primary">追加する</button>
       </form>
@@ -1011,11 +1012,20 @@
     try { localStorage.setItem(MY_KEY, JSON.stringify(my)); } catch (e) {}
   }
 
-  // 全部埋まったときのご褒美。レベルに合う自分のご褒美があれば、設定した割合でそちらを出す。
-  // 自分のご褒美も、合うものを一巡するまでは同じものを出さない。
+  // 全部埋まったときのご褒美。レベルが合う自分のご褒美があれば、設定した割合でそちらを出す。
+  // 合うものが無ければ前後1つのレベルのものを、割合を NEAR_LEVEL_RATIO_SCALE 倍に下げて出す(たまに出る程度)。
+  // 自分のご褒美も、候補を一巡するまでは同じものを出さない。
+  var NEAR_LEVEL_RATIO_SCALE = 1 / 3;
   function drawFinalReward(level) {
     var fits = my.items.filter(function (it) { return it.levels.indexOf(level) !== -1; });
-    if (fits.length && Math.random() < my.ratio) {
+    var ratio = my.ratio;
+    if (!fits.length) {
+      fits = my.items.filter(function (it) {
+        return it.levels.indexOf(level - 1) !== -1 || it.levels.indexOf(level + 1) !== -1;
+      });
+      ratio = my.ratio * NEAR_LEVEL_RATIO_SCALE;
+    }
+    if (fits.length && Math.random() < ratio) {
       var fresh = fits.filter(function (it) { return my.bag.indexOf(it.id) === -1; });
       if (!fresh.length) {
         my.bag = my.bag.filter(function (id) { return !fits.some(function (it) { return it.id === id; }); });
@@ -1466,10 +1476,19 @@
     document.querySelectorAll("#ratioChips .chip").forEach(function (c) {
       c.setAttribute("aria-pressed", String(c === ratioChip));
     });
+    // どのレベルを選べばよく出るかの目安
+    $("lastLevelHint").textContent = state.score != null ?
+      "前回のマス目のご褒美は Lv" + state.level + " " + levelName(state.level) + " でした。" :
+      "よくある設定(重さ3・15分・ふつう)だと Lv" + usualLevel() + " " + levelName(usualLevel()) + " になります。";
     renderMyList();
   }
 
-  levelChips($("myAddLevels"), [3]);
+  function usualLevel() {
+    return C.rewardLevel(C.difficultyScore({ heaviness: 3, energy: 2, time: 15, base: C.FALLBACK.base }));
+  }
+
+  // 登録画面のレベルの初期値は、前回のマス目のレベル(まだ無ければよくある設定のレベル)
+  levelChips($("myAddLevels"), [state.score != null ? state.level : usualLevel()]);
   (function renderLegend() {
     var ul = $("levelLegend");
     C.LEVEL_NAMES.forEach(function (name, i) {
