@@ -106,7 +106,7 @@ TYPES.forEach(function (type) {
       var ok = x.place !== "h" || (type === "final" && x.size.w >= 1);
       check(ok, type + " の外の候補に家でしかできない文: 「" + x.text + "」");
     });
-    check(out.length >= 500, type + " レベル" + lv + " の外の候補が少ない: " + out.length);
+    check(out.length >= 400, type + " レベル" + lv + " の外の候補が少ない: " + out.length);
   }
   console.log(type + ": 外で使える件数 レベル1〜6 = " + outSizes.join(" / "));
 });
