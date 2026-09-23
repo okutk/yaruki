@@ -33,6 +33,12 @@
     --gold-soft: #e0d3a8;
     --card-bg: #fbfaf3;
     --danger: #b3261e;
+    /* 見守り: 赤ペン(はなまる・赤丸)と付箋 */
+    --red: #c62d25;
+    --toast-red: #ff8f80;
+    --sticky-bg: #fff2a6;
+    --sticky-ink: #4a3d00;
+    --sticky-edge: #9a7b00;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -50,6 +56,11 @@
       --gold-soft: #4a3f22;
       --card-bg: #1a2b28;
       --danger: #ffb4ab;
+      --red: #ff8f80;
+      --toast-red: #c62d25;
+      --sticky-bg: #594c16;
+      --sticky-ink: #fff4c2;
+      --sticky-edge: #d9bd4a;
     }
   }
   :root[data-theme="dark"] {
@@ -67,6 +78,11 @@
     --gold-soft: #4a3f22;
     --card-bg: #1a2b28;
     --danger: #ffb4ab;
+    --red: #ff8f80;
+    --toast-red: #c62d25;
+    --sticky-bg: #594c16;
+    --sticky-ink: #fff4c2;
+    --sticky-edge: #d9bd4a;
   }
 
   * { box-sizing: border-box; }
@@ -1164,14 +1180,14 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 4px 8px;
-    padding-right: 40px;
+    padding-right: 44px;
     font-size: 12px;
     color: var(--ink-soft);
   }
   .sheet-task {
     display: block;
     margin: 4px 0 6px;
-    padding-right: 40px;
+    padding-right: 44px;
     font-size: 15px;
     line-height: 1.5;
     overflow-wrap: anywhere;
@@ -1425,6 +1441,275 @@
   }
   .small-btn.danger-fill { background: var(--danger); border-color: var(--danger); color: var(--card-bg); }
 
+  /* ── 見守り: 上のお知らせ(たより・おかえり)。一度に1枚まで。ジムの日カードはその下 ── */
+  .notice { margin: 0 0 18px; }
+  body.view-my .notice,
+  body.view-binder .notice,
+  body.view-gymset .notice { display: none; }
+  .envelope {
+    display: flex;
+    align-items: center;
+    background: var(--card-bg);
+    border: 1.5px solid var(--hanko);
+    border-radius: 2px;
+    box-shadow: 0 1px 0 var(--rule-soft);
+  }
+  .envelope-open {
+    flex: 1;
+    min-width: 0;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 4px 0 14px;
+    background: none;
+    border: none;
+    color: var(--ink);
+    font-family: "Noto Serif JP", serif;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+  }
+  .envelope-text {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .envelope-mark {
+    flex: none;
+    font-family: "Noto Sans JP", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--hanko);
+  }
+  .icon-btn {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--ink-soft);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .icon-btn:focus-visible,
+  .envelope-open:focus-visible { outline: 2px solid var(--rule); outline-offset: -2px; }
+  .welcome-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 10px 0 12px 14px;
+    background: var(--card-bg);
+    border: 1.5px solid var(--gold);
+    border-radius: 2px;
+  }
+  .welcome-main { flex: 1; min-width: 0; }
+  .welcome-text {
+    margin: 10px 0 0;
+    font-family: "Noto Serif JP", serif;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .welcome-main .small-btn { margin-top: 8px; }
+  .welcome-main .small-btn:disabled { color: var(--hanko); border-color: var(--hanko); cursor: default; }
+
+  /* たより(オーバーレイ。Android の戻る操作で閉じる) */
+  html.overlay-open,
+  html.overlay-open body { overflow: hidden; }
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: max(16px, env(safe-area-inset-top, 0px)) 16px max(16px, env(safe-area-inset-bottom, 0px));
+    background: rgba(0, 0, 0, 0.45);
+  }
+  .letter {
+    width: min(460px, 100%);
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 18px 16px;
+    background: var(--card-bg);
+    color: var(--ink);
+    border: 2px solid var(--hanko);
+    border-radius: 2px;
+  }
+  .letter:focus { outline: none; }
+  .letter-head {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 8px;
+    background: var(--card-bg);
+    border-bottom: 2px solid var(--rule);
+  }
+  .letter-head h2 {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-family: "Noto Serif JP", serif;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  .letter-body { margin: 6px 0 12px; }
+  .letter-body p {
+    margin: 0;
+    padding: 7px 2px;
+    border-bottom: 1px dashed var(--rule-soft);
+    font-family: "Noto Serif JP", serif;
+    font-size: 15.5px;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+  }
+  .letter-body p.item { padding: 2px 2px 2px 1em; border-bottom: none; font-size: 15px; }
+  .letter-body p.item + p:not(.item) { border-top: 1px dashed var(--rule-soft); }
+  .letter .secondary-btn { margin-top: 4px; }
+
+  /* 綴じ帳の「たより」の欄 */
+  .letters { margin-top: 18px; }
+  .letters .month-head { margin-top: 0; }
+  .letter-item .sheet-task { padding-right: 0; }
+  .letter-preview {
+    display: block;
+    font-size: 13px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* はなまる(仕上がった紙)と赤丸(書きかけの紙)。赤ペンで描いたような線 */
+  svg.hanamaru,
+  svg.red-maru {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  svg.hanamaru path,
+  svg.red-maru path {
+    fill: none;
+    stroke: var(--red);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  svg.hanamaru path { stroke-width: 3.4; }
+  svg.red-maru path { stroke-width: 7; }
+  svg.hanamaru.drawing path {
+    stroke-dasharray: 1 2;
+    animation: hanamaruDraw var(--d, 0.3s) ease-out var(--delay, 0s) both;
+  }
+  @keyframes hanamaruDraw {
+    0% { stroke-dashoffset: 1; opacity: 0; }
+    1% { opacity: 1; }
+    100% { stroke-dashoffset: 0; opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    svg.hanamaru.drawing path { animation: none; stroke-dasharray: none; }
+  }
+  .seal-wrap { position: relative; display: inline-block; }
+  .hanamaru-slot {
+    position: absolute;
+    left: calc(100% - 20px);
+    top: -18px;
+    width: 68px;
+    height: 68px;
+    pointer-events: none;
+  }
+  .maru-slot {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-right: 6px;
+    vertical-align: -3px;
+  }
+  .sheet-mark {
+    position: absolute;
+    top: 6px;
+    width: 32px;
+    height: 32px;
+  }
+  .sheet-mark.maru { right: 9px; }
+  .sheet-item.has-hana .sheet-top,
+  .sheet-item.has-hana .sheet-task { padding-right: 78px; }
+  .sheet-mark.hana { right: 42px; }
+  .detail-status .sheet-mark { position: static; flex: none; width: 34px; height: 34px; }
+  .toast svg.hanamaru,
+  .toast svg.red-maru {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+    vertical-align: -5px;
+  }
+  .toast svg path { stroke: var(--toast-red); }
+
+  /* おかえりのおまけ(ご褒美を1段上げたマス) */
+  .welcome-tag {
+    display: block;
+    margin-bottom: 2px;
+    font-family: "Noto Serif JP", serif;
+    font-size: 11px;
+    color: var(--gold);
+  }
+
+  /* 付箋(書きかけの普段の紙。「止まっている」ではなく「待っている」と分かるように) */
+  .sticky-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+    padding: 6px 12px;
+    background: var(--sticky-bg);
+    color: var(--sticky-ink);
+    border: none;
+    border-left: 4px solid var(--sticky-edge);
+    border-radius: 1px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+    font-family: "Noto Sans JP", sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: left;
+    overflow-wrap: anywhere;
+    transform: rotate(-1deg);
+  }
+  button.sticky-note { min-height: 44px; cursor: pointer; }
+  button.sticky-note:focus-visible { outline: 2px solid var(--rule); outline-offset: 2px; }
+  .sticky-change {
+    flex: none;
+    font-size: 12px;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .panel-sticky { margin: -4px 0 12px; }
+  .sticky-edit { display: grid; gap: 8px; }
+  .sticky-edit .field-label { margin-bottom: 0; }
+  .sticky-edit .detail-actions { margin-top: 0; }
+  .sheet-sticky {
+    display: flex;
+    width: fit-content;
+    margin: 2px 0 6px;
+    padding: 2px 10px;
+    font-size: 12.5px;
+  }
+  .detail-sticky { margin: -6px 0 14px; }
+  .panel-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0 16px;
+  }
+
   @media (max-width: 480px) {
     .spine {
       writing-mode: horizontal-tb;
@@ -1494,6 +1779,22 @@
       </div>
     </header>
 
+    <div class="notice" id="notice" hidden>
+      <div class="envelope" id="envelope" hidden>
+        <button type="button" class="envelope-open" id="envelopeOpen">
+          <span class="envelope-text" id="envelopeText"></span><span class="envelope-mark" aria-hidden="true">›</span>
+        </button>
+        <button type="button" class="icon-btn" id="envelopeClose" aria-label="たよりを綴じ帳にしまう">×</button>
+      </div>
+      <div class="welcome-card" id="welcomeCard" role="status" hidden>
+        <div class="welcome-main">
+          <p class="welcome-text" id="welcomeText"></p>
+          <button type="button" class="small-btn" id="welcomeLight">今日は軽めにする？</button>
+        </div>
+        <button type="button" class="icon-btn" id="welcomeClose" aria-label="閉じる">×</button>
+      </div>
+    </div>
+
     <section class="card gym-card" id="gymCard" aria-labelledby="gymTitle" hidden>
       <div class="gym-head">
         <h2 id="gymTitle"><span id="gymTitleText">🏋 今日はジムの日</span><span class="gym-bonus-count" id="gymBonusCount" hidden></span></h2>
@@ -1561,7 +1862,7 @@
             </div>
           </div>
           <div id="gymBanner">
-            <span class="seal">完</span>
+            <span class="seal-wrap"><span class="seal">完</span><span class="hanamaru-slot" id="gymHanamaru" role="img" aria-label="はなまる"></span></span>
             <div class="unlock-note" id="gymUnlockNote" hidden>🔓 お楽しみのご褒美、開いたよ</div>
             <div class="final-reward" id="gymFinalText"></div>
             <div class="secret-hint" id="gymSecretHint" hidden>伏せています。タップで表示</div>
@@ -1630,6 +1931,18 @@
 
     <div class="card" id="panel">
       <h2><span class="num">2</span>今日埋めるマス目</h2>
+      <div class="panel-sticky" id="stickyArea" hidden>
+        <button type="button" class="sticky-note" id="stickyShow" hidden><span id="stickyText"></span><span class="sticky-change">変える</span></button>
+        <div class="sticky-edit" id="stickyEdit" hidden>
+          <label class="field-label" for="stickyInput">付箋（待っていることなど。40字まで）</label>
+          <input type="text" id="stickyInput" class="my-input" maxlength="40" autocomplete="off" enterkeyhint="done" placeholder="例：返事待ち">
+          <div class="detail-actions">
+            <button type="button" class="small-btn strong" id="stickySave">貼る</button>
+            <button type="button" class="small-btn danger" id="stickyRemove">はがす</button>
+            <button type="button" class="small-btn" id="stickyCancel">やめる</button>
+          </div>
+        </div>
+      </div>
       <div class="plan-meta" id="planMeta" hidden>
         <span id="metaCategory"></span><span id="metaScore"></span><span id="metaLevel"></span>
       </div>
@@ -1647,7 +1960,7 @@
       </div>
       <div class="progress-line">
         <span>タップして埋めると、マスの中に小さなご褒美が出てくるよ</span>
-        <strong id="progressText">0 / 0</strong>
+        <strong><span class="maru-slot" id="progressMaru" role="img" aria-label="書きかけ" hidden></span><span id="progressText">0 / 0</span></strong>
       </div>
       <div class="praise-toast" id="praiseToast"></div>
       <div class="boxes" id="boxes"></div>
@@ -1664,7 +1977,7 @@
       </div>
 
       <div id="completeBanner">
-        <span class="seal">完</span>
+        <span class="seal-wrap"><span class="seal">完</span><span class="hanamaru-slot" id="hanamaruSlot" role="img" aria-label="はなまる"></span></span>
         <div class="unlock-note" id="unlockNote" hidden>🔓 お楽しみのご褒美、開いたよ</div>
         <div class="final-reward" id="finalRewardText"></div>
         <div class="secret-hint" id="secretHint" hidden>伏せています。タップで表示</div>
@@ -1678,7 +1991,10 @@
         </div>
       </div>
 
-      <button class="reset-link" id="resetBtn">新しい原稿用紙にする</button>
+      <div class="panel-links">
+        <button type="button" class="reset-link" id="stickyAdd" hidden>＋ 付箋を貼る</button>
+        <button class="reset-link" id="resetBtn">新しい原稿用紙にする</button>
+      </div>
     </div>
 
     <div class="card" id="myRewardsCard" aria-labelledby="myTitle">
@@ -1782,6 +2098,11 @@
           <div class="stat"><span class="stat-num" id="statSheets">0</span><span class="stat-label">綴じた枚数</span></div>
           <div class="stat"><span class="stat-num" id="statDone">0</span><span class="stat-label">仕上がった枚数</span></div>
         </div>
+        <section class="letters" id="lettersSection" aria-labelledby="lettersTitle" hidden>
+          <h3 class="month-head" id="lettersTitle">📮 たより</h3>
+          <ul class="sheet-list" id="lettersList"></ul>
+          <button type="button" class="link-btn" id="lettersMore" hidden>前のたよりも見る</button>
+        </section>
         <div id="binderList"></div>
         <p class="binder-empty" id="binderEmpty" hidden>まだ何も綴じていないよ。1マス埋めると、ここに残るよ。</p>
         <button type="button" class="link-btn" id="binderMore" hidden>もっと見る</button>
@@ -1810,6 +2131,7 @@
         <h3 class="detail-task" id="dTask"></h3>
         <div class="plan-meta" id="dMeta"></div>
         <div class="detail-status" id="dStatus"></div>
+        <div class="detail-sticky" id="dStickyShow" hidden><span class="sticky-note" id="dStickyText"></span></div>
         <ol class="detail-steps" id="dSteps"></ol>
         <div class="detail-block">
           <div class="field-label">最後のご褒美</div>
@@ -1829,6 +2151,15 @@
           </div>
           <div class="note-hint" id="dNoteMsg" aria-live="polite"></div>
         </div>
+        <div class="detail-block" id="dStickyBlock" hidden>
+          <label class="field-label" for="dSticky">付箋（待っていることなど。40字まで）</label>
+          <input type="text" class="my-input" id="dSticky" maxlength="40" autocomplete="off" enterkeyhint="done" placeholder="例：返事待ち">
+          <div class="detail-actions">
+            <button type="button" class="small-btn strong" id="dStickySave">貼る</button>
+            <button type="button" class="small-btn danger" id="dStickyClear">はがす</button>
+          </div>
+          <div class="note-hint" id="dStickyMsg" aria-live="polite"></div>
+        </div>
         <div class="detail-foot">
           <button type="button" class="primary" id="dContinue" hidden>続きを書く</button>
           <button type="button" class="small-btn danger" id="dRemove">この1枚を外す</button>
@@ -1845,18 +2176,30 @@
     <button type="button" class="small-btn strong" id="askYes">OK</button>
   </div>
 </dialog>
+<div class="overlay" id="letterOverlay" hidden>
+  <div class="letter" id="letterPaper" role="dialog" aria-modal="true" aria-labelledby="letterTitle" tabindex="-1">
+    <div class="letter-head">
+      <h2 id="letterTitle"></h2>
+      <button type="button" class="icon-btn" id="letterClose" aria-label="閉じる">×</button>
+    </div>
+    <div class="letter-body" id="letterBody"></div>
+    <button type="button" class="secondary-btn" id="letterDone">閉じる</button>
+  </div>
+</div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="classify.js"></script>
 <script src="rewards.js"></script>
 <script src="records.js"></script>
 <script src="gym.js"></script>
+<script src="watch.js"></script>
 <script>
 (function () {
   var C = window.YarukiClassify;
   var R = window.YarukiRewards;
   var Rec = window.YarukiRecords;
   var G = window.YarukiGym;
+  var W = window.YarukiWatch;
 
   var praisePool = {
     firstStep: [
@@ -1891,13 +2234,13 @@
   // level: ご褒美レベル(1〜6)。score: 難易度スコア。finalUserId: 全完了ご褒美が自分のご褒美ならそのID。
   // 古い保存データにはこれらが無いので、既定値のまま扱われる(level は tier から読み替える)。
   // sheetId: 今の原稿用紙の id(綴じ帳の記録と同じ)。task / timeAtGen / energyAtGen: 生成したときの入力。
-  // moodBefore / moodAfter: 始める前・終わった後の気分(1〜5)。note: 次の自分への一言。どれも任意。
+  // moodBefore / moodAfter: 始める前・終わった後の気分(1〜5)。note: 次の自分への一言。sticky: 付箋。どれも任意。
   var state = {
     heaviness: 3, time: 15, energy: 2, lockChoice: "show", steps: [], done: [], boxRewards: [],
     heavinessAtGen: 3, rewardLocked: false, lowEnergyAtGen: false,
     level: 3, score: null, category: "", categoryLabel: "", finalUserId: null,
     sheetId: null, createdAt: null, task: "", timeAtGen: null, energyAtGen: null,
-    moodBefore: null, moodAfter: null, note: null
+    moodBefore: null, moodAfter: null, note: null, sticky: null
   };
   var praiseTimer = null;
   var STORAGE_KEY = "genkouyoushi-state-v1";
@@ -2096,13 +2439,21 @@
 
       if (typeof state.boxRewards[i] !== "string") state.boxRewards[i] = drawBoxReward(state.level);
       function refreshRewardText() {
-        rewardTextEl.textContent = "→ " + state.boxRewards[i];
+        setBoxRewardText(rewardTextEl, state.boxRewards[i], isWelcomeBox(state.sheetId, i));
       }
       refreshRewardText();
 
       function toggle() {
         var newDone = !state.done[i];
+        var wasComplete = taskComplete();
         state.done[i] = newDone;
+        // おかえりの後、最初に埋めたマスは、ご褒美を1段上げる
+        var welcomed = newDone && takeWelcomeBonus(state.sheetId, i);
+        if (welcomed) {
+          state.boxRewards[i] = drawBoxReward(W.bumpLevel(state.level));
+          refreshRewardText();
+        }
+        if (newDone && !wasComplete && taskComplete()) hanamaruPending.task = true;
         box.classList.toggle("done", newDone);
         box.setAttribute("aria-checked", String(newDone));
         updateProgress();
@@ -2113,7 +2464,9 @@
         if (newDone) {
           var doneCount = state.done.filter(Boolean).length;
           var tier = heavinessTier(state.heavinessAtGen);
-          if (doneCount === 1) {
+          if (welcomed && doneCount < state.steps.length) {
+            showPraise(WELCOME_PRAISE);
+          } else if (doneCount === 1) {
             showPraise(randomFrom(praisePool.firstStep));
           } else if (doneCount < state.steps.length) {
             showPraise(randomFrom(praisePool[tier]));
@@ -2132,7 +2485,8 @@
 
       rerollEl.addEventListener("click", function (e) {
         e.stopPropagation();
-        state.boxRewards[i] = drawBoxReward(state.level);
+        var lv = isWelcomeBox(state.sheetId, i) ? W.bumpLevel(state.level) : state.level;
+        state.boxRewards[i] = drawBoxReward(lv);
         refreshRewardText();
         saveState();
       });
@@ -2176,10 +2530,16 @@
     fitRewardInput();
   }
 
+  function taskComplete() {
+    return state.steps.length > 0 && doneCount() === state.steps.length;
+  }
+
   function updateProgress() {
     var doneCount = state.done.filter(Boolean).length;
     var complete = doneCount === state.steps.length && state.steps.length > 0;
     $("progressText").textContent = doneCount + " / " + state.steps.length;
+    // 途中まででも見ているよ、という印(1マス以上の書きかけ)
+    $("progressMaru").hidden = !(doneCount > 0 && !complete);
     applyRewardView(complete);
     var banner = $("completeBanner");
     if (complete) {
@@ -2188,11 +2548,15 @@
       var tier = heavinessTier(state.heavinessAtGen);
       $("completeMessage").textContent = randomFrom(completeMessagePool[tier]);
       banner.classList.add("show");
+      // はなまるは、仕上がった瞬間だけ描いていく(開き直したときは描き終えた形で出す)
+      paintHanamaru($("hanamaruSlot"), W.hanamaruTier(state.score), hanamaruPending.task);
     } else {
       banner.classList.remove("show");
     }
+    hanamaruPending.task = false;
     renderNudge();
     renderAfter();
+    renderSticky();
   }
 
   function setFinalReward(f) {
@@ -2220,15 +2584,88 @@
     binderSaveFailed = !store(BINDER_KEY, JSON.stringify(binder));
   }
   refreshBinder();
-  // ジムの日カードより前の記録には kind が無い。読み込むと "task" が補われるので、そのまま保存し直す
-  (function fillKind() {
+  // 前の版で保存した記録には、kind や見守りの項目(マスを埋めた時刻・付箋・おかえり)が無い。
+  // 読み込むと補われるので、そのまま保存し直す
+  (function fillMissing() {
     var raw = null;
     try { raw = JSON.parse(localStorage.getItem(BINDER_KEY)); } catch (e) {}
-    if (Rec.lacksKind(raw)) saveBinder();
+    if (Rec.needsFill(raw)) saveBinder();
   })();
 
   function nowIso() { return new Date().toISOString(); }
   function doneCount() { return state.done.filter(Boolean).length; }
+
+  /* ── 見守り: おかえりのおまけ・はなまると赤丸(決まりごとは watch.js) ── */
+  var WELCOME_PRAISE = "おかえりのおまけ。このマスのご褒美、1段上げたよ";
+  var hanamaruPending = { task: false, gym: false };   // 仕上がった瞬間(次に描くときだけ動かす)
+
+  // おかえりを出した後、最初に埋めたマスなら true(1回だけ)。どの紙のどのマスかを残す
+  function takeWelcomeBonus(id, box) {
+    if (!id) return false;
+    refreshBinder();
+    if (!binder.welcome.bonusPending) return false;
+    binder.welcome.bonusPending = false;
+    binder.welcome.bonusFor = { id: id, box: box };
+    saveBinder();
+    return true;
+  }
+  function isWelcomeBox(id, box) {
+    var b = binder.welcome.bonusFor;
+    return !!b && !!id && b.id === id && b.box === box;
+  }
+  function setBoxRewardText(elm, text, welcome) {
+    elm.textContent = "";
+    if (welcome) elm.appendChild(el("span", "welcome-tag", "おかえりのおまけ"));
+    elm.appendChild(document.createTextNode("→ " + text));
+  }
+
+  var SVG_NS = "http://www.w3.org/2000/svg";
+  function svgMark(paths, cls) {
+    var svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("viewBox", "0 0 100 100");
+    svg.setAttribute("class", cls);
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+    paths.forEach(function (p) {
+      var path = document.createElementNS(SVG_NS, "path");
+      path.setAttribute("d", p.d);
+      path.setAttribute("pathLength", "1");
+      svg.appendChild(path);
+    });
+    return svg;
+  }
+  // はなまる。animate なら、判子が押されたあとに赤ペンで描いていく(合わせて 1秒弱)
+  var HANAMARU_DELAY = 0.35, HANAMARU_DRAW = 0.85;
+  function hanamaruEl(tier, animate) {
+    var paths = W.hanamaruPaths(tier);
+    var svg = svgMark(paths, "hanamaru");
+    if (!animate || reduceMotion()) return svg;
+    var total = 0;
+    paths.forEach(function (p) { total += p.len; });
+    var t = HANAMARU_DELAY;
+    Array.prototype.forEach.call(svg.childNodes, function (node, i) {
+      var d = Math.max(0.06, HANAMARU_DRAW * paths[i].len / total);
+      node.style.setProperty("--delay", t.toFixed(2) + "s");
+      node.style.setProperty("--d", d.toFixed(2) + "s");
+      t += d;
+    });
+    svg.classList.add("drawing");
+    // 描き終えたら動きを外す(画面を切り替えて戻ったときに、もう一度描き直さないように)
+    svg.lastChild.addEventListener("animationend", function () { svg.classList.remove("drawing"); });
+    return svg;
+  }
+  function redMaruEl() { return svgMark([W.redCirclePath()], "red-maru"); }
+  function paintHanamaru(slot, tier, animate) {
+    if (!animate && slot.firstChild && slot.getAttribute("data-tier") === String(tier)) return;
+    slot.textContent = "";
+    slot.appendChild(hanamaruEl(tier, animate));
+    slot.setAttribute("data-tier", String(tier));
+  }
+  // 綴じ帳にしまったときの印: 仕上がっていればはなまる、書きかけなら赤丸
+  function taskMark() {
+    return taskComplete() ? hanamaruEl(W.hanamaruTier(state.score), false) : redMaruEl();
+  }
+  $("progressMaru").appendChild(redMaruEl());
 
   function currentRecord() {
     return {
@@ -2250,7 +2687,8 @@
       createdAt: state.createdAt,
       moodBefore: state.moodBefore,
       moodAfter: state.moodAfter,
-      note: state.note
+      note: state.note,
+      sticky: state.sticky || null
     };
   }
 
@@ -2264,9 +2702,12 @@
   }
 
   var toastTimer = null;
-  function toast(text, ms) {
+  // mark: 文の前に添える印(はなまる・赤丸の svg)。無くてもよい
+  function toast(text, ms, mark) {
     var el = $("toast");
-    el.textContent = text;
+    el.textContent = "";
+    if (mark) el.appendChild(mark);
+    el.appendChild(document.createTextNode(text));
     el.classList.add("show");
     if (toastTimer) clearTimeout(toastTimer);
     toastTimer = setTimeout(function () { el.classList.remove("show"); }, ms || 3200);
@@ -2412,6 +2853,7 @@
     commitNote();
     // 今の紙に1マス以上埋まっていれば、その記録は綴じ帳に残したまま新しい紙にする
     var shelved = !!state.sheetId && doneCount() > 0;
+    var mark = shelved ? taskMark() : null;
     state.sheetId = Rec.newId(new Date());
     state.createdAt = nowIso();
     state.task = task;
@@ -2420,6 +2862,8 @@
     state.moodBefore = null;
     state.moodAfter = null;
     state.note = null;
+    state.sticky = null;
+    stickyEditing = false;
     $("noteInput").value = "";
     $("noteHint").textContent = "";
     // 分類 → 難易度スコア → マス数・手順の軽さ・ご褒美レベル(classify.js)
@@ -2445,7 +2889,7 @@
     fitRewardInput();
     $("panel").scrollIntoView({ behavior: "smooth", block: "start" });
     saveState();
-    if (shelved) toast("📒 前の原稿用紙は綴じ帳にしまったよ");
+    if (shelved) toast("前の原稿用紙は綴じ帳にしまったよ", null, mark);
   });
 
   $("rerollBtn").addEventListener("click", function () {
@@ -2493,6 +2937,8 @@
     state.moodBefore = null;
     state.moodAfter = null;
     state.note = null;
+    state.sticky = null;
+    stickyEditing = false;
     $("noteInput").value = "";
     $("noteHint").textContent = "";
     saveState();
@@ -2501,8 +2947,65 @@
   $("resetBtn").addEventListener("click", function () {
     commitNote();
     var shelved = !!state.sheetId && doneCount() > 0;
+    var mark = shelved ? taskMark() : null;
     clearCurrentSheet();
-    if (shelved) toast("📒 この原稿用紙は綴じ帳にしまったよ");
+    if (shelved) toast("この原稿用紙は綴じ帳にしまったよ", null, mark);
+  });
+
+  /* ── 付箋(書きかけの紙に貼る短いメモ。例: 返事待ち) ──
+   * 貼ってあれば紙の上部に出す。貼る・変える・はがすは、ここと綴じ帳の1枚からできる */
+  var stickyEditing = false;
+  function renderSticky() {
+    var n = doneCount();
+    var can = !!(state.sheetId && state.steps.length) && n > 0 && n < state.steps.length;
+    var has = can && !!state.sticky;
+    var editing = can && stickyEditing;
+    $("stickyShow").hidden = !has || editing;
+    if (has) {
+      $("stickyText").textContent = state.sticky;
+      $("stickyShow").setAttribute("aria-label", "付箋：" + state.sticky + "（押すと変えられる）");
+    }
+    $("stickyEdit").hidden = !editing;
+    $("stickyArea").hidden = !has && !editing;
+    $("stickyAdd").hidden = !can || has || editing;
+    $("stickySave").textContent = state.sticky ? "貼り替える" : "貼る";
+    $("stickyRemove").hidden = !state.sticky;
+  }
+  function openStickyEdit() {
+    stickyEditing = true;
+    $("stickyInput").value = state.sticky || "";
+    renderSticky();
+    $("stickyInput").focus();
+  }
+  function closeStickyEdit(focusBack) {
+    stickyEditing = false;
+    renderSticky();
+    if (!focusBack) return;
+    var back = !$("stickyShow").hidden ? $("stickyShow") : $("stickyAdd");
+    if (!back.hidden) back.focus({ preventScroll: true });
+  }
+  function setSticky(value) {
+    var next = Rec.stickyOrNull(value);
+    var had = !!state.sticky;
+    state.sticky = next;
+    saveState();
+    syncRecord();
+    closeStickyEdit(true);
+    if (next) toast(had ? "付箋を貼り替えたよ" : "付箋を貼ったよ。綴じ帳でも見えるよ");
+    else if (had) toast("付箋をはがしたよ");
+  }
+  $("stickyAdd").addEventListener("click", openStickyEdit);
+  $("stickyShow").addEventListener("click", openStickyEdit);
+  $("stickySave").addEventListener("click", function () { setSticky($("stickyInput").value); });
+  $("stickyRemove").addEventListener("click", function () { setSticky(""); });
+  $("stickyCancel").addEventListener("click", function () { closeStickyEdit(true); });
+  $("stickyInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.isComposing && e.keyCode !== 229) {
+      e.preventDefault();
+      setSticky($("stickyInput").value);
+    } else if (e.key === "Escape") {
+      closeStickyEdit(true);
+    }
   });
 
   function setChip(containerId, value) {
@@ -2522,6 +3025,7 @@
     if (!(savedLevel >= 1 && savedLevel <= 6)) state.level = LEGACY_TIER_LEVEL[saved.state.tier] || 3;
     if (!Array.isArray(state.boxRewards)) state.boxRewards = [];
     if (typeof state.finalUserId !== "string") state.finalUserId = null;
+    state.sticky = Rec.stickyOrNull(state.sticky);
     $("taskInput").value = saved.task || "";
     $("heaviness").value = state.heaviness;
     setChip("timeChips", state.time);
@@ -2809,8 +3313,15 @@
     return id === C.FALLBACK.id ? C.FALLBACK.label : "";
   }
 
+  function markSpan(kind, svg) {
+    var span = el("span", "sheet-mark " + kind);
+    span.appendChild(svg);
+    return span;
+  }
+
   function renderBinderList() {
     refreshBinder();
+    renderLettersList();
     $("statBoxes").textContent = String(Rec.totalDone(binder));
     $("statSheets").textContent = String(binder.sheets.length);
     $("statDone").textContent = String(Rec.completedCount(binder));
@@ -2838,6 +3349,8 @@
       if (isGym && s.id === todayGymId()) top.appendChild(el("span", "tag now", "今日のジム"));
       btn.appendChild(top);
       btn.appendChild(el("span", "sheet-task", sheetTitle(s)));
+      // 書きかけの普段の紙に貼った付箋(待っていることなど)
+      if (!isGym && !s.completedAt && s.sticky) btn.appendChild(el("span", "sticky-note sheet-sticky", s.sticky));
       var row = el("span", "sheet-row");
       var mini = el("span", "mini-boxes");
       mini.setAttribute("role", "img");
@@ -2854,7 +3367,14 @@
       if (mp) row.appendChild(el("span", "sheet-mood", mp));
       btn.appendChild(row);
       if (s.note) btn.appendChild(el("span", "sheet-note", "「" + s.note.split(/\r?\n/)[0] + "」"));
-      if (s.completedAt) btn.appendChild(el("span", "seal-sm", "完"));
+      // 仕上がった紙には「完」とはなまる、書きかけの普段の紙には赤丸(ジムの「動き出した」には付けない)
+      if (s.completedAt) {
+        btn.appendChild(el("span", "seal-sm", "完"));
+        btn.appendChild(markSpan("hana", hanamaruEl(W.hanamaruTier(s.difficulty), false)));
+        btn.classList.add("has-hana");
+      } else if (!isGym) {
+        btn.appendChild(markSpan("maru", redMaruEl()));
+      }
       btn.addEventListener("click", function () { navTo("#tojicho/" + encodeURIComponent(s.id)); });
       var li = document.createElement("li");
       li.appendChild(btn);
@@ -2883,6 +3403,7 @@
     if (openSheetId !== id) {
       detailPeek = false;
       $("dNoteMsg").textContent = "";
+      $("dStickyMsg").textContent = "";
     }
     openSheetId = id;
     $("dDate").textContent = Rec.dayLabel(s.createdAt) + " " + Rec.timeLabel(s.createdAt);
@@ -2899,15 +3420,25 @@
     var bonus = bonusOf(s);
     if (s.completedAt) {
       status.appendChild(el("span", "seal-sm", "完"));
+      status.appendChild(markSpan("hana", hanamaruEl(W.hanamaruTier(s.difficulty), false)));
       status.appendChild(el("span", null, (isGym ? "ジムに着いた（" : "仕上がった（") + Rec.shortDay(s.completedAt) + "）" +
         (bonus && bonus.done ? "　おまけ " + bonus.done + "/" + bonus.total : "")));
     } else if (isGym) {
       status.appendChild(el("span", "tag", "動き出した"));
       status.appendChild(el("span", null, "ここまで " + Rec.countDone(s.done) + "マス動けた"));
     } else {
+      status.appendChild(markSpan("maru", redMaruEl()));
       status.appendChild(el("span", "tag", "書きかけ"));
       status.appendChild(el("span", null, "ここまで " + Rec.countDone(s.done) + " / " + s.steps.length + "マス"));
     }
+    // 付箋: 書きかけの普段の紙だけ
+    var canSticky = !isGym && !s.completedAt;
+    $("dStickyShow").hidden = !(canSticky && s.sticky);
+    $("dStickyText").textContent = s.sticky || "";
+    $("dStickyBlock").hidden = !canSticky;
+    if (document.activeElement !== $("dSticky")) $("dSticky").value = s.sticky || "";
+    $("dStickySave").textContent = s.sticky ? "貼り替える" : "貼る";
+    $("dStickyClear").hidden = !s.sticky;
     var ol = $("dSteps");
     ol.innerHTML = "";
     s.steps.forEach(function (step, i) {
@@ -2975,6 +3506,30 @@
     });
   });
 
+  function saveDetailSticky(value) {
+    var s = openSheet();
+    if (!s || s.kind === "gym" || s.completedAt) return;
+    var had = !!s.sticky;
+    s.sticky = Rec.stickyOrNull(value);
+    s.updatedAt = nowIso();
+    saveBinder();
+    if (s.id === state.sheetId) {   // 今の原稿用紙なら、紙の上の付箋もそろえる
+      state.sticky = s.sticky;
+      saveState();
+    }
+    $("dSticky").value = s.sticky || "";
+    $("dStickyMsg").textContent = s.sticky ? (had ? "付箋を貼り替えたよ" : "付箋を貼ったよ") : "付箋をはがしたよ";
+    renderDetail(s.id);
+  }
+  $("dStickySave").addEventListener("click", function () { saveDetailSticky($("dSticky").value); });
+  $("dStickyClear").addEventListener("click", function () { saveDetailSticky(""); });
+  $("dSticky").addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.isComposing && e.keyCode !== 229) {
+      e.preventDefault();
+      saveDetailSticky($("dSticky").value);
+    }
+  });
+
   // 綴じ帳の書きかけを、今の原稿用紙として呼び戻す
   function loadSheetAsCurrent(s) {
     var level = s.level || (s.difficulty != null ? C.rewardLevel(s.difficulty) : 3);
@@ -2996,6 +3551,8 @@
     state.moodBefore = s.moodBefore;
     state.moodAfter = s.moodAfter;
     state.note = s.note;
+    state.sticky = s.sticky;
+    stickyEditing = false;
     state.boxRewards = s.steps.map(function () { return drawBoxReward(level); });
     delete state.tier;
     $("taskInput").value = s.task;
@@ -3015,10 +3572,11 @@
     commitNote();
     // 今の紙に1マス以上埋まっていれば、それは綴じ帳に残したまま入れ替える
     var shelved = !!state.sheetId && doneCount() > 0;
+    var mark = shelved ? taskMark() : null;
     loadSheetAsCurrent(s);
     pendingPanelScroll = true;
     navHome();
-    if (shelved) toast("📒 それまでの原稿用紙は綴じ帳にしまったよ");
+    if (shelved) toast("それまでの原稿用紙は綴じ帳にしまったよ", null, mark);
   });
 
   $("dRemove").addEventListener("click", function () {
@@ -3051,6 +3609,7 @@
   KEY_NAMES[MY_KEY] = "自分のご褒美とその設定";
   KEY_NAMES[HISTORY_KEY] = "ご褒美の出方の記録（同じご褒美を続けて出さないためのもの）";
   KEY_NAMES[G.KEY] = "ジムの日カードの設定（曜日・いつ・どうする・お供）と、今日のジムの紙";
+  KEY_NAMES[W.KEY] = "週のたより";
   var IMPORT_ERRORS = {
     broken: "読み込めなかったよ。ファイルが途中で切れているか、形が違うみたい。データは何も変えていないよ",
     other: "このアプリで書き出したファイルではないみたい。データは何も変えていないよ",
@@ -3083,6 +3642,7 @@
     out[MY_KEY] = JSON.stringify(my);
     if (rewardHistory) out[HISTORY_KEY] = JSON.stringify(rewardHistory);
     out[G.KEY] = JSON.stringify(gym);
+    if (letters.letters.length) out[W.KEY] = JSON.stringify(letters);
     return out;
   }
   function backupText() {
@@ -3191,6 +3751,8 @@
       gym = loadGym();
       gymBoxesKey = null;
     }
+    if (replaceKeys.indexOf(W.KEY) !== -1) letters = loadLetters();
+    renderNotice();
     renderBinderList();
     renderTally();
     updateProgress();
@@ -3344,6 +3906,10 @@
     } else {
       s.done[i] = next;
     }
+    // おかえりの後、最初に埋めたマス(押したマス)は、ご褒美を1段上げる
+    var welcomed = next && takeWelcomeBonus(s.id, i);
+    if (welcomed) s.boxRewards[i] = drawBoxReward(W.bumpLevel(gymBoxLevel(s, i)));
+    if (!wasArrived && G.arrived(s)) hanamaruPending.gym = true;
     saveGym();
     syncGym();
     celebratePage();
@@ -3353,7 +3919,7 @@
       revealBelow($("gymBanner"));
       return;
     }
-    var p = G.praiseFor(s, i);
+    var p = welcomed ? WELCOME_PRAISE : G.praiseFor(s, i);
     if (p) gymPraise(p);
     // 最後のおまけ(帰ってからのマス)を埋めたら、気分と一言の欄をそっと見せる
     if (i === s.steps.length - 1 && G.arrived(s)) revealBelow($("gymAfter"));
@@ -3382,9 +3948,7 @@
       if (extra) idx.appendChild(el("span", "bonus-tag", "おまけ"));
       box.querySelector(".stamp").textContent = goal ? "着" : "済";
       box.querySelector(".label").textContent = step;
-      var rewardText = box.querySelector(".box-reward-text");
       var reroll = box.querySelector(".box-reroll");
-      rewardText.textContent = "→ " + s.boxRewards[i];
       box.addEventListener("click", function () { toggleGymBox(i); });
       box.addEventListener("keydown", function (e) {
         if (e.target === reroll) return;
@@ -3397,8 +3961,9 @@
         e.stopPropagation();
         var cur = gymSheet();
         if (!cur) return;
-        cur.boxRewards[i] = drawBoxReward(gymBoxLevel(cur, i));
-        rewardText.textContent = "→ " + cur.boxRewards[i];
+        var lv = gymBoxLevel(cur, i);
+        cur.boxRewards[i] = drawBoxReward(isWelcomeBox(cur.id, i) ? W.bumpLevel(lv) : lv);
+        paintGymBoxes(cur);
         saveGym();
       });
       wrap.appendChild(box);
@@ -3409,6 +3974,7 @@
       var d = !!s.done[i];
       box.classList.toggle("done", d);
       box.setAttribute("aria-checked", String(d));
+      setBoxRewardText(box.querySelector(".box-reward-text"), s.boxRewards[i], isWelcomeBox(s.id, i));
     });
   }
 
@@ -3613,6 +4179,8 @@
       $("gymMonthDone").hidden = !monthDays;
       if (monthDays) $("gymMonthDone").innerHTML = gymMonthText(monthDays);
       banner.classList.add("show");
+      // 着いた瞬間だけ、はなまるを描いていく
+      paintHanamaru($("gymHanamaru"), W.hanamaruTier(s.score), hanamaruPending.gym);
       var input = $("gymNoteInput");
       if (document.activeElement !== input) input.value = s.note || "";
       // 帰ってからのマスまで埋めて、気分も一言もまだなら、そっと目立たせる
@@ -3622,6 +4190,7 @@
     } else {
       banner.classList.remove("show");
     }
+    hanamaruPending.gym = false;
     paintGymMoods(s);
   }
 
@@ -3923,7 +4492,158 @@
     }
   })();
 
-  /* ── 画面の切り替え(#my-rewards / #tojicho / #tojicho/記録のid / #gym-settings / #gym) ──────
+  /* ── 見守り: おかえり・週のたより(genkouyoushi-letters-v1。決まりごとは watch.js) ──────
+   * アプリを開いたとき(ほかのアプリから戻ったときも)に確かめる。
+   * 上に出すお知らせは一度に1枚まで。たよりを優先し、おかえりと重なったら1枚にまとめる。 */
+  function loadLetters() {
+    var raw = null;
+    try { raw = JSON.parse(localStorage.getItem(W.KEY)); } catch (e) {}
+    return W.checkLetters(raw);
+  }
+  var letters = loadLetters();
+  function saveLetters() { store(W.KEY, JSON.stringify(letters)); }
+
+  // このページを開いている間の、おかえりの出し方(出したことは綴じ帳の welcome に残す)
+  var welcomeNote = { on: false, merged: false, closed: false, words: "", light: false };
+
+  function checkWatch() {
+    refreshBinder();
+    letters = loadLetters();
+    var now = new Date();
+    var due = W.welcomeDue(binder, now);
+    var waiting = !!W.unreadLetter(letters);
+    var made = W.makeLetters(binder, letters, now, { welcome: due });
+    if (made.length) saveLetters();
+    if (due) {
+      binder.welcome.shownFor = binder.lastFilledAt;
+      binder.welcome.bonusPending = true;
+      saveBinder();
+      welcomeNote = { on: true, merged: made.length > 0 || waiting, closed: false, words: randomFrom(W.WELCOME_WORDS), light: false };
+    }
+    renderNotice();
+  }
+
+  // スマホの幅でも1行に収まる長さにする
+  function envelopeLabel(l) {
+    var prev = W.addDays(W.weekStartKey(new Date()), -7);
+    var name = l.weekStart === prev ? "先週" : W.weekLabel(l.weekStart);
+    if (welcomeNote.on && welcomeNote.merged) return "📮 おかえり。" + name + "のたよりだよ";
+    return "📮 " + name + "のたよりが届いたよ";
+  }
+  function renderNotice() {
+    var l = W.unreadLetter(letters);
+    var showWelcome = !l && welcomeNote.on && !welcomeNote.merged && !welcomeNote.closed;
+    $("envelope").hidden = !l;
+    if (l) $("envelopeText").textContent = envelopeLabel(l);
+    $("welcomeCard").hidden = !showWelcome;
+    if (showWelcome) {
+      $("welcomeText").textContent = welcomeNote.words;
+      $("welcomeLight").disabled = welcomeNote.light;
+      $("welcomeLight").textContent = welcomeNote.light ? "✓ 今日は軽めにしたよ" : "今日は軽めにする？";
+    }
+    $("notice").hidden = !l && !showWelcome;
+  }
+
+  $("envelopeOpen").addEventListener("click", function () {
+    var l = W.unreadLetter(letters);
+    if (l) navTo("#tayori/" + l.weekStart);
+  });
+  $("envelopeClose").addEventListener("click", function () {
+    var l = W.unreadLetter(letters);
+    if (!l) return;
+    l.readAt = nowIso();   // 開かずにしまったときも、もう上には出さない(綴じ帳でいつでも読める)
+    saveLetters();
+    renderNotice();
+    toast("📮 たよりは綴じ帳にしまったよ");
+  });
+  $("welcomeClose").addEventListener("click", function () {
+    welcomeNote.closed = true;
+    renderNotice();
+  });
+  // 今日は軽めにする: フォームのエネルギーを「低め」にする
+  $("welcomeLight").addEventListener("click", function () {
+    state.energy = 1;
+    setChip("energyChips", 1);
+    saveState();
+    welcomeNote.light = true;
+    renderNotice();
+  });
+
+  /* たよりを読む(オーバーレイ)。開いたら readAt を入れる */
+  var letterOpener = null;
+  function openLetter(ws) {
+    var l = W.findLetter(letters, ws);
+    if (!l.readAt) {
+      l.readAt = nowIso();
+      saveLetters();
+    }
+    $("letterTitle").textContent = "📮 " + W.weekLabel(ws) + "のたより";
+    var body = $("letterBody");
+    body.textContent = "";
+    l.lines.forEach(function (line) {
+      body.appendChild(el("p", line.indexOf("・") === 0 ? "item" : null, line));
+    });
+    if ($("letterOverlay").hidden) letterOpener = document.activeElement;
+    $("letterOverlay").hidden = false;
+    document.documentElement.classList.add("overlay-open");
+    $("letterPaper").scrollTop = 0;
+    $("letterPaper").focus({ preventScroll: true });
+    renderNotice();
+  }
+  function closeLetter() {
+    $("letterOverlay").hidden = true;
+    document.documentElement.classList.remove("overlay-open");
+    var back = letterOpener;
+    letterOpener = null;
+    renderNotice();
+    if (baseView === "binder") renderLettersList();
+    if (back && back.focus && back.offsetParent !== null) back.focus({ preventScroll: true });
+  }
+  $("letterClose").addEventListener("click", function () { navBack(); });
+  $("letterDone").addEventListener("click", function () { navBack(); });
+  $("letterOverlay").addEventListener("click", function (e) {
+    if (e.target === $("letterOverlay")) navBack();
+  });
+  $("letterOverlay").addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { e.preventDefault(); navBack(); return; }
+    if (e.key !== "Tab") return;
+    // 開いている間は、たよりの中だけを行き来する
+    var first = $("letterClose"), last = $("letterDone");
+    if (e.shiftKey && (document.activeElement === first || document.activeElement === $("letterPaper"))) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
+
+  /* 綴じ帳の「たより」の欄(新しい順。はじめは3通まで) */
+  var LETTERS_PAGE = 3;
+  var lettersShown = LETTERS_PAGE;
+  function renderLettersList() {
+    var list = letters.letters.slice().reverse();
+    $("lettersSection").hidden = !list.length;
+    var ul = $("lettersList");
+    ul.textContent = "";
+    list.slice(0, lettersShown).forEach(function (l) {
+      var btn = el("button", "sheet-item letter-item");
+      btn.type = "button";
+      btn.appendChild(el("span", "sheet-task", W.weekLabel(l.weekStart) + "のたより"));
+      btn.appendChild(el("span", "letter-preview", l.lines[1] || l.lines[0]));
+      btn.addEventListener("click", function () { navTo("#tayori/" + l.weekStart); });
+      var li = document.createElement("li");
+      li.appendChild(btn);
+      ul.appendChild(li);
+    });
+    $("lettersMore").hidden = list.length <= lettersShown;
+  }
+  $("lettersMore").addEventListener("click", function () {
+    lettersShown = Infinity;
+    renderLettersList();
+  });
+
+  /* ── 画面の切り替え(#my-rewards / #tojicho / #tojicho/記録のid / #gym-settings / #gym / #tayori/週) ──────
    * アプリ内のボタンで開くときは history に積む。「← 戻る」や Android の戻る操作で1つ前に戻る。
    * 積んだ深さは history.state に入れておく(開き直しても、戻る操作で戻れるように)。
    * #gym はメインの画面のまま、たたんだジムの日カードをひらいた状態(戻る操作でまた畳む)。 */
@@ -3958,6 +4678,7 @@
 
   function viewFromHash() {
     var h = location.hash;
+    if (h.indexOf("#tayori/") === 0) return "letter:" + h.slice(8);
     if (h === "#my-rewards") return "my";
     if (h === "#gym-settings") return "gymset";
     if (h === "#gym") return "gym";
@@ -3968,8 +4689,35 @@
     return "main";
   }
 
+  /* #tayori/週の月曜 はたよりのオーバーレイ。下の画面(baseView)はそのままにして上に重ね、
+   * 戻る操作で閉じたら、下の画面を描き直さずにそのまま見せる */
+  var baseView = "main";
+  function letterOf(view) {
+    return typeof view === "string" && view.indexOf("letter:") === 0 ? view.slice(7) : null;
+  }
   function showView() {
     var view = viewFromHash();
+    if (view === currentView) return;
+    var ws = letterOf(view);
+    if (ws !== null) {
+      if (W.findLetter(letters, ws)) {
+        if (!currentView) applyView("main");   // たよりを開いたまま開き直したときは、下にメインの画面を出す
+        if (letterOf(currentView) === null) baseView = currentView;
+        currentView = view;
+        openLetter(ws);
+        return;
+      }
+      try { history.replaceState(history.state, "", homeUrl()); } catch (e) {}
+      view = "main";
+    }
+    if (letterOf(currentView) !== null) {
+      closeLetter();
+      currentView = baseView;
+      if (view === currentView) return;
+    }
+    applyView(view);
+  }
+  function applyView(view) {
     if (view === currentView) return;
     var prev = currentView;
     closeAsk(false);
@@ -4007,7 +4755,10 @@
       window.scrollTo(0, 0);
     } else if (view === "binder") {
       var fromDetail = !!prev && prev.indexOf("detail:") === 0;
-      if (!fromDetail) binderShown = BINDER_PAGE;
+      if (!fromDetail) {
+        binderShown = BINDER_PAGE;
+        lettersShown = LETTERS_PAGE;
+      }
       renderBinderList();
       window.scrollTo(0, fromDetail ? listScrollY : 0);
     } else if (detailId !== null) {
@@ -4042,6 +4793,10 @@
   $("gymSetBackBtn").addEventListener("click", function () { navBack(); });
   window.addEventListener("popstate", showView);
   window.addEventListener("hashchange", showView);
+  checkWatch();
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") checkWatch();
+  });
   showView();
   // ショートカットから開いたときは、ジムの日カードまで動かす
   if (gymFromShortcut && currentView === "main" && !$("gymCard").hidden) {

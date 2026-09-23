@@ -346,6 +346,8 @@
     ARRIVE: ARRIVE,
     dayKey: dayKey,
     isDayKey: isDayKey,
+    dateOfKey: dateOfKey,
+    dayNumber: dayNumber,
     weekdayOf: weekdayOf,
     defaultDayType: defaultDayType,
     defaults: defaults,

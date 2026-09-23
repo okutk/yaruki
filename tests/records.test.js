@@ -156,6 +156,59 @@ function rec(over) {
   check(Object.keys(gym).join(",") === Rec.FIELDS.join(","), "ジムの紙も保存する項目がそろっている");
 })();
 
+// ── 3d. 見守りの項目(filledAt・sticky・lastFilledAt・welcome)と、古い記録への補い ──
+(function () {
+  var b = Rec.emptyBinder();
+  check(b.lastFilledAt === null && b.welcome.shownFor === null && b.welcome.bonusPending === false, "空の綴じ帳の初期値");
+  Rec.putSheet(b, rec({ done: [true, false, false] }), T1);
+  Rec.putSheet(b, rec({ done: [true, true, false] }), T2);
+  var s = b.sheets[0];
+  check(s.filledAt.join() === [T1, T2, null].join() && b.lastFilledAt === T2, "マスごとに埋めた時刻が入り、最後に埋めた時刻も進む");
+  Rec.putSheet(b, rec({ done: [false, true, false] }), T3);
+  check(b.sheets[0].filledAt[0] === null && b.sheets[0].filledAt[1] === T2 && b.lastFilledAt === T2,
+    "外したマスの時刻は消え、残ったマスの時刻は変わらない");
+  Rec.putSheet(b, rec({ done: [true, true, false] }), T3);
+  check(b.sheets[0].filledAt[0] === T3, "埋め直したマスは、その時刻になる");
+
+  // 付箋
+  Rec.putSheet(b, rec({ done: [true, true, false], sticky: "  返事\n待ち  " }), T3);
+  check(b.sheets[0].sticky === "返事 待ち", "付箋は1行にそろえる");
+  var long = Rec.checkSheet(rec({ done: [true, false, false], sticky: new Array(80).join("あ"), updatedAt: T1 }));
+  check(long.sticky.length === Rec.STICKY_MAX && Rec.STICKY_MAX === 40, "付箋は40字まで");
+  check(Rec.checkSheet(rec({ done: [true, false, false], sticky: "   ", updatedAt: T1 })).sticky === null, "空白だけの付箋は貼らない");
+  var gymWithSticky = Rec.checkSheet({ id: "g", kind: "gym", steps: ["1", "2"], done: [true, false], createdAt: T0, sticky: "x" });
+  check(gymWithSticky.sticky === null, "ジムの紙には付箋を付けない");
+  // 付箋を貼っても消しても、同じ id の記録が1枚のまま
+  Rec.putSheet(b, rec({ done: [true, true, false], sticky: null }), T3);
+  check(b.sheets.length === 1 && b.sheets[0].sticky === null, "付箋をはがしても記録は1枚のまま");
+
+  // 見守りの項目が無い古い綴じ帳
+  var old = { version: 1, celebratedPages: 0, sheets: [
+    { id: "o1", kind: "task", task: "部屋の掃除", steps: ["a", "b", "c"], done: [true, true, false],
+      createdAt: T0, firstFilledAt: T1, updatedAt: T3 }
+  ] };
+  check(Rec.needsFill(old), "古い綴じ帳に気づく");
+  var filled = Rec.checkBinder(old);
+  var o = filled.sheets[0];
+  check(o.filledAt.join() === [T1, T3, null].join() && o.sticky === null,
+    "マスの時刻は、最初のマスは最初に埋めた時刻・ほかは最後に書き換えた時刻で補う");
+  check(filled.lastFilledAt === T3 && filled.welcome.bonusPending === false, "最後に埋めた時刻を記録から補う");
+  check(!Rec.needsFill(JSON.parse(JSON.stringify(filled))), "そろえて保存し直せば目印は消える");
+  check(Object.keys(o).join(",") === Rec.FIELDS.join(","), "補った記録も保存する項目がそろっている");
+  check(!Rec.needsFill(null) && !Rec.needsFill({ sheets: "x" }), "綴じ帳が無ければ何もしない");
+
+  // 読み込み: 最後に埋めた時刻は新しい方、おかえりはこの端末のもの
+  var local = Rec.emptyBinder();
+  Rec.putSheet(local, rec({ id: "l", done: [true, false, false] }), T1);
+  local.welcome.shownFor = T1;
+  var file = Rec.emptyBinder();
+  Rec.putSheet(file, rec({ id: "f", done: [true, false, false] }), T3);
+  file.welcome.bonusPending = true;
+  Rec.mergeBinder(local, Rec.checkBinder(JSON.parse(JSON.stringify(file))));
+  check(local.lastFilledAt === T3 && local.welcome.shownFor === T1 && local.welcome.bonusPending === false,
+    "読み込むと、最後に埋めた時刻は新しい方・おかえりの記録は手元のまま");
+})();
+
 // ── 4. 並び順と月の区切り(ローカル時刻) ─────────────
 (function () {
   var lateNight = new Date(2026, 8, 30, 23, 59).toISOString();   // 9月30日 23:59(端末の時刻)

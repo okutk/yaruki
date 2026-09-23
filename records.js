@@ -1,5 +1,5 @@
 /*
- * やる気の原稿用紙: 綴じ帳(書いた原稿用紙の記録。普段のマス目とジムの紙)・累計マス・気分の傾向・バックアップ
+ * やる気の原稿用紙: 綴じ帳(書いた原稿用紙の記録。普段のマス目とジムの紙)・累計マス・気分の傾向・付箋・バックアップ
  *
  * ブラウザでは window.YarukiRecords、node では require("./records.js") で使う。
  * 画面(DOM)と localStorage には触らない(読み書きは index.html が行う)。
@@ -19,6 +19,7 @@
   var BACKUP_FORMAT = 1;
   var PAGE_SIZE = 400;            // 原稿用紙1枚 = 400マス
   var NOTE_MAX = 100;
+  var STICKY_MAX = 40;            // 付箋(書きかけの紙に貼る短いメモ)
   var TREND_MIN = 3;              // 気分の傾向は、前後がそろった記録がこれ以上あるときだけ出す
 
   var MOODS = [
@@ -32,11 +33,13 @@
   // 1枚の記録の項目(この順で保存する)
   //  kind: "task"(普段のマス目) / "gym"(ジムの日カード)。kind が無い古い記録は "task" として読む。
   //  mainCount / light / dayType はジムの紙だけ(本体のマスの数・軽めで始めたか・平日/休日)。普段の紙では null。
+  //  filledAt: マスごとに埋めた時刻(埋まっていないマスは null)。週のたよりで、その週に埋めたマスを数える。
+  //  sticky: 付箋。普段の紙だけ(ジムの紙では null)。
   var FIELDS = [
     "id", "kind", "task", "category", "difficulty", "heaviness", "time", "energy", "lowEnergy", "level",
-    "steps", "done", "mainCount", "light", "dayType", "finalReward", "rewardLocked", "finalUserId",
+    "steps", "done", "filledAt", "mainCount", "light", "dayType", "finalReward", "rewardLocked", "finalUserId",
     "createdAt", "firstFilledAt", "updatedAt", "completedAt",
-    "moodBefore", "moodAfter", "note"
+    "moodBefore", "moodAfter", "note", "sticky"
   ];
 
   function isOwnKey(k) { return typeof k === "string" && k.indexOf(PREFIX) === 0; }
@@ -65,6 +68,17 @@
     if (typeof v !== "string" || !v.trim()) return null;
     return v.slice(0, NOTE_MAX);
   }
+  // 付箋は1行にする(改行や続く空白は1つの空白に)
+  function stickyOrNull(v) {
+    if (typeof v !== "string") return null;
+    var t = v.replace(/\s+/g, " ").trim();
+    return t ? t.slice(0, STICKY_MAX) : null;
+  }
+  function laterIso(a, b) {
+    if (!a) return b || null;
+    if (!b) return a;
+    return Date.parse(b) > Date.parse(a) ? b : a;
+  }
 
   // 仕上がったか。ジムの紙は本体(最初の mainCount マス)がそろえば仕上がり(おまけは埋めなくてよい)
   function isComplete(done, mainCount) {
@@ -88,6 +102,14 @@
     var gym = s.kind === "gym";
     var mainCount = gym ? (intIn(s.mainCount, 1, steps.length) || steps.length) : null;
     var complete = isComplete(done, mainCount);
+    var firstFilledAt = isoOrNull(s.firstFilledAt) || createdAt;
+    // マスごとの時刻が無い古い記録: 最初に埋めたマスは firstFilledAt、ほかは最後に書き換えた時刻とみなす
+    var srcFilled = Array.isArray(s.filledAt) ? s.filledAt : [];
+    var firstDone = done.indexOf(true);
+    var filledAt = done.map(function (d, i) {
+      if (!d) return null;
+      return isoOrNull(srcFilled[i]) || (i === firstDone ? firstFilledAt : (updatedAt || createdAt));
+    });
     var out = {
       id: s.id,
       kind: gym ? "gym" : "task",
@@ -101,6 +123,7 @@
       level: intIn(s.level, 1, 6),
       steps: steps,
       done: done,
+      filledAt: filledAt,
       mainCount: mainCount,
       light: gym ? s.light === true : null,
       dayType: gym ? (s.dayType === "holiday" ? "holiday" : "weekday") : null,
@@ -108,18 +131,45 @@
       rewardLocked: s.rewardLocked === true,
       finalUserId: typeof s.finalUserId === "string" && s.finalUserId ? s.finalUserId : null,
       createdAt: createdAt,
-      firstFilledAt: isoOrNull(s.firstFilledAt) || createdAt,
+      firstFilledAt: firstFilledAt,
       updatedAt: updatedAt || createdAt,
       completedAt: complete ? (isoOrNull(s.completedAt) || updatedAt || createdAt) : null,
       moodBefore: moodOrNull(s.moodBefore),
       moodAfter: moodOrNull(s.moodAfter),
-      note: noteOrNull(s.note)
+      note: noteOrNull(s.note),
+      sticky: gym ? null : stickyOrNull(s.sticky)
     };
     return out;
   }
 
+  /* 綴じ帳全体に持つもの
+   *  lastFilledAt: 最後にマスを埋めた時刻(普段の紙・ジムの紙・おまけのマスを含む)。おかえりに使う
+   *  welcome: おかえり。shownFor = 出したときの lastFilledAt(同じ間あきには1回だけ出す)、
+   *           bonusPending = 次に埋めた1マスのご褒美を1段上げる、bonusFor = 上げたマス { id, box } */
+  function emptyWelcome() {
+    return { shownFor: null, bonusPending: false, bonusFor: null };
+  }
   function emptyBinder() {
-    return { version: 1, celebratedPages: 0, sheets: [] };
+    return { version: 1, celebratedPages: 0, lastFilledAt: null, welcome: emptyWelcome(), sheets: [] };
+  }
+  function checkWelcome(w) {
+    var out = emptyWelcome();
+    if (!w || typeof w !== "object") return out;
+    out.shownFor = isoOrNull(w.shownFor);
+    out.bonusPending = w.bonusPending === true;
+    var b = w.bonusFor;
+    if (b && typeof b === "object" && typeof b.id === "string" && b.id && intIn(b.box, 0, 49) !== null) {
+      out.bonusFor = { id: b.id, box: intIn(b.box, 0, 49) };
+    }
+    return out;
+  }
+  // 記録の中で一番新しい、マスを埋めた時刻(lastFilledAt が無い古い綴じ帳に補う)
+  function latestFill(sheets) {
+    var best = null;
+    sheets.forEach(function (s) {
+      s.filledAt.forEach(function (t) { best = laterIso(best, t); });
+    });
+    return best;
   }
 
   function newer(a, b) {           // a の方が新しければ true
@@ -138,6 +188,8 @@
       if (byId[c.id] === undefined) { byId[c.id] = b.sheets.length; b.sheets.push(c); }
       else if (newer(c, b.sheets[byId[c.id]])) b.sheets[byId[c.id]] = c;
     });
+    b.lastFilledAt = isoOrNull(raw.lastFilledAt) || latestFill(b.sheets);
+    b.welcome = checkWelcome(raw.welcome);
     return b;
   }
 
@@ -165,10 +217,20 @@
       return s && typeof s === "object" && s.kind !== "task" && s.kind !== "gym";
     });
   }
+  // 見守りの項目(lastFilledAt・welcome・filledAt・sticky)や kind が無い綴じ帳なら true。
+  // 読み込むと補われるので、保存し直す目印にする
+  function needsFill(raw) {
+    if (!raw || typeof raw !== "object" || !Array.isArray(raw.sheets)) return false;
+    if (lacksKind(raw) || !("lastFilledAt" in raw) || !raw.welcome || typeof raw.welcome !== "object") return true;
+    return raw.sheets.some(function (s) {
+      return s && typeof s === "object" && (!Array.isArray(s.filledAt) || !("sticky" in s));
+    });
+  }
 
   /* 今の原稿用紙の状態を綴じ帳に反映する。binder を書き換える。
    *  1マス以上: 同じ id の記録を入れる/更新する。全部埋まったら completedAt、1マスでも外せば null。
    *            (ジムの紙は本体の mainCount マスがそろえば completedAt。おまけのマスは関係ない)
+   *            新しく埋まったマスには、その時刻(filledAt)を入れ、binder.lastFilledAt も進める。
    *  0マス   : 綴じ帳から外す(誤タップ対策)。
    * 戻り値: "added" / "updated" / "same"(変化なし) / "removed" / "none"(0マスで元々無い) */
   function putSheet(binder, rec, nowIso) {
@@ -185,8 +247,17 @@
     src.firstFilledAt = (old && old.firstFilledAt) || isoOrNull(rec.firstFilledAt) || nowIso;
     src.updatedAt = (old && old.updatedAt) || nowIso;
     src.completedAt = (old && old.completedAt) || nowIso;   // 全部埋まっていなければ checkSheet が null にする
+    // 埋めた時刻は前の記録から引き継ぎ、新しく埋まったマスだけ今の時刻にする
+    var added = false;
+    src.filledAt = (Array.isArray(rec.done) ? rec.done : []).map(function (d, i) {
+      if (d !== true) return null;
+      if (old && old.done[i] === true && old.filledAt[i]) return old.filledAt[i];
+      added = true;
+      return nowIso;
+    });
     var next = checkSheet(src);
     if (!next) return "none";
+    if (added) binder.lastFilledAt = laterIso(binder.lastFilledAt, nowIso);
     if (old && sameContent(old, next)) return "same";
     next.updatedAt = nowIso;
     if (old) binder.sheets[idx] = next;
@@ -351,6 +422,8 @@
     // 読み込みで増えたマスではお祝いを出さない
     binder.celebratedPages = Math.max(binder.celebratedPages, incoming.celebratedPages,
       Math.floor(totalDone(binder) / PAGE_SIZE));
+    // 最後にマスを埋めた時刻は新しい方。おかえりの記録(welcome)はこの端末のものを残す
+    binder.lastFilledAt = laterIso(binder.lastFilledAt, incoming.lastFilledAt);
     return { added: added, updated: updated, same: same };
   }
 
@@ -360,6 +433,7 @@
     BACKUP_APP: BACKUP_APP,
     PAGE_SIZE: PAGE_SIZE,
     NOTE_MAX: NOTE_MAX,
+    STICKY_MAX: STICKY_MAX,
     TREND_MIN: TREND_MIN,
     MOODS: MOODS,
     FIELDS: FIELDS,
@@ -369,7 +443,9 @@
     countDone: countDone,
     isComplete: isComplete,
     checkSheet: checkSheet,
+    stickyOrNull: stickyOrNull,
     lacksKind: lacksKind,
+    needsFill: needsFill,
     emptyBinder: emptyBinder,
     checkBinder: checkBinder,
     findSheet: findSheet,

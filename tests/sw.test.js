@@ -106,7 +106,7 @@ function request(sw, url, mode) {
   check(r.res.body === "cached-root" || r.res.body === "cached-index", "オフライン: ?start=gym で開いても、保存済みの画面を表示する");
 
   var src = fs.readFileSync(path.join(__dirname, "..", "sw.js"), "utf8");
-  ["./classify.js", "./rewards.js", "./records.js", "./gym.js", "./index.html", "./icons/shortcut-gym-96.png"].forEach(function (f) {
+  ["./classify.js", "./rewards.js", "./records.js", "./gym.js", "./watch.js", "./index.html", "./icons/shortcut-gym-96.png"].forEach(function (f) {
     check(src.indexOf('"' + f + '"') !== -1, "最初からキャッシュするファイルに " + f + " がある");
   });
   var ctx = { self: { addEventListener: function () {} } };
@@ -116,7 +116,7 @@ function request(sw, url, mode) {
     return a !== "./" && !fs.existsSync(path.join(__dirname, "..", a));
   });
   check(!missing.length, "最初からキャッシュするファイルが全部ある" + (missing.length ? ": " + missing.join(", ") : ""));
-  check(/genkouyoushi-v5/.test(ctx.CACHE), "キャッシュ名の番号を上げた(" + ctx.CACHE + ")");
+  check(/genkouyoushi-v6/.test(ctx.CACHE), "キャッシュ名の番号を上げた(" + ctx.CACHE + ")");
 
   // manifest のショートカット
   var manifest = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "manifest.webmanifest"), "utf8"));
