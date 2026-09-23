@@ -501,7 +501,8 @@
 
   .reset-link {
     display: inline-block;
-    margin-top: 18px;
+    min-height: 44px;
+    margin-top: 10px;
     font-size: 12.5px;
     color: var(--ink-soft);
     text-decoration: underline;
@@ -726,6 +727,447 @@
   .back-btn:focus-visible { outline: 2px solid var(--rule); outline-offset: 2px; }
   [hidden] { display: none !important; }
 
+  /* 累計マス(ヒーローの下) */
+  .tally {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .tally-main { flex: 1; min-width: 0; }
+  .tally-line {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+  .tally-line strong {
+    margin-left: 4px;
+    font-family: "Noto Serif JP", serif;
+    font-size: 17px;
+    color: var(--ink);
+  }
+  .tally-sub {
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .tally-bar {
+    height: 4px;
+    margin-top: 6px;
+    background: var(--rule-soft);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .tally-bar span {
+    display: block;
+    height: 100%;
+    background: var(--gold);
+  }
+
+  /* 生成直後のパネル上部: 前のあなたより・気分の傾向・始める前の気分を1枚にまとめる */
+  .nudge {
+    display: grid;
+    gap: 8px;
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    background: var(--paper-2);
+    border-left: 3px solid var(--gold);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .nudge-from { font-size: 12px; color: var(--ink-soft); }
+  .nudge-text {
+    font-family: "Noto Serif JP", serif;
+    font-size: 14.5px;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+  .nudge-trend { color: var(--hanko); }
+  .mood-q {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 8px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .mood-picked { color: var(--hanko); font-weight: 700; }
+  .mood-faces {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .mood-btn {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--rule-soft);
+    border-radius: 50%;
+    background: var(--card-bg);
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .mood-btn[aria-pressed="true"] {
+    border: 2px solid var(--hanko);
+    background: var(--gold-soft);
+  }
+  .mood-btn:focus-visible { outline: 2px solid var(--rule); outline-offset: 2px; }
+  .mood-summary { font-size: 12.5px; color: var(--ink-soft); }
+
+  /* 全部埋まったあと: 終わった今の気分と、次の自分への一言 */
+  .after-block {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--rule-soft);
+  }
+  #completeBanner .mood-q,
+  #completeBanner .mood-faces { justify-content: center; }
+  .note-label {
+    display: block;
+    margin: 16px 0 8px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+  .note-hint {
+    min-height: 1.4em;
+    margin-top: 6px;
+    font-size: 12.5px;
+    color: var(--hanko);
+  }
+
+  /* 綴じ帳の画面(#tojicho) */
+  #binderCard { display: none; }
+  body.view-binder #binderCard { display: block; }
+  body.view-binder header.hero,
+  body.view-binder #formCard,
+  body.view-binder #panel,
+  body.view-binder #panel.show { display: none; }
+  .binder-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .stat {
+    padding: 10px 4px;
+    background: var(--paper-2);
+    border: 1px solid var(--rule-soft);
+    text-align: center;
+  }
+  .stat-num {
+    display: block;
+    font-family: "Noto Serif JP", serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .stat-label {
+    display: block;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+  }
+  .month-head {
+    margin: 20px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--rule-soft);
+    font-family: "Noto Serif JP", serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--rule);
+  }
+  .sheet-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .sheet-item {
+    position: relative;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 12px;
+    background: var(--paper-2);
+    border: 1px solid var(--rule-soft);
+    border-radius: 2px;
+    color: var(--ink);
+    font-family: "Noto Sans JP", sans-serif;
+    text-align: left;
+    cursor: pointer;
+  }
+  .sheet-item:focus-visible { outline: 2px solid var(--rule); outline-offset: 2px; }
+  .sheet-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    padding-right: 40px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .sheet-task {
+    display: block;
+    margin: 4px 0 6px;
+    padding-right: 40px;
+    font-size: 15px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  .sheet-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    font-size: 13px;
+  }
+  .mini-boxes { display: inline-flex; gap: 3px; }
+  .mini-boxes i {
+    display: block;
+    width: 10px;
+    height: 10px;
+    border: 1px solid var(--rule);
+  }
+  .mini-boxes i.on { background: var(--gold); border-color: var(--gold); }
+  .sheet-mood {
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+    white-space: nowrap;
+  }
+  .sheet-note {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .seal-sm {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--hanko);
+    border-radius: 50%;
+    color: var(--hanko);
+    font-family: "Noto Serif JP", serif;
+    font-weight: 900;
+    font-size: 13px;
+    transform: rotate(-8deg);
+  }
+  .tag {
+    padding: 1px 8px;
+    border: 1px solid var(--rule-soft);
+    border-radius: 20px;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+  .tag.now { border-color: var(--hanko); color: var(--hanko); }
+  .binder-empty {
+    margin: 18px 0 0;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--ink-soft);
+  }
+
+  .detail-date { font-size: 12.5px; color: var(--ink-soft); }
+  .detail-task {
+    margin: 4px 0 6px;
+    font-family: "Noto Serif JP", serif;
+    font-size: 18px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  .detail-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0 14px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .detail-status .seal-sm { position: static; flex: none; }
+  .detail-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .detail-steps li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--paper-2);
+    border: 1px solid var(--rule-soft);
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+  .detail-steps li.on { background: var(--gold-soft); color: var(--ink-soft); }
+  .step-mark {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px dashed var(--rule-soft);
+    border-radius: 50%;
+    color: var(--hanko);
+    font-family: "Noto Serif JP", serif;
+    font-weight: 900;
+    font-size: 11px;
+  }
+  li.on .step-mark { border: 2px solid var(--hanko); transform: rotate(-8deg); }
+  .detail-block { margin-top: 18px; }
+  #binderDetailView .field-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .detail-text {
+    font-size: 14.5px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+  .detail-text.masked { color: var(--ink-soft); letter-spacing: 0.15em; }
+  .detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  textarea.my-input {
+    display: block;
+    resize: vertical;
+    line-height: 1.6;
+  }
+  .detail-foot {
+    display: grid;
+    gap: 10px;
+    margin-top: 26px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--rule-soft);
+  }
+  .detail-foot .primary { margin-top: 0; }
+  .detail-foot .small-btn { justify-self: start; }
+
+  .backup {
+    margin-top: 32px;
+    padding-top: 18px;
+    border-top: 2px solid var(--rule);
+  }
+  .backup h3 {
+    margin: 0 0 10px;
+    font-family: "Noto Serif JP", serif;
+    font-size: 16px;
+  }
+  .backup-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .backup .link-btn { text-align: left; }
+  .backup details { margin-top: 4px; }
+  .backup summary {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: var(--hanko);
+    cursor: pointer;
+  }
+  .backup-area {
+    width: 100%;
+    min-height: 110px;
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: var(--paper-2);
+    border: 1px solid var(--rule-soft);
+    border-radius: 2px;
+    color: var(--ink);
+    font-family: ui-monospace, monospace;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  .backup-msg {
+    min-height: 1.4em;
+    margin-top: 10px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--hanko);
+    white-space: pre-line;
+  }
+  .backup-msg.err { color: var(--danger); }
+
+  /* 画面の下に少しだけ出るお知らせ */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    z-index: 20;
+    width: max-content;
+    max-width: calc(100% - 32px);
+    padding: 10px 16px;
+    border-radius: 4px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: center;
+    opacity: 0;
+    transform: translate(-50%, 8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  @media (prefers-reduced-motion: reduce) {
+    .toast { transition: none; }
+  }
+
+  /* 確認ダイアログ */
+  .ask {
+    width: min(420px, calc(100% - 32px));
+    padding: 20px 18px 16px;
+    background: var(--card-bg);
+    color: var(--ink);
+    border: 2px solid var(--hanko);
+    border-radius: 2px;
+  }
+  .ask::backdrop { background: rgba(0, 0, 0, 0.45); }
+  .ask p {
+    margin: 0 0 16px;
+    font-size: 15px;
+    line-height: 1.8;
+    white-space: pre-line;
+  }
+  .ask-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .small-btn.danger-fill { background: var(--danger); border-color: var(--danger); color: var(--card-bg); }
+
   @media (max-width: 480px) {
     .spine {
       writing-mode: horizontal-tb;
@@ -785,6 +1227,14 @@
     <header class="hero">
       <h1>一マスずつ、埋めていく。</h1>
       <p>気が重いことほど、いきなり全部はやらなくていい。質問に答えると、マス目のタスクと難易度に合ったご褒美の提案ができるよ。</p>
+      <div class="tally">
+        <div class="tally-main">
+          <div class="tally-line" id="tallyLine">1マス埋めると、ここに積み上がっていくよ</div>
+          <div class="tally-sub" id="tallySub" hidden></div>
+          <div class="tally-bar" id="tallyBar" aria-hidden="true" hidden><span id="tallyFill"></span></div>
+        </div>
+        <button type="button" class="back-btn" id="openBinderBtn">📒 綴じ帳</button>
+      </div>
     </header>
 
     <div class="card" id="formCard">
@@ -833,6 +1283,18 @@
       <div class="plan-meta" id="planMeta" hidden>
         <span id="metaCategory"></span><span id="metaScore"></span><span id="metaLevel"></span>
       </div>
+      <div class="nudge" id="nudge" hidden>
+        <div id="nudgeNote" hidden>
+          <div class="nudge-from" id="nudgeFrom"></div>
+          <div class="nudge-text" id="nudgeText"></div>
+        </div>
+        <div class="nudge-trend" id="nudgeTrend" hidden></div>
+        <div id="moodBeforeRow" hidden>
+          <div class="mood-q"><span id="moodBeforeQ">始める前の気分は？</span><span class="mood-picked" id="moodBeforePicked"></span></div>
+          <div class="mood-faces" id="moodBeforeFaces" role="group" aria-labelledby="moodBeforeQ"></div>
+        </div>
+        <div class="mood-summary" id="moodBeforeSummary" hidden></div>
+      </div>
       <div class="progress-line">
         <span>タップして埋めると、マスの中に小さなご褒美が出てくるよ</span>
         <strong id="progressText">0 / 0</strong>
@@ -857,9 +1319,16 @@
         <div class="final-reward" id="finalRewardText"></div>
         <div class="secret-hint" id="secretHint" hidden>伏せています。タップで表示</div>
         <p id="completeMessage">全部埋まったよ。お疲れさま。</p>
+        <div class="after-block">
+          <div class="mood-q"><span id="moodAfterQ">終わった今の気分は？</span><span class="mood-picked" id="moodAfterPicked"></span></div>
+          <div class="mood-faces" id="moodAfterFaces" role="group" aria-labelledby="moodAfterQ"></div>
+          <label class="note-label" for="noteInput">次にこれをやる自分へ、一言残す？（なくてもOK）</label>
+          <input type="text" id="noteInput" class="my-input" maxlength="100" autocomplete="off" enterkeyhint="done">
+          <div class="note-hint" id="noteHint" aria-live="polite"></div>
+        </div>
       </div>
 
-      <button class="reset-link" id="resetBtn">最初からやり直す</button>
+      <button class="reset-link" id="resetBtn">新しい原稿用紙にする</button>
     </div>
 
     <div class="card" id="myRewardsCard" aria-labelledby="myTitle">
@@ -903,15 +1372,92 @@
         <p class="my-card-hint" id="myEmpty">まだ登録はありません。</p>
       </div>
     </div>
+
+    <div class="card" id="binderCard" aria-labelledby="binderTitle">
+      <div class="my-head">
+        <h2 id="binderTitle"><span class="num">綴</span>綴じ帳</h2>
+        <button type="button" class="back-btn" id="binderBackBtn">← 戻る</button>
+      </div>
+
+      <div id="binderListView">
+        <div class="binder-stats">
+          <div class="stat"><span class="stat-num" id="statBoxes">0</span><span class="stat-label">埋めたマス</span></div>
+          <div class="stat"><span class="stat-num" id="statSheets">0</span><span class="stat-label">綴じた枚数</span></div>
+          <div class="stat"><span class="stat-num" id="statDone">0</span><span class="stat-label">仕上がった枚数</span></div>
+        </div>
+        <div id="binderList"></div>
+        <p class="binder-empty" id="binderEmpty" hidden>まだ何も綴じていないよ。1マス埋めると、ここに残るよ。</p>
+        <button type="button" class="link-btn" id="binderMore" hidden>もっと見る</button>
+
+        <section class="backup" aria-labelledby="backupTitle">
+          <h3 id="backupTitle">バックアップ</h3>
+          <p class="privacy-note">記録はこの端末のブラウザの中にだけあります。ときどき書き出しておくと、機種変更やデータが消えたときに戻せるよ。<br>Safari のタブで使っていると、しばらく開かないうちにデータが消えることがあるよ（ホーム画面から使うなら基本的に大丈夫）。</p>
+          <div class="backup-row">
+            <button type="button" class="small-btn strong" id="exportBtn">書き出す</button>
+            <button type="button" class="small-btn" id="importFileBtn">読み込む（ファイル）</button>
+            <input type="file" id="importFile" accept=".json,application/json" hidden>
+          </div>
+          <button type="button" class="link-btn" id="copyBtn">うまく保存できないときは、テキストでコピー</button>
+          <textarea class="backup-area" id="copyArea" readonly hidden aria-label="書き出したテキスト"></textarea>
+          <details id="pasteBox">
+            <summary>テキストを貼り付けて読み込む</summary>
+            <textarea class="backup-area" id="importText" aria-label="読み込むテキスト" placeholder="書き出したテキストをここに貼り付け"></textarea>
+            <div class="detail-actions"><button type="button" class="small-btn strong" id="importTextBtn">読み込む</button></div>
+          </details>
+          <div class="backup-msg" id="backupMsg" aria-live="polite"></div>
+        </section>
+      </div>
+
+      <div id="binderDetailView" hidden>
+        <div class="detail-date" id="dDate"></div>
+        <h3 class="detail-task" id="dTask"></h3>
+        <div class="plan-meta" id="dMeta"></div>
+        <div class="detail-status" id="dStatus"></div>
+        <ol class="detail-steps" id="dSteps"></ol>
+        <div class="detail-block">
+          <div class="field-label">最後のご褒美</div>
+          <div class="detail-text" id="dReward"></div>
+          <div class="detail-actions" id="dPeekRow" hidden><button type="button" class="small-btn" id="dPeekBtn" aria-pressed="false">見る</button></div>
+        </div>
+        <div class="detail-block" id="dMoodBlock">
+          <div class="field-label">気分</div>
+          <div class="detail-text" id="dMood"></div>
+        </div>
+        <div class="detail-block">
+          <label class="field-label" for="dNote">次の自分への一言</label>
+          <textarea class="my-input" id="dNote" rows="2" maxlength="100" placeholder="なくてもOK"></textarea>
+          <div class="detail-actions">
+            <button type="button" class="small-btn strong" id="dNoteSave">保存</button>
+            <button type="button" class="small-btn danger" id="dNoteClear">消す</button>
+          </div>
+          <div class="note-hint" id="dNoteMsg" aria-live="polite"></div>
+        </div>
+        <div class="detail-foot">
+          <button type="button" class="primary" id="dContinue" hidden>続きを書く</button>
+          <button type="button" class="small-btn danger" id="dRemove">この1枚を外す</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
+<dialog class="ask" id="askDialog" aria-labelledby="askText">
+  <p id="askText"></p>
+  <div class="ask-actions">
+    <button type="button" class="small-btn" id="askNo">やめる</button>
+    <button type="button" class="small-btn strong" id="askYes">OK</button>
+  </div>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
 <script src="classify.js"></script>
 <script src="rewards.js"></script>
+<script src="records.js"></script>
 <script>
 (function () {
   var C = window.YarukiClassify;
   var R = window.YarukiRewards;
+  var Rec = window.YarukiRecords;
 
   var praisePool = {
     firstStep: [
@@ -945,10 +1491,14 @@
   // lockChoice: フォームの選択("show"/"lock")。rewardLocked / lowEnergyAtGen: 生成時点の値。
   // level: ご褒美レベル(1〜6)。score: 難易度スコア。finalUserId: 全完了ご褒美が自分のご褒美ならそのID。
   // 古い保存データにはこれらが無いので、既定値のまま扱われる(level は tier から読み替える)。
+  // sheetId: 今の原稿用紙の id(綴じ帳の記録と同じ)。task / timeAtGen / energyAtGen: 生成したときの入力。
+  // moodBefore / moodAfter: 始める前・終わった後の気分(1〜5)。note: 次の自分への一言。どれも任意。
   var state = {
     heaviness: 3, time: 15, energy: 2, lockChoice: "show", steps: [], done: [], boxRewards: [],
     heavinessAtGen: 3, rewardLocked: false, lowEnergyAtGen: false,
-    level: 3, score: null, category: "", categoryLabel: "", finalUserId: null
+    level: 3, score: null, category: "", categoryLabel: "", finalUserId: null,
+    sheetId: null, createdAt: null, task: "", timeAtGen: null, energyAtGen: null,
+    moodBefore: null, moodAfter: null, note: null
   };
   var praiseTimer = null;
   var STORAGE_KEY = "genkouyoushi-state-v1";
@@ -960,14 +1510,31 @@
 
   var $ = function (id) { return document.getElementById(id); };
 
-  function saveState() {
+  // localStorage への書き込み。容量いっぱい・使えない環境で失敗したら、控えめに一度だけ知らせる
+  var saveFailShown = false;
+  function store(key, value) {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        state: state,
-        task: $("taskInput").value,
-        reward: $("rewardInput").value
-      }));
-    } catch (e) {}
+      localStorage.setItem(key, value);
+      saveFailShown = false;
+      return true;
+    } catch (e) {
+      if (!saveFailShown) {
+        saveFailShown = true;
+        toast("保存できなかったよ。バックアップを取っておいてね", 5000);
+      }
+      return false;
+    }
+  }
+
+  function stateJson() {
+    return JSON.stringify({
+      state: state,
+      task: $("taskInput").value,
+      reward: $("rewardInput").value
+    });
+  }
+  function saveState() {
+    store(STORAGE_KEY, stateJson());
   }
 
   /* ── ご褒美の抽選(履歴は端末の localStorage に保存) ── */
@@ -981,7 +1548,7 @@
     return rewardHistory;
   }
   function saveHistory() {
-    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(rewardHistory)); } catch (e) {}
+    store(HISTORY_KEY, JSON.stringify(rewardHistory));
   }
   function drawBoxReward(level) {
     var r = R.draw("box", level, loadHistory().box);
@@ -1009,7 +1576,7 @@
   }
   var my = loadMy();
   function saveMy() {
-    try { localStorage.setItem(MY_KEY, JSON.stringify(my)); } catch (e) {}
+    store(MY_KEY, JSON.stringify(my));
   }
 
   // 全部埋まったときのご褒美。レベルが合う自分のご褒美があれば、設定した割合でそちらを出す。
@@ -1141,6 +1708,8 @@
         box.setAttribute("aria-checked", String(newDone));
         updateProgress();
         saveState();
+        syncRecord();
+        celebratePage();
 
         if (newDone) {
           var doneCount = state.done.filter(Boolean).length;
@@ -1223,6 +1792,8 @@
     } else {
       banner.classList.remove("show");
     }
+    renderNudge();
+    renderAfter();
   }
 
   function setFinalReward(f) {
@@ -1231,8 +1802,220 @@
     peeking = false;
   }
 
+  /* ── 綴じ帳(書いた原稿用紙の記録。genkouyoushi-history-v1) ──────────
+   * 1マス以上埋まった紙は、マスが変わるたびに同じ id の記録を更新する。0マスに戻れば外す。
+   * 「新しい原稿用紙にする」やマス目の生成で今の紙を片付けても、記録はそのまま残る。 */
+  var BINDER_KEY = Rec.BINDER_KEY;
+  var binder = Rec.emptyBinder();
+  var binderSaveFailed = false;
+  // 別のタブで書き換わっていることもあるので、変える前に読み直す(保存に失敗しているときは手元のものを使う)
+  function refreshBinder() {
+    if (binderSaveFailed) return;
+    var raw;
+    try { raw = localStorage.getItem(BINDER_KEY); } catch (e) { return; }
+    var parsed = null;
+    try { parsed = JSON.parse(raw); } catch (e) {}
+    binder = Rec.checkBinder(parsed);
+  }
+  function saveBinder() {
+    binderSaveFailed = !store(BINDER_KEY, JSON.stringify(binder));
+  }
+  refreshBinder();
+
+  function nowIso() { return new Date().toISOString(); }
+  function doneCount() { return state.done.filter(Boolean).length; }
+
+  function currentRecord() {
+    return {
+      id: state.sheetId,
+      task: state.task || "",
+      category: state.category || null,
+      difficulty: state.score,
+      heaviness: state.heavinessAtGen,
+      time: state.timeAtGen,
+      energy: state.energyAtGen,
+      lowEnergy: !!state.lowEnergyAtGen,
+      level: state.level,
+      steps: state.steps,
+      done: state.done,
+      finalReward: $("rewardInput").value,
+      rewardLocked: !!state.rewardLocked,
+      finalUserId: state.finalUserId,
+      createdAt: state.createdAt,
+      moodBefore: state.moodBefore,
+      moodAfter: state.moodAfter,
+      note: state.note
+    };
+  }
+
+  // 今の原稿用紙の状態を綴じ帳に写す
+  function syncRecord() {
+    if (!state.sheetId || !state.steps.length) return;
+    refreshBinder();
+    var r = Rec.putSheet(binder, currentRecord(), nowIso());
+    if (r !== "same" && r !== "none") saveBinder();
+    renderTally();
+  }
+
+  var toastTimer = null;
+  function toast(text, ms) {
+    var el = $("toast");
+    el.textContent = text;
+    el.classList.add("show");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove("show"); }, ms || 3200);
+  }
+
+  /* ── 累計マス(今の紙も含む。400マスで原稿用紙1枚) ── */
+  function renderTally() {
+    var total = Rec.totalDone(binder);
+    var line = $("tallyLine");
+    $("tallySub").hidden = !total;
+    $("tallyBar").hidden = !total;
+    if (!total) {
+      line.textContent = "1マス埋めると、ここに積み上がっていくよ";
+      return;
+    }
+    var p = Rec.pageInfo(total);
+    line.textContent = "これまでに埋めたマス";
+    var strong = document.createElement("strong");
+    strong.textContent = String(total);
+    line.appendChild(strong);
+    $("tallySub").textContent = "原稿用紙 " + p.pages + "枚と" + p.rest + "マス";
+    $("tallyFill").style.width = (p.rest / Rec.PAGE_SIZE * 100) + "%";
+  }
+  // 400マスの倍数を超えた瞬間に一度だけお祝いする。何枚目まで祝ったかは綴じ帳に保存する
+  function celebratePage() {
+    var p = Rec.pageToCelebrate(binder);
+    if (!p) return;
+    binder.celebratedPages = p;
+    saveBinder();
+    toast("📜 原稿用紙1枚分、書き上げたよ（通算" + p + "枚目）", 6000);
+  }
+
+  /* ── 気分(始める前・終わった後)。選ばなくてもよく、同じ顔をもう一度押すと選ばなかったことに戻る ── */
+  function buildMoodButtons(container, key) {
+    Rec.MOODS.forEach(function (m) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "mood-btn";
+      b.textContent = m.face;
+      b.title = m.label;
+      b.setAttribute("aria-label", m.label);
+      b.setAttribute("aria-pressed", "false");
+      b.setAttribute("data-mood", String(m.v));
+      b.addEventListener("click", function () {
+        state[key] = state[key] === m.v ? null : m.v;
+        saveState();
+        syncRecord();
+        renderMoods();
+      });
+      container.appendChild(b);
+    });
+  }
+  buildMoodButtons($("moodBeforeFaces"), "moodBefore");
+  buildMoodButtons($("moodAfterFaces"), "moodAfter");
+
+  function renderMoods() {
+    [["moodBeforeFaces", "moodBeforePicked", "moodBefore"],
+     ["moodAfterFaces", "moodAfterPicked", "moodAfter"]].forEach(function (x) {
+      var v = state[x[2]];
+      $(x[0]).querySelectorAll(".mood-btn").forEach(function (b) {
+        b.setAttribute("aria-pressed", String(Number(b.getAttribute("data-mood")) === v));
+      });
+      var m = Rec.mood(v);
+      $(x[1]).textContent = m ? m.label : "";
+    });
+  }
+
+  function kindName() {
+    if (state.category && state.category !== "other") return state.categoryLabel;
+    var t = (state.task || "").trim();
+    return "「" + (t.length > 16 ? t.slice(0, 16) + "…" : t) + "」";
+  }
+
+  // パネル上部の1枚: 前のあなたより・気分の傾向・始める前の気分(最初のマスを埋めたら畳む)
+  function renderNudge() {
+    var active = !!(state.sheetId && state.steps.length);
+    var key = active ? Rec.kindKey({ category: state.category, task: state.task }) : null;
+    var note = Rec.latestNote(binder.sheets, key, state.sheetId);
+    var trend = Rec.moodTrend(binder.sheets, key, state.sheetId);
+    var asking = active && doneCount() === 0;
+    var before = Rec.mood(state.moodBefore);
+    var summary = active && !asking && !!before;
+    $("nudgeNote").hidden = !note;
+    if (note) {
+      $("nudgeFrom").textContent = "📮 前のあなたより（" + Rec.shortDay(note.at) + "）";
+      $("nudgeText").textContent = note.note;
+    }
+    $("nudgeTrend").hidden = !trend;
+    if (trend) {
+      $("nudgeTrend").textContent = kindName() + "は、終わった後に気分が上がることが多いよ（" +
+        trend.count + "回中" + trend.up + "回）";
+    }
+    $("moodBeforeRow").hidden = !asking;
+    $("moodBeforeSummary").hidden = !summary;
+    if (summary) $("moodBeforeSummary").textContent = "始める前の気分：" + before.face + " " + before.label;
+    $("nudge").hidden = !(note || trend || asking || summary);
+    renderMoods();
+  }
+
+  /* ── 全部埋まったあとの「終わった今の気分」と「次の自分への一言」 ── */
+  function notePlaceholder() {
+    if (state.category === "undou") return "例：行くまでがだるいだけ。行けば気分いい";
+    if (state.category === "souji" || state.category === "katazuke") return "例：終わった後の部屋、気持ちよかった";
+    return "例：やってみたら、思ったより早く終わった";
+  }
+  function renderAfter() {
+    var input = $("noteInput");
+    input.placeholder = notePlaceholder();
+    if (document.activeElement !== input) input.value = state.note || "";
+    renderMoods();
+  }
+  var noteTimer = null;
+  var reloading = false;   // 読み込んだ内容で開き直す途中は、手元の内容で上書きしない
+  function commitNote() {
+    if (noteTimer) { clearTimeout(noteTimer); noteTimer = null; }
+    if (!state.sheetId || reloading) return;
+    var v = $("noteInput").value.trim();
+    var next = v ? v.slice(0, Rec.NOTE_MAX) : null;   // 空なら残さない
+    if (next === state.note) return;
+    state.note = next;
+    saveState();
+    syncRecord();
+    $("noteHint").textContent = next ? "📒 綴じ帳に残したよ。次に同じことをするときに届けるね" : "";
+  }
+  $("noteInput").addEventListener("input", function () {
+    if (noteTimer) clearTimeout(noteTimer);
+    noteTimer = setTimeout(commitNote, 600);
+  });
+  $("noteInput").addEventListener("change", commitNote);
+  $("noteInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.isComposing && e.keyCode !== 229) {
+      e.preventDefault();
+      $("noteInput").blur();
+    }
+  });
+  window.addEventListener("pagehide", commitNote);
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden") commitNote();
+  });
+
   $("generateBtn").addEventListener("click", function () {
     var task = $("taskInput").value.trim();
+    commitNote();
+    // 今の紙に1マス以上埋まっていれば、その記録は綴じ帳に残したまま新しい紙にする
+    var shelved = !!state.sheetId && doneCount() > 0;
+    state.sheetId = Rec.newId(new Date());
+    state.createdAt = nowIso();
+    state.task = task;
+    state.timeAtGen = state.time;
+    state.energyAtGen = state.energy;
+    state.moodBefore = null;
+    state.moodAfter = null;
+    state.note = null;
+    $("noteInput").value = "";
+    $("noteHint").textContent = "";
     // 分類 → 難易度スコア → マス数・手順の軽さ・ご褒美レベル(classify.js)
     var plan = C.plan({ task: task, heaviness: state.heaviness, time: state.time, energy: state.energy });
     state.steps = plan.steps;
@@ -1256,6 +2039,7 @@
     fitRewardInput();
     $("panel").scrollIntoView({ behavior: "smooth", block: "start" });
     saveState();
+    if (shelved) toast("📒 前の原稿用紙は綴じ帳にしまったよ");
   });
 
   $("rerollBtn").addEventListener("click", function () {
@@ -1263,6 +2047,7 @@
     setFinalReward(drawFinalReward(state.level));
     updateProgress();
     saveState();
+    syncRecord();
   });
 
   $("peekBtn").addEventListener("click", function () {
@@ -1280,10 +2065,13 @@
     // 全部埋まったあとに書き換えたら、完成バナーのご褒美も同じ内容にする
     $("finalRewardText").textContent = $("rewardInput").value;
     saveState();
+    syncRecord();
   });
   window.addEventListener("resize", fitRewardInput);
 
-  $("resetBtn").addEventListener("click", function () {
+  // 今の原稿用紙を片付ける。フォームの選択(重さ・時間・エネルギー・ご褒美の見せ方)は残す。
+  // 綴じ帳の記録には触らない(1マス以上埋まっていれば、もう綴じ帳に入っている)
+  function clearCurrentSheet() {
     $("panel").classList.remove("show");
     $("completeBanner").classList.remove("show");
     $("praiseToast").classList.remove("show");
@@ -1293,8 +2081,22 @@
     state.rewardLocked = false;
     state.finalUserId = null;
     state.score = null;
-    // マス目は消すが、フォームの選択(重さ・時間・エネルギー・ご褒美の見せ方)は残す
+    state.sheetId = null;
+    state.createdAt = null;
+    state.task = "";
+    state.moodBefore = null;
+    state.moodAfter = null;
+    state.note = null;
+    $("noteInput").value = "";
+    $("noteHint").textContent = "";
     saveState();
+  }
+
+  $("resetBtn").addEventListener("click", function () {
+    commitNote();
+    var shelved = !!state.sheetId && doneCount() > 0;
+    clearCurrentSheet();
+    if (shelved) toast("📒 この原稿用紙は綴じ帳にしまったよ");
   });
 
   function setChip(containerId, value) {
@@ -1320,6 +2122,16 @@
     setChip("energyChips", state.energy);
     setChip("lockChips", state.lockChoice);
     if (!state.steps || !state.steps.length) return;
+    // 綴じ帳ができる前のデータ: 今の紙に id を付ける(見た目は変えない)。1マス以上埋まっていれば下の syncRecord で綴じ帳に入る
+    var migrated = false;
+    if (typeof state.sheetId !== "string" || !state.sheetId) {
+      state.sheetId = Rec.newId(new Date());
+      state.createdAt = nowIso();
+      state.task = (saved.task || "").trim();
+      state.timeAtGen = state.time;
+      state.energyAtGen = state.energy;
+      migrated = true;
+    }
     $("tierLabel").textContent = levelName(state.level);
     $("rewardInput").value = saved.reward || "";
     var missingRewards = state.steps.some(function (_, i) { return typeof state.boxRewards[i] !== "string"; });
@@ -1327,14 +2139,15 @@
     renderBoxes();
     $("panel").classList.add("show");
     fitRewardInput();
-    if (missingRewards) saveState();
+    if (missingRewards || migrated) saveState();
+    syncRecord();
   })();
+  renderTally();
 
   /* ── 自分のご褒美の画面(#my-rewards) ───────────────── */
   var editingId = null;
   var pendingDeleteId = null;
   var pendingDeleteTimer = null;
-  var openedFromApp = false;
 
   function levelChips(container, selected) {
     container.innerHTML = "";
@@ -1528,34 +2341,557 @@
     });
   });
 
+  /* ── 確認ダイアログ(<dialog> が使えなければ confirm) ── */
+  var askResolve = null;
+  function ask(text, yesLabel, noLabel, danger) {
+    var dlg = $("askDialog");
+    closeAsk(false);
+    if (typeof dlg.showModal !== "function") return Promise.resolve(window.confirm(text));
+    $("askText").textContent = text;
+    $("askYes").textContent = yesLabel || "OK";
+    $("askNo").textContent = noLabel || "やめる";
+    $("askYes").classList.toggle("danger-fill", !!danger);
+    $("askYes").classList.toggle("strong", !danger);
+    return new Promise(function (resolve) {
+      askResolve = resolve;
+      dlg.showModal();
+      $("askNo").focus();
+    });
+  }
+  function closeAsk(answer) {
+    var dlg = $("askDialog");
+    var r = askResolve;
+    askResolve = null;
+    if (dlg.open) dlg.close();
+    if (r) r(answer);
+  }
+  $("askYes").addEventListener("click", function () { closeAsk(true); });
+  $("askNo").addEventListener("click", function () { closeAsk(false); });
+  // Esc や Android の戻る操作で閉じたとき(続けて次の確認を開いた直後の close は無視する)
+  $("askDialog").addEventListener("close", function () {
+    if (!$("askDialog").open) closeAsk(false);
+  });
+
+  /* ── 綴じ帳の一覧(#tojicho) ─────────────────── */
+  var BINDER_PAGE = 30;
+  var binderShown = BINDER_PAGE;
+  var listScrollY = 0;
+  var mainScrollY = 0;
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function sheetTitle(s) { return s.task.trim() || "（名前のない原稿用紙）"; }
+  function moodPair(s) {
+    var a = Rec.mood(s.moodBefore), b = Rec.mood(s.moodAfter);
+    if (!a && !b) return "";
+    return (a ? a.face : "") + "→" + (b ? b.face : "");
+  }
+  function categoryLabelOf(id) {
+    if (!id) return "";
+    for (var i = 0; i < C.CATEGORIES.length; i++) if (C.CATEGORIES[i].id === id) return C.CATEGORIES[i].label;
+    return id === C.FALLBACK.id ? C.FALLBACK.label : "";
+  }
+
+  function renderBinderList() {
+    refreshBinder();
+    $("statBoxes").textContent = String(Rec.totalDone(binder));
+    $("statSheets").textContent = String(binder.sheets.length);
+    $("statDone").textContent = String(Rec.completedCount(binder));
+    var sheets = Rec.sortNewest(binder.sheets);
+    var wrap = $("binderList");
+    wrap.innerHTML = "";
+    var list = null, month = null;
+    sheets.slice(0, binderShown).forEach(function (s) {
+      var mk = Rec.monthKey(s.createdAt);
+      if (mk !== month) {
+        month = mk;
+        wrap.appendChild(el("h3", "month-head", Rec.monthLabel(s.createdAt)));
+        list = el("ul", "sheet-list");
+        wrap.appendChild(list);
+      }
+      var btn = el("button", "sheet-item");
+      btn.type = "button";
+      // button の中は span だけにする(見た目は CSS でブロックにする)
+      var top = el("span", "sheet-top");
+      top.appendChild(el("span", null, Rec.dayLabel(s.createdAt)));
+      if (!s.completedAt) top.appendChild(el("span", "tag", "書きかけ"));
+      if (s.id === state.sheetId) top.appendChild(el("span", "tag now", "いまの原稿用紙"));
+      btn.appendChild(top);
+      btn.appendChild(el("span", "sheet-task", sheetTitle(s)));
+      var row = el("span", "sheet-row");
+      var mini = el("span", "mini-boxes");
+      mini.setAttribute("role", "img");
+      mini.setAttribute("aria-label", Rec.countDone(s.done) + " / " + s.steps.length + "マス");
+      s.done.forEach(function (d) { mini.appendChild(el("i", d ? "on" : null)); });
+      row.appendChild(mini);
+      var mp = moodPair(s);
+      if (mp) row.appendChild(el("span", "sheet-mood", mp));
+      btn.appendChild(row);
+      if (s.note) btn.appendChild(el("span", "sheet-note", "「" + s.note.split(/\r?\n/)[0] + "」"));
+      if (s.completedAt) btn.appendChild(el("span", "seal-sm", "完"));
+      btn.addEventListener("click", function () { navTo("#tojicho/" + encodeURIComponent(s.id)); });
+      var li = document.createElement("li");
+      li.appendChild(btn);
+      list.appendChild(li);
+    });
+    $("binderEmpty").hidden = sheets.length > 0;
+    $("binderMore").hidden = sheets.length <= binderShown;
+  }
+  $("binderMore").addEventListener("click", function () {
+    binderShown += BINDER_PAGE;
+    renderBinderList();
+  });
+
+  /* ── 綴じ帳の1枚(#tojicho/記録のid) ─────────────── */
+  var openSheetId = null;
+  var detailPeek = false;
+  function openSheet() {
+    refreshBinder();
+    return openSheetId ? Rec.findSheet(binder, openSheetId) : null;
+  }
+
+  function renderDetail(id) {
+    refreshBinder();
+    var s = Rec.findSheet(binder, id);
+    if (!s) return false;
+    if (openSheetId !== id) {
+      detailPeek = false;
+      $("dNoteMsg").textContent = "";
+    }
+    openSheetId = id;
+    $("dDate").textContent = Rec.dayLabel(s.createdAt) + " " + Rec.timeLabel(s.createdAt);
+    $("dTask").textContent = sheetTitle(s);
+    var meta = $("dMeta");
+    meta.innerHTML = "";
+    var cat = categoryLabelOf(s.category);
+    if (cat) meta.appendChild(el("span", null, cat));
+    if (s.difficulty != null) meta.appendChild(el("span", null, "難易度 " + s.difficulty));
+    meta.hidden = !meta.childNodes.length;
+    var status = $("dStatus");
+    status.innerHTML = "";
+    if (s.completedAt) {
+      status.appendChild(el("span", "seal-sm", "完"));
+      status.appendChild(el("span", null, "仕上がった（" + Rec.shortDay(s.completedAt) + "）"));
+    } else {
+      status.appendChild(el("span", "tag", "書きかけ"));
+      status.appendChild(el("span", null, "ここまで " + Rec.countDone(s.done) + " / " + s.steps.length + "マス"));
+    }
+    var ol = $("dSteps");
+    ol.innerHTML = "";
+    s.steps.forEach(function (step, i) {
+      var li = el("li", s.done[i] ? "on" : null);
+      li.appendChild(el("span", "step-mark", s.done[i] ? "済" : ""));
+      li.appendChild(el("span", null, step));
+      ol.appendChild(li);
+    });
+    // 最後のご褒美: 🔒(全部埋めるまで隠す)なら書きかけの間は伏せたまま。自分のご褒美を伏せる設定なら「見る」で表示
+    var reward = $("dReward");
+    var lockedNow = s.rewardLocked && !s.completedAt;
+    var secret = !lockedNow && my.masked && !!s.finalUserId;
+    reward.classList.toggle("masked", lockedNow || (secret && !detailPeek));
+    reward.textContent = lockedNow ? "🔒 全部埋めたら開けるお楽しみ" :
+      secret && !detailPeek ? "●●●●●●（伏せています）" : (s.finalReward || "（なし）");
+    $("dPeekRow").hidden = !secret;
+    $("dPeekBtn").textContent = detailPeek ? "隠す" : "見る";
+    $("dPeekBtn").setAttribute("aria-pressed", String(detailPeek));
+    var a = Rec.mood(s.moodBefore), b = Rec.mood(s.moodAfter);
+    $("dMoodBlock").hidden = !a && !b;
+    $("dMood").textContent = [
+      a ? "始める前：" + a.face + " " + a.label : "",
+      b ? "終わった後：" + b.face + " " + b.label : ""
+    ].filter(Boolean).join("\n");
+    if (document.activeElement !== $("dNote")) $("dNote").value = s.note || "";
+    $("dNoteClear").hidden = !s.note;
+    $("dContinue").hidden = !!s.completedAt || s.id === state.sheetId;
+    return true;
+  }
+
+  $("dPeekBtn").addEventListener("click", function () {
+    detailPeek = !detailPeek;
+    renderDetail(openSheetId);
+  });
+
+  function saveDetailNote(value) {
+    var s = openSheet();
+    if (!s) return;
+    var v = value.trim();
+    s.note = v ? v.slice(0, Rec.NOTE_MAX) : null;
+    s.updatedAt = nowIso();
+    saveBinder();
+    if (s.id === state.sheetId) {   // 今の原稿用紙なら、完成の欄の一言もそろえる
+      state.note = s.note;
+      saveState();
+      $("noteInput").value = s.note || "";
+    }
+    $("dNote").value = s.note || "";
+    $("dNoteMsg").textContent = s.note ? "保存したよ" : "一言を消したよ";
+    renderDetail(s.id);
+  }
+  $("dNoteSave").addEventListener("click", function () { saveDetailNote($("dNote").value); });
+  $("dNoteClear").addEventListener("click", function () {
+    ask("この一言を消す？", "消す", "やめる", true).then(function (yes) {
+      if (yes) saveDetailNote("");
+    });
+  });
+
+  // 綴じ帳の書きかけを、今の原稿用紙として呼び戻す
+  function loadSheetAsCurrent(s) {
+    var level = s.level || (s.difficulty != null ? C.rewardLevel(s.difficulty) : 3);
+    state.sheetId = s.id;
+    state.createdAt = s.createdAt;
+    state.task = s.task;
+    state.steps = s.steps.slice();
+    state.done = s.done.slice();
+    state.category = s.category || "";
+    state.categoryLabel = categoryLabelOf(s.category);
+    state.score = s.difficulty;
+    state.level = level;
+    state.heavinessAtGen = s.heaviness || 3;
+    state.timeAtGen = s.time;
+    state.energyAtGen = s.energy;
+    state.lowEnergyAtGen = s.lowEnergy;
+    state.rewardLocked = s.rewardLocked;
+    state.finalUserId = s.finalUserId;
+    state.moodBefore = s.moodBefore;
+    state.moodAfter = s.moodAfter;
+    state.note = s.note;
+    state.boxRewards = s.steps.map(function () { return drawBoxReward(level); });
+    delete state.tier;
+    $("taskInput").value = s.task;
+    $("rewardInput").value = s.finalReward;
+    $("tierLabel").textContent = levelName(level);
+    $("noteHint").textContent = "";
+    peeking = false;
+    renderPlanMeta();
+    renderBoxes();
+    $("panel").classList.add("show");
+    fitRewardInput();
+    saveState();
+  }
+  $("dContinue").addEventListener("click", function () {
+    var s = openSheet();
+    if (!s || s.completedAt) return;
+    commitNote();
+    // 今の紙に1マス以上埋まっていれば、それは綴じ帳に残したまま入れ替える
+    var shelved = !!state.sheetId && doneCount() > 0;
+    loadSheetAsCurrent(s);
+    pendingPanelScroll = true;
+    navHome();
+    if (shelved) toast("📒 それまでの原稿用紙は綴じ帳にしまったよ");
+  });
+
+  $("dRemove").addEventListener("click", function () {
+    var s = openSheet();
+    if (!s) return;
+    var current = s.id === state.sheetId;
+    ask("この1枚を綴じ帳から外す？\n外した記録は元に戻せないよ。" +
+      (current ? "\n（いま書いている原稿用紙なので、画面のマス目も片付けるよ）" : ""), "外す", "やめる", true)
+      .then(function (yes) {
+        if (!yes) return;
+        refreshBinder();
+        Rec.removeSheet(binder, s.id);
+        saveBinder();
+        if (current) clearCurrentSheet();
+        renderTally();
+        navBack("#tojicho");
+      });
+  });
+
+  /* ── バックアップ(書き出し・読み込み) ──────────────── */
+  var FLASH_KEY = "genkouyoushi-flash";   // 読み込み後に開き直したときのお知らせ(sessionStorage)
+  var KEY_NAMES = {};
+  KEY_NAMES[STORAGE_KEY] = "今の原稿用紙と、入力欄の選択";
+  KEY_NAMES[MY_KEY] = "自分のご褒美とその設定";
+  KEY_NAMES[HISTORY_KEY] = "ご褒美の出方の記録（同じご褒美を続けて出さないためのもの）";
+  var IMPORT_ERRORS = {
+    broken: "読み込めなかったよ。ファイルが途中で切れているか、形が違うみたい。データは何も変えていないよ",
+    other: "このアプリで書き出したファイルではないみたい。データは何も変えていないよ",
+    newer: "新しい版のアプリで書き出したファイルみたい。ページを開き直してから、もう一度試してね",
+    empty: "このファイルには、読み込めるものが入っていなかったよ。データは何も変えていないよ",
+    big: "ファイルが大きすぎて読み込めなかったよ。データは何も変えていないよ",
+    read: "ファイルを開けなかったよ。データは何も変えていないよ"
+  };
+
+  function backupMsg(text, isError) {
+    var m = $("backupMsg");
+    m.textContent = text;
+    m.classList.toggle("err", !!isError);
+  }
+  function readKey(k) {
+    try { return localStorage.getItem(k); } catch (e) { return null; }
+  }
+
+  // このアプリのキー(genkouyoushi- で始まるもの)だけを集める。保存に失敗していても手元の最新を入れる
+  function collectEntries() {
+    var out = {};
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (Rec.isOwnKey(k)) out[k] = localStorage.getItem(k);
+      }
+    } catch (e) {}
+    out[BINDER_KEY] = JSON.stringify(binder);
+    out[STORAGE_KEY] = stateJson();
+    out[MY_KEY] = JSON.stringify(my);
+    if (rewardHistory) out[HISTORY_KEY] = JSON.stringify(rewardHistory);
+    return out;
+  }
+  function backupText() {
+    commitNote();
+    refreshBinder();
+    return JSON.stringify(Rec.buildBackup(collectEntries(), nowIso()), null, 1);
+  }
+
+  function showCopy(text) {
+    var area = $("copyArea");
+    area.value = text;
+    area.hidden = false;
+    function selectAll() {
+      area.focus();
+      area.select();
+      try { area.setSelectionRange(0, text.length); } catch (e) {}
+    }
+    function copied() { backupMsg("コピーしたよ。メモアプリなどに貼り付けて残しておいてね"); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(copied, function () {
+        selectAll();
+        backupMsg("下の文字を全部選んで、コピーしてね");
+      });
+      return;
+    }
+    selectAll();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) {}
+    if (ok) copied();
+    else backupMsg("下の文字を全部選んで、コピーしてね");
+  }
+
+  function downloadText(text, name) {
+    if (!("download" in document.createElement("a"))) { showCopy(text); return; }
+    try {
+      var url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 30000);
+      backupMsg("「" + name + "」を保存したよ（ダウンロードの中）。\n見つからないときは「テキストでコピー」を使ってね");
+    } catch (e) {
+      showCopy(text);
+    }
+  }
+
+  // 書き出し: 共有シート(ファイルを共有できる端末) → ダウンロード → テキストをコピー の順に試す
+  // (Android の Chrome は .json の共有に対応していないので、ダウンロード(「ダウンロード」フォルダ)になる。
+  //  iPhone のホーム画面から開いたときは a[download] が不安定なことがあるので、共有シートを先に試す)
+  $("exportBtn").addEventListener("click", function () {
+    var text = backupText();
+    var name = Rec.backupFileName(new Date());
+    var file = null;
+    try { file = new File([text], name, { type: "application/json" }); } catch (e) {}
+    var canShareFile = false;
+    try {
+      canShareFile = !!(file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] }));
+    } catch (e) {}
+    if (!canShareFile) { downloadText(text, name); return; }
+    navigator.share({ files: [file], title: name }).then(function () {
+      backupMsg("書き出したよ（" + name + "）");
+    }, function (err) {
+      if (err && err.name === "AbortError") { backupMsg(""); return; }   // 共有シートを閉じただけ
+      downloadText(text, name);
+    });
+  });
+  $("copyBtn").addEventListener("click", function () { showCopy(backupText()); });
+
+  function applyImport(p, replaceKeys) {
+    if (!p.sheetCount && !replaceKeys.length) {
+      backupMsg("このファイルの内容は、もう全部入っていたよ");
+      return;
+    }
+    var ok = true, res = null;
+    if (p.binder) {
+      refreshBinder();
+      res = Rec.mergeBinder(binder, p.binder);
+      saveBinder();
+      if (binderSaveFailed) ok = false;
+    }
+    replaceKeys.forEach(function (k) { if (!store(k, p.others[k])) ok = false; });
+    var parts = [];
+    if (res) {
+      parts.push("新しく入った記録 " + res.added + "枚");
+      if (res.updated) parts.push("新しくなった記録 " + res.updated + "枚");
+      if (res.same) parts.push("もう入っていた記録 " + res.same + "枚");
+    }
+    var msg = "読み込んだよ。" + parts.join("・");
+    if (replaceKeys.length) msg += "\n自分のご褒美などの設定も置き換えたよ";
+    if (p.skipped) msg += "\n（読めなかった記録 " + p.skipped + "枚は飛ばしたよ）";
+    if (!ok) msg += "\n一部を保存できなかったよ。端末の空き容量を確かめてね";
+    if (replaceKeys.indexOf(STORAGE_KEY) !== -1) {
+      // 今の原稿用紙が変わるので、開き直して読み込んだ内容で表示する
+      try { sessionStorage.setItem(FLASH_KEY, msg); } catch (e) {}
+      reloading = true;
+      location.reload();
+      return;
+    }
+    if (replaceKeys.indexOf(MY_KEY) !== -1) my = loadMy();
+    if (replaceKeys.indexOf(HISTORY_KEY) !== -1) rewardHistory = null;
+    renderBinderList();
+    renderTally();
+    updateProgress();
+    backupMsg(msg, !ok);
+  }
+
+  // 読み込み: 中身を確かめてから件数を出して確認。綴じ帳は id でまとめ、それ以外は確認してから置き換える
+  function importBackup(text) {
+    var p = Rec.parseBackup(text);
+    if (!p.ok) { backupMsg(IMPORT_ERRORS[p.error] || IMPORT_ERRORS.broken, true); return; }
+    var changed = Object.keys(p.others).filter(function (k) { return readKey(k) !== p.others[k]; });
+    var first = p.sheetCount ?
+      ask(p.sheetCount + "枚の記録を読み込みます。\n同じ記録は新しい方を残すので、同じファイルを2回読み込んでも重なりません。", "読み込む") :
+      Promise.resolve(true);
+    first.then(function (go) {
+      if (!go) { backupMsg("読み込むのをやめたよ"); return; }
+      var names = changed.map(function (k) { return "・" + (KEY_NAMES[k] || k); }).join("\n");
+      var second = changed.length ?
+        ask("次のものも、ファイルの時点の内容に置き換えますか？\n" + names, "置き換える", "今のままにする") :
+        Promise.resolve(false);
+      return second.then(function (replace) { applyImport(p, replace ? changed : []); });
+    });
+  }
+
+  $("importFileBtn").addEventListener("click", function () { $("importFile").click(); });
+  $("importFile").addEventListener("change", function () {
+    var input = $("importFile");
+    var f = input.files && input.files[0];
+    input.value = "";   // 同じファイルをもう一度選べるように
+    if (!f) return;
+    if (f.size > 20 * 1024 * 1024) { backupMsg(IMPORT_ERRORS.big, true); return; }
+    var reader = new FileReader();
+    reader.onload = function () { importBackup(String(reader.result)); };
+    reader.onerror = function () { backupMsg(IMPORT_ERRORS.read, true); };
+    reader.readAsText(f);
+  });
+  $("importTextBtn").addEventListener("click", function () {
+    var t = $("importText").value;
+    if (!t.trim()) { backupMsg("貼り付けたテキストが空だよ", true); return; }
+    importBackup(t);
+  });
+
+  (function showFlash() {
+    var m = null;
+    try {
+      m = sessionStorage.getItem(FLASH_KEY);
+      sessionStorage.removeItem(FLASH_KEY);
+    } catch (e) {}
+    if (m) backupMsg(m);
+  })();
+
+  /* ── 画面の切り替え(#my-rewards / #tojicho / #tojicho/記録のid) ──────
+   * アプリ内のボタンで開くときは history に積む。「← 戻る」や Android の戻る操作で1つ前に戻る。
+   * 積んだ深さは history.state に入れておく(開き直しても、戻る操作で戻れるように)。 */
+  var currentView = null;
+  var pendingPanelScroll = false;
+  // 画面ごとのスクロール位置はこちらで戻すので、ブラウザには戻させない
+  try { history.scrollRestoration = "manual"; } catch (e) {}
+  function navDepth() {
+    var s = history.state;
+    return s && typeof s.ykDepth === "number" ? s.ykDepth : 0;
+  }
+  function homeUrl() { return location.pathname + location.search; }
+  function navTo(hash) {
+    try { history.pushState({ ykDepth: navDepth() + 1 }, "", hash); }
+    catch (e) { location.hash = hash; return; }
+    showView();
+  }
+  // 1つ前の画面へ。アプリ内で開いたのでなければ(直接開いた場合など)fallback の画面に置き換える
+  function navBack(fallback) {
+    if (navDepth() > 0) { history.back(); return; }
+    try { history.replaceState(null, "", fallback || homeUrl()); }
+    catch (e) { location.hash = fallback || ""; return; }
+    showView();
+  }
+  function navHome() {
+    var d = navDepth();
+    if (d > 0) { history.go(-d); return; }
+    try { history.replaceState(null, "", homeUrl()); }
+    catch (e) { location.hash = ""; return; }
+    showView();
+  }
+
+  function viewFromHash() {
+    var h = location.hash;
+    if (h === "#my-rewards") return "my";
+    if (h === "#tojicho") return "binder";
+    if (h.indexOf("#tojicho/") === 0) {
+      try { return "detail:" + decodeURIComponent(h.slice(9)); } catch (e) { return "binder"; }
+    }
+    return "main";
+  }
+
   function showView() {
-    var mine = location.hash === "#my-rewards";
-    document.body.classList.toggle("view-my", mine);
-    if (mine) {
+    var view = viewFromHash();
+    if (view === currentView) return;
+    var prev = currentView;
+    closeAsk(false);
+    if (prev === "main") mainScrollY = window.scrollY;
+    if (prev === "binder") listScrollY = window.scrollY;
+    var detailId = view.indexOf("detail:") === 0 ? view.slice(7) : null;
+    if (detailId !== null && !renderDetail(detailId)) {
+      // 外した記録などで見つからないときは一覧を出す
+      try { history.replaceState(history.state, "", "#tojicho"); } catch (e) {}
+      view = "binder";
+      detailId = null;
+    }
+    currentView = view;
+    document.body.classList.toggle("view-my", view === "my");
+    document.body.classList.toggle("view-binder", view === "binder" || detailId !== null);
+    $("binderListView").hidden = detailId !== null;
+    $("binderDetailView").hidden = detailId === null;
+    $("binderBackBtn").textContent = detailId !== null ? "← 一覧へ" : "← 戻る";
+    if (view === "my") {
       my = loadMy();
       editingId = null;
       pendingDeleteId = null;
       renderMy();
       window.scrollTo(0, 0);
+    } else if (view === "binder") {
+      var fromDetail = !!prev && prev.indexOf("detail:") === 0;
+      if (!fromDetail) binderShown = BINDER_PAGE;
+      renderBinderList();
+      window.scrollTo(0, fromDetail ? listScrollY : 0);
+    } else if (detailId !== null) {
+      window.scrollTo(0, 0);
     } else {
       updateProgress();
+      renderTally();
+      if (pendingPanelScroll && $("panel").classList.contains("show")) {
+        pendingPanelScroll = false;
+        $("panel").scrollIntoView({ block: "start" });
+      } else if (prev) {
+        window.scrollTo(0, mainScrollY);
+      }
     }
   }
-  $("openMyBtn").addEventListener("click", function () {
-    openedFromApp = true;
-    location.hash = "#my-rewards";
+  $("openMyBtn").addEventListener("click", function () { navTo("#my-rewards"); });
+  $("myBackBtn").addEventListener("click", function () { navBack(); });
+  $("openBinderBtn").addEventListener("click", function () { navTo("#tojicho"); });
+  $("binderBackBtn").addEventListener("click", function () {
+    navBack(currentView === "binder" ? "" : "#tojicho");
   });
-  $("myBackBtn").addEventListener("click", function () {
-    // アプリ内のボタンで開いたときはブラウザの「戻る」と同じ動きにする
-    if (openedFromApp) {
-      openedFromApp = false;
-      history.back();
-    } else {
-      location.hash = "";
-    }
-  });
+  window.addEventListener("popstate", showView);
   window.addEventListener("hashchange", showView);
   showView();
+
+  // 対応しているブラウザでは、データを消されにくくしてもらう(断られても何もしない)
+  try {
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {});
+  } catch (e) {}
 
   if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
     navigator.serviceWorker.register("sw.js").catch(function () {});
