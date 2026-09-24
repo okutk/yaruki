@@ -58,6 +58,21 @@ TYPES.forEach(function (type) {
   }
 });
 
+// ── 1b2. やわらかい言い回しを残す(そろえすぎて、気持ちが動く言い方を消さない) ─────────
+var GENTLE = [
+  ["box", "好きな飲み物をひと口飲む"], ["box", "空の色を確かめる"], ["box", "深呼吸をひとつしてから"],
+  ["box", "ため息をひとつ大きくつく"], ["box", "心の中で「いいね、自分」と言う"], ["box", "手を洗ってさっぱりしてから"],
+  ["box", "冷蔵庫の前で立ったまま"], ["box", "今のひとときを味わうように"], ["final", "好きな飲み物をいれて、ゆっくり飲む"],
+  ["final", "自分をたっぷり甘やかして"]
+];
+GENTLE.forEach(function (g) {
+  var found = false;
+  for (var lv = 1; lv <= R.LEVELS && !found; lv++) {
+    found = R.pool(g[0], lv).some(function (text) { return text.indexOf(g[1]) !== -1; });
+  }
+  check(found, g[0] + " にやわらかい言い回し「" + g[1] + "」が残っていない");
+});
+
 // ── 1c. 段階の釣り合い: レベルが上がるほどご褒美が大きい(tools/reward-scale.md) ─────────
 function quantile(list, p) {
   var s = list.slice().sort(function (a, b) { return a - b; });
