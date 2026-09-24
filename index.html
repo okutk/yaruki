@@ -586,6 +586,167 @@
   }
   .link-btn:focus-visible { outline: 2px solid var(--rule); outline-offset: 2px; }
 
+  /* 分類を質問で一緒に決めるカード(guess.js)。
+   * 答える気力が続くように: 1画面に質問は1つ・ボタンの位置は動かさない・切り替えはふわっと短く */
+  .guess-card {
+    border-color: var(--rule);
+    animation: guessIn 0.32s ease-out both;
+  }
+  .guess-card.is-closing {
+    animation: guessOut 0.22s ease-in both;
+  }
+  @keyframes guessIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes guessOut {
+    from { opacity: 1; transform: none; }
+    to { opacity: 0; transform: translateY(-6px); }
+  }
+  .guess-card h2 { margin-bottom: 8px; }
+  .guess-stage { transition: opacity 0.24s ease, transform 0.24s ease; }
+  /* 質問と「もしかして」の画面では、文が1行でも2行でもボタンの位置が変わらないように高さを取っておく */
+  .guess-card[data-mode="question"] .guess-stage,
+  .guess-card[data-mode="guess"] .guess-stage { min-height: 118px; }
+  .guess-stage:focus { outline: none; }
+  .guess-body.is-leaving .guess-stage,
+  .guess-stage.is-leaving {
+    opacity: 0;
+    transform: translateX(-12px);
+    transition-duration: 0.15s;
+  }
+  .guess-body.is-entering .guess-stage,
+  .guess-stage.is-entering {
+    opacity: 0;
+    transform: translateX(12px);
+    transition: none;
+  }
+  .guess-body > :not(.guess-stage) { transition: opacity 0.24s ease; }
+  .guess-body.is-leaving > :not(.guess-stage) { opacity: 0; transition-duration: 0.15s; }
+  .guess-body.is-entering > :not(.guess-stage) { opacity: 0; transition: none; }
+  .guess-ack {
+    min-height: 1.6em;
+    margin: 0 0 6px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--hanko);
+    font-family: "Noto Serif JP", serif;
+  }
+  .guess-about {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    overflow-wrap: anywhere;
+  }
+  .guess-q {
+    margin: 2px 0 0;
+    font-family: "Noto Serif JP", serif;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+  /* 「、」の後ろと「（」の前でだけ折り返す(「き／れい」のように語の途中で切れないように) */
+  .guess-q .phrase { display: inline-block; }
+  .guess-note {
+    margin: 6px 0 0;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    text-wrap: pretty;
+  }
+  .guess-note:empty, .guess-about:empty { display: none; }
+  .guess-answers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .guess-btn {
+    min-height: 52px;
+    padding: 10px 8px;
+    border: 1.5px solid var(--rule);
+    border-radius: 2px;
+    background: var(--paper-2);
+    color: var(--ink);
+    font-family: "Noto Serif JP", serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+  }
+  .guess-btn.wide { grid-column: 1 / -1; min-height: 46px; }
+  .guess-btn.soft {
+    border-color: var(--rule-soft);
+    color: var(--ink-soft);
+    font-weight: 500;
+    font-size: 15px;
+  }
+  .guess-btn.strong { background: var(--cta); border-color: var(--cta); color: #fbfaf3; }
+  .guess-btn.picked { transform: scale(0.97); border-color: var(--hanko); }
+  @media (hover: hover) {
+    .guess-btn:hover { border-color: var(--hanko); }
+    .guess-btn.strong:hover { background: var(--cta-hover); }
+  }
+  .guess-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .guess-btn:disabled { cursor: default; }
+  .guess-pick {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .guess-pick .chip { font-size: 14.5px; }
+  .guess-pick .guess-btn { flex: 1 1 100%; }
+  .guess-near {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--rule-soft);
+  }
+  .guess-near .field-label { margin-bottom: 8px; font-size: 12.5px; color: var(--ink-soft); }
+  .guess-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px 12px;
+    margin-top: 14px;
+  }
+  .guess-dots { display: inline-flex; gap: 5px; }
+  .guess-dots i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: 1px solid var(--rule);
+    transition: background-color 0.3s ease;
+  }
+  .guess-dots i.on { background: var(--rule); }
+  .guess-links { display: inline-flex; flex-wrap: wrap; gap: 0 14px; margin-left: auto; }
+  .guess-link {
+    min-height: 40px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--hanko);
+    font-family: "Noto Sans JP", sans-serif;
+    font-size: 13px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .guess-link:focus-visible { outline: 2px solid var(--rule); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    .guess-card, .guess-card.is-closing { animation: none; }
+    .guess-stage, .guess-body > :not(.guess-stage), .guess-btn, .guess-dots i { transition: none; }
+    .guess-body.is-leaving .guess-stage, .guess-stage.is-leaving,
+    .guess-body.is-entering .guess-stage, .guess-stage.is-entering { transform: none; }
+    .guess-btn.picked { transform: none; }
+  }
+  body.view-my #guessCard,
+  body.view-gymset #guessCard,
+  body.view-msset #guessCard,
+  body.view-binder #guessCard { display: none; }
+
   /* 自分のご褒美の画面(#my-rewards) */
   #myRewardsCard { display: none; }
   body.view-my #myRewardsCard { display: block; }
@@ -2242,6 +2403,41 @@
       <button type="button" class="link-btn" id="openGymSetBtn">🏋 ジムの日カードの設定</button>
     </div>
 
+    <!-- 分類がわからなかったときに、質問で一緒に決めるカード(guess.js) -->
+    <section class="card guess-card" id="guessCard" hidden aria-labelledby="guessTitle">
+      <h2 id="guessTitle">ちょっとだけ教えてね</h2>
+      <div class="guess-body" id="guessBody">
+        <div class="guess-stage" id="guessStage" tabindex="-1" aria-live="polite">
+          <p class="guess-ack" id="guessAck"></p>
+          <p class="guess-about" id="guessAbout"></p>
+          <p class="guess-q" id="guessQ"></p>
+          <p class="guess-note" id="guessNote"></p>
+        </div>
+        <div class="guess-answers" id="guessAnswers" role="group" aria-labelledby="guessQ">
+          <button type="button" class="guess-btn" data-answer="yes">はい</button>
+          <button type="button" class="guess-btn" data-answer="no">いいえ</button>
+          <button type="button" class="guess-btn soft wide" data-answer="maybe">どちらでもない</button>
+        </div>
+        <div class="guess-answers" id="guessConfirm" role="group" aria-labelledby="guessQ" hidden>
+          <button type="button" class="guess-btn strong" id="guessYes">そう、それ</button>
+          <button type="button" class="guess-btn" id="guessNo">ちがうかな</button>
+        </div>
+        <div class="guess-pick" id="guessPick" role="group" aria-labelledby="guessQ" hidden></div>
+        <div class="guess-near" id="guessNear" hidden>
+          <div class="field-label" id="guessNearLabel">近そうなもの（押すと、すぐ決まるよ）</div>
+          <div class="chipset" id="guessNearList" role="group" aria-labelledby="guessNearLabel"></div>
+        </div>
+      </div>
+      <div class="guess-foot">
+        <span class="guess-dots" id="guessDots" role="img"></span>
+        <span class="guess-links">
+          <button type="button" class="guess-link" id="guessBack">ひとつ戻る</button>
+          <button type="button" class="guess-link" id="guessAll">一覧から選ぶ</button>
+          <button type="button" class="guess-link" id="guessSkip">今は答えずに作る</button>
+        </span>
+      </div>
+    </section>
+
     <div class="card" id="panel">
       <h2><span class="num">2</span>今日埋めるマス目</h2>
       <div class="panel-sticky" id="stickyArea" hidden>
@@ -2563,6 +2759,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="classify.js"></script>
+<script src="guess.js"></script>
 <script src="rewards.js"></script>
 <script src="records.js"></script>
 <script src="gym.js"></script>
@@ -3460,8 +3657,291 @@
     if (document.visibilityState === "hidden") commitNote();
   });
 
+  /* ── 分類がわからないときに、質問で一緒に決める(guess.js) ─────────────
+   * 入力の分類が決まらない(classify の unknown)ときは、マス目を作る前に「ちょっとだけ教えてね」のカードを出す。
+   * はい・いいえ・どちらでもない で答えてもらい、「もしかして○○のこと？」で確かめる。
+   * 決めた分類は覚えておき(LEARN_KEY)、次に同じことを入力したときは聞かずに作る。
+   * 答える気力が続くように: 1画面に1問・ボタンの位置は変えない・切り替えは短くふわっと・
+   * 近そうなものは押すだけで決まる・ひとつ戻れる・いつでも「今は答えずに作る」で抜けられる */
+  var Gu = window.YarukiGuess;
+  var LEARN_KEY = "genkouyoushi-learned-v1";
+  var LEARN_MAX = 200;
+  var GUESS_ACKS = ["ありがとう", "なるほど", "うんうん", "教えてくれてありがとう", "いい感じ"];
+  var guess = null;          // guess.js のセッション(カードを出していないときは null)
+  var guessView = "ask";     // "ask" = 質問・もしかして・候補 / "all" = 全部から選ぶ / "done" = 決まった
+  var guessStep = null;      // 今出している Gu.next() の結果
+  var guessAck = "";         // 質問の上に出す、ひとこと
+  var guessDoneId = null;
+  var guessBusy = false;     // 切り替えの途中(二度押しで答えが2つ入らないように)
+  var guessTimer = null;
+
+  // 覚えた分類: { v: 1, items: [[normalize した入力, カテゴリid, 覚えた日時], ...] }(古い順。LEARN_MAX 件まで)
+  function loadLearnedItems() {
+    var raw = null;
+    try { raw = JSON.parse(localStorage.getItem(LEARN_KEY)); } catch (e) {}
+    if (!raw || !Array.isArray(raw.items)) return [];
+    return raw.items.filter(function (x) {
+      return Array.isArray(x) && typeof x[0] === "string" && x[0] && C.isCategoryId(x[1]);
+    });
+  }
+  function learnedMap() {
+    var map = {};
+    loadLearnedItems().forEach(function (x) { map[x[0]] = x[1]; });
+    return map;
+  }
+  function rememberCategory(task, id) {
+    var key = C.normalize(task);
+    if (!key) return;
+    var items = loadLearnedItems().filter(function (x) { return x[0] !== key; });
+    items.push([key, id, nowIso()]);
+    if (items.length > LEARN_MAX) items = items.slice(items.length - LEARN_MAX);
+    store(LEARN_KEY, JSON.stringify({ v: 1, items: items }));
+  }
+
+  function guessCatLabel(id) {
+    if (id === C.FALLBACK.id) return C.FALLBACK.label;
+    var emoji = C.CATEGORY_EMOJI[id];
+    return (emoji ? emoji + " " : "") + categoryLabelOf(id);
+  }
+  function guessChip(id, cls, text) {
+    return makeButton(text || guessCatLabel(id), cls || "chip", function () {
+      if (!guessBusy) finishGuess(id);
+    });
+  }
+
+  function openGuess(task) {
+    var card = $("guessCard");
+    if (guess && guess.task === task && !card.hidden && guessView !== "done") {
+      card.scrollIntoView({ behavior: reduceMotion() ? "auto" : "smooth", block: "start" });
+      return;
+    }
+    closeGuess(false);
+    guess = Gu.start(task, C.CATEGORIES.map(function (c) { return c.id; }));
+    guessView = "ask";
+    guessAck = "";
+    card.hidden = false;
+    renderGuess();
+    card.scrollIntoView({ behavior: reduceMotion() ? "auto" : "smooth", block: "start" });
+    $("guessStage").focus({ preventScroll: true });
+  }
+
+  // animated: ふわっと消す。then: 消えたあとにすること(マス目を作る など)
+  function closeGuess(animated, then) {
+    if (guessTimer) { clearTimeout(guessTimer); guessTimer = null; }
+    var card = $("guessCard");
+    guess = null;
+    guessStep = null;
+    guessBusy = false;
+    function done() {
+      card.hidden = true;
+      card.classList.remove("is-closing");
+      if (then) then();
+    }
+    if (card.hidden || !animated || reduceMotion()) { done(); return; }
+    guessBusy = true;
+    card.classList.add("is-closing");
+    guessTimer = setTimeout(function () { guessTimer = null; guessBusy = false; done(); }, 200);
+  }
+
+  // 入力欄の文が変わったら、前の文についての質問はしまう(決まった直後は除く)
+  function guessFollowInput() {
+    if (guess && guessView !== "done" && $("taskInput").value.trim() !== guess.task) closeGuess(false);
+  }
+
+  // 画面を描き直す。whole: カード全体を入れ替える(質問→質問のときは、文のところだけ入れ替える)
+  function swapGuess(whole) {
+    var target = whole ? $("guessBody") : $("guessStage");
+    if (reduceMotion()) { renderGuess(); return; }
+    guessBusy = true;
+    target.classList.add("is-leaving");
+    setTimeout(function () {
+      target.classList.remove("is-leaving");
+      if (!guess) { guessBusy = false; return; }
+      renderGuess();
+      target.classList.add("is-entering");
+      void target.offsetWidth;   // 入ってくる位置から動かすために、いったん描かせる
+      target.classList.remove("is-entering");
+      guessBusy = false;
+    }, 150);
+  }
+
+  function renderGuess() {
+    var s = guess;
+    if (!s) return;
+    var task = s.task;
+    var count = Gu.questionCount(s);
+    var mode = guessView === "ask" ? (guessStep = Gu.next(s)).type : guessView;
+    if (guessView !== "ask") guessStep = null;
+    var ack = guessAck, about = "", q = "", note = "";
+    var pick = $("guessPick");
+    pick.textContent = "";
+
+    if (mode === "question") {
+      about = "「" + task + "」のこと、";
+      q = guessStep.question.text;
+      if (guessStep.number === 1) {
+        ack = "合うマス目を作りたいから、少しだけ聞かせてね";
+        note = "はい・いいえ・どちらでもない で答えるだけ。多くても" + Gu.MAX_QUESTIONS + "つまでだよ";
+      }
+    } else if (mode === "guess") {
+      about = "「" + task + "」は、";
+      q = "もしかして「" + guessCatLabel(guessStep.id) + "」のこと？";
+    } else if (mode === "none" || mode === "choose") {
+      about = "「" + task + "」に";
+      if (mode === "none") {
+        q = "ぴったりの分け方は、なさそうかも";
+        note = "「その他」でも、ちゃんとマス目は作れるよ。近いものがあれば、選んでもいいよ";
+        pick.appendChild(guessChip(C.FALLBACK.id, "guess-btn strong", "「その他」で作る"));
+      } else {
+        q = "近いのは、このあたりかな？";
+        note = "いちばん近いものを選んでね。ぴったりじゃなくても大丈夫";
+      }
+      guessStep.candidates.forEach(function (c) { pick.appendChild(guessChip(c.id)); });
+      if (mode === "choose") pick.appendChild(guessChip(C.FALLBACK.id, "chip", "どれでもない（その他で作る）"));
+      pick.appendChild(makeButton("全部から選ぶ", "chip", function () {
+        if (guessBusy) return;
+        guessView = "all";
+        guessAck = "";
+        swapGuess(true);
+      }));
+    } else if (mode === "all") {
+      about = "「" + task + "」に近いものを、";
+      q = "全部の中から選んでね";
+      C.CATEGORIES.forEach(function (c) { pick.appendChild(guessChip(c.id)); });
+      pick.appendChild(guessChip(C.FALLBACK.id, "chip", "その他"));
+    } else if (mode === "done") {
+      q = "「" + guessCatLabel(guessDoneId) + "」で作るね";
+      note = guessDoneId === C.FALLBACK.id ?
+        "次から「" + task + "」は、聞かずに「その他」で作るよ" :
+        "次から「" + task + "」は、聞かずにこの分け方で作るよ";
+    }
+
+    $("guessCard").setAttribute("data-mode", mode);
+    $("guessAck").textContent = ack;
+    $("guessAbout").textContent = about;
+    setPhrases($("guessQ"), q);
+    $("guessNote").textContent = note;
+    $("guessAnswers").hidden = mode !== "question";
+    $("guessConfirm").hidden = mode !== "guess";
+    pick.hidden = !pick.firstChild;
+    document.querySelectorAll("#guessCard button").forEach(function (b) { b.disabled = mode === "done"; });
+
+    // 2問答えたら、近そうなものを3つ出す(押せばすぐ決まる)
+    var near = $("guessNearList");
+    near.textContent = "";
+    if (mode === "question" && count >= 2) {
+      Gu.candidates(s, 3).forEach(function (c) { near.appendChild(guessChip(c.id)); });
+    }
+    $("guessNear").hidden = !near.firstChild;
+
+    var dots = $("guessDots");
+    dots.textContent = "";
+    for (var i = 0; i < Gu.MAX_QUESTIONS; i++) dots.appendChild(el("i", i < count ? "on" : null));
+    dots.setAttribute("aria-label", count + "問答えたよ（多くても" + Gu.MAX_QUESTIONS + "問）");
+    dots.hidden = mode === "done";
+    $("guessBack").hidden = mode === "done" || (guessView === "ask" && !s.history.length);
+    $("guessAll").hidden = mode !== "question" && mode !== "guess";
+    $("guessSkip").hidden = mode === "done";
+
+    // 押したボタンが消えたら、読み上げが続くように文のところへ
+    var act = document.activeElement;
+    if (act && $("guessCard").contains(act) && (act.offsetParent === null || act.disabled)) {
+      $("guessStage").focus({ preventScroll: true });
+    }
+  }
+
+  function setPhrases(node, text) {
+    node.textContent = "";
+    text.replace(/、/g, "、\n").replace(/（/g, "\n（").split("\n").forEach(function (t) {
+      if (t) node.appendChild(el("span", "phrase", t));
+    });
+  }
+
+  // 答えたあとの、ひとこと。次に出す画面に合わせる
+  function guessAckFor(answer, nextType) {
+    if (nextType === "guess") return "ありがとう。わかってきたかも";
+    if (nextType === "choose" || nextType === "none") return "ここまで答えてくれてありがとう";
+    if (answer === Gu.MAYBE) return "大丈夫、次の質問にいくね";
+    var close = "だんだん、わかってきたよ";
+    if (Gu.confidence(guess) >= 0.35 && guessAck !== close) return close;
+    return GUESS_ACKS[(Gu.questionCount(guess) - 1) % GUESS_ACKS.length];
+  }
+
+  function pressed(btn) {
+    if (!btn || reduceMotion()) return;
+    btn.classList.add("picked");
+    setTimeout(function () { btn.classList.remove("picked"); }, 180);
+  }
+
+  document.querySelectorAll("#guessAnswers .guess-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      if (guessBusy || !guessStep || guessStep.type !== "question") return;
+      pressed(btn);
+      Gu.answer(guess, guessStep.question.id, btn.getAttribute("data-answer"));
+      var nextType = Gu.next(guess).type;
+      guessAck = guessAckFor(btn.getAttribute("data-answer"), nextType);
+      swapGuess(nextType !== "question");
+    });
+  });
+  $("guessYes").addEventListener("click", function () {
+    if (guessBusy || !guessStep || guessStep.type !== "guess") return;
+    finishGuess(guessStep.id);
+  });
+  $("guessNo").addEventListener("click", function () {
+    if (guessBusy || !guessStep || guessStep.type !== "guess") return;
+    Gu.reject(guess, guessStep.id);
+    guessAck = Gu.next(guess).type === "question" ? "そっか、ちがったね。もう少しだけ聞かせてね" : "そっか、ちがったね";
+    swapGuess(true);
+  });
+  $("guessBack").addEventListener("click", function () {
+    if (guessBusy || !guess) return;
+    if (guessView === "all") guessView = "ask";
+    else if (!Gu.undo(guess)) return;
+    guessAck = "ひとつ前に戻ったよ";
+    swapGuess(true);
+  });
+  $("guessAll").addEventListener("click", function () {
+    if (guessBusy || !guess) return;
+    guessView = "all";
+    guessAck = "";
+    swapGuess(true);
+  });
+  $("guessSkip").addEventListener("click", function () {
+    if (guessBusy || !guess) return;
+    var task = guess.task;
+    closeGuess(true, function () { makeSheet(task, null); });
+  });
+
+  // 分類が決まった: 覚えておき、「○○で作るね」を少し見せてからマス目を作る
+  function finishGuess(id) {
+    if (!guess || guessView === "done") return;
+    var task = guess.task;
+    rememberCategory(task, id);
+    guessView = "done";
+    guessDoneId = id;
+    guessAck = "ありがとう！";
+    swapGuess(true);
+    guessTimer = setTimeout(function () {
+      guessTimer = null;
+      closeGuess(true, function () { makeSheet(task, id); });
+    }, reduceMotion() ? 900 : 1400);
+  }
+
+  $("taskInput").addEventListener("input", guessFollowInput);
+
   $("generateBtn").addEventListener("click", function () {
     var task = $("taskInput").value.trim();
+    // 分類が決まらないときは、先に質問で一緒に決める(覚えた分類があれば聞かない)
+    if (task && C.classify(task, { learned: learnedMap() }).unknown) {
+      openGuess(task);
+      return;
+    }
+    closeGuess(false);
+    makeSheet(task, null);
+  });
+
+  // マス目を作る。category: 質問で一緒に決めたカテゴリ(null なら入力から分類する)
+  function makeSheet(task, category) {
     commitNote();
     // 今の紙に1マス以上埋まっていれば、その記録は綴じ帳に残したまま新しい紙にする
     var shelved = !!state.sheetId && doneCount() > 0;
@@ -3479,7 +3959,10 @@
     $("noteInput").value = "";
     $("noteHint").textContent = "";
     // 分類 → 難易度スコア → マス数・手順の軽さ・ご褒美レベル(classify.js)
-    var plan = C.plan({ task: task, heaviness: state.heaviness, time: state.time, energy: state.energy });
+    var plan = C.plan({
+      task: task, heaviness: state.heaviness, time: state.time, energy: state.energy,
+      category: category, learned: learnedMap()
+    });
     state.steps = plan.steps;
     state.done = state.steps.map(function () { return false; });
     state.score = plan.score;
@@ -3504,7 +3987,7 @@
     $("panel").scrollIntoView({ behavior: "smooth", block: "start" });
     saveState();
     if (shelved) toast("前の原稿用紙は綴じ帳にしまったよ", null, mark);
-  });
+  }
 
   $("rerollBtn").addEventListener("click", function () {
     if ($("rerollBtn").disabled || $("rerollBtn").hidden) return;
@@ -3540,6 +4023,7 @@
     $("completeBanner").classList.remove("show");
     $("praiseToast").classList.remove("show");
     $("taskInput").value = "";
+    guessFollowInput();
     state.steps = [];
     state.done = [];
     state.gold = [];
@@ -4195,6 +4679,7 @@
     state.boxRewards = s.steps.map(function (_, i) { return drawTaskBoxReward(i); });
     delete state.tier;
     $("taskInput").value = s.task;
+    guessFollowInput();
     $("rewardInput").value = s.finalReward;
     $("tierLabel").textContent = levelName(level);
     $("noteHint").textContent = "";
@@ -4255,6 +4740,7 @@
   KEY_NAMES[G.KEY] = "ジムの日カードの設定（曜日・いつ・どうする・お供）と、今日のジムの紙";
   KEY_NAMES[W.KEY] = "週のたより";
   KEY_NAMES[M.KEY] = "原稿用紙（書いた作品・書き上げた原稿用紙・その設定）";
+  KEY_NAMES[LEARN_KEY] = "質問で一緒に決めた分類（次から聞かずに作るためのもの）";
   var IMPORT_ERRORS = {
     broken: "読み込めなかったよ。ファイルが途中で切れているか、形が違うみたい。データは何も変えていないよ",
     other: "このアプリで書き出したファイルではないみたい。データは何も変えていないよ",
@@ -5779,6 +6265,7 @@
   }
   function useRecent(r) {
     $("taskInput").value = r.task;
+    guessFollowInput();
     if (r.heaviness >= 1 && r.heaviness <= 5) {
       state.heaviness = r.heaviness;
       $("heaviness").value = r.heaviness;

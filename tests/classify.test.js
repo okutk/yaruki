@@ -262,5 +262,34 @@ console.log("全組み合わせ(" + total + "通り)のレベル分布: " + dist
 check(C.CATEGORIES.every(function (c) { return typeof C.CATEGORY_EMOJI[c.id] === "string" && C.CATEGORY_EMOJI[c.id]; }) &&
   !C.CATEGORY_EMOJI[C.FALLBACK.id], "カテゴリごとに絵文字がある(「その他」には無い)");
 
+// ── 6. 分類がわからないとき(unknown)と、質問で一緒に決めた分類(learned・category) ──────
+before = failures;
+check(C.classify("謎のこと").unknown === true && C.classify("謎のこと").id === "other", "何も当たらなければ unknown(質問で決める)");
+check(C.classify("部屋の掃除").unknown === false, "当たれば unknown ではない");
+var L = {};
+L[C.normalize("猫と遊ぶ")] = "kaji";
+L[C.normalize("部屋の掃除")] = "katazuke";
+L[C.normalize("ぼーっとする")] = "other";
+L[C.normalize("ゲーム")] = "goraku";
+L[C.normalize("謎の用事")] = "no-such-category";
+var r1 = C.classify("猫と遊ぶ", { learned: L });
+check(r1.id === "kaji" && r1.learned && !r1.unknown, "覚えた入力とまるごと同じなら、その分類: " + r1.id);
+check(C.classify("  猫と遊ぶ ", { learned: L }).id === "kaji", "前後の空白は気にしない");
+check(C.classify("部屋の掃除", { learned: L }).id === "katazuke", "まるごと同じなら、キーワードより覚えた分類");
+var r2 = C.classify("ぼーっとする", { learned: L });
+check(r2.id === "other" && !r2.unknown, "「その他」と決めたものは、もう聞かない(unknown ではない)");
+check(C.classify("ぼーっとするだけ", { learned: L }).unknown, "「その他」と決めたものは、入力の一部としては使わない");
+check(C.classify("猫と遊ぶ時間", { learned: L }).id === "kaji", "キーワードが当たらないときは、覚えた入力が中にあればその分類");
+check(C.classify("ゲーム実況の動画編集", { learned: L }).id === "sousaku", "キーワードが当たれば、覚えた入力が中にあってもキーワードの分類");
+check(C.classify("謎の用事", { learned: L }).unknown, "無いカテゴリの id は使わない");
+check(C.classify("猫と遊ぶ").unknown, "覚えた分類を渡さなければ、今までどおり");
+var pc = C.plan({ task: "謎のこと", heaviness: 3, energy: 2, time: 15, category: "souji" });
+check(pc.category === "souji" && pc.categoryLabel === "掃除" && pc.steps.length > 0, "plan: 決めたカテゴリで作る");
+check(pc.score === C.plan({ task: "部屋の掃除", heaviness: 3, energy: 2, time: 15 }).score, "plan: 決めたカテゴリの難しさで計算する");
+check(C.plan({ task: "謎のこと", heaviness: 3, energy: 2, time: 15, category: "no-such-category" }).category === "other", "plan: 無いカテゴリなら、今までどおり分類する");
+check(C.plan({ task: "猫と遊ぶ", heaviness: 3, energy: 2, time: 15, learned: L }).category === "kaji", "plan: 覚えた分類を使う");
+check(C.isCategoryId("other") && C.isCategoryId("souji") && !C.isCategoryId("x"), "isCategoryId");
+console.log("分類がわからないとき・覚えた分類: " + (failures === before ? "OK" : "NG あり"));
+
 if (failures) { console.log("\n失敗: " + failures + " 件"); process.exit(1); }
 console.log("\nすべて成功");

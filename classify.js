@@ -945,7 +945,11 @@
    *  (3) 残った語の重みをカテゴリごとに足し、合計が一番大きいカテゴリにする。
    *  (4) 合計が同じなら、1語あたりの重みの最大値が大きい方 → 入力の中で先に出てくる方
    *      → CATEGORIES の並び順 の順で決める。
-   *  (5) 何も当たらなければ「その他」(FALLBACK)。
+   *  (5) 何も当たらなければ「その他」(FALLBACK)。このとき unknown: true(画面では質問で一緒に決める。guess.js)。
+   *  (6) 覚えた分類(opts.learned = { normalize() した入力: カテゴリid }。質問で一緒に決めたもの)
+   *      ・入力がまるごと同じなら、キーワードより先にその分類にする(「その他」と決めたものも)。
+   *      ・キーワードが何も当たらないときだけ、覚えた入力(2文字以上)が入力の中にあればその分類にする。
+   *        いくつもあれば長い方(同じ長さなら後から覚えた方)。「その他」と決めたものはここでは使わない。
    * ──────────────────────────────────────────────── */
   function normalize(s) {
     s = String(s == null ? "" : s);
@@ -971,8 +975,20 @@
     });
   })();
 
-  function classify(task) {
+  function isCategoryId(id) {
+    return id === FALLBACK.id || CATEGORIES.some(function (c) { return c.id === id; });
+  }
+  function has(obj, key) { return Object.prototype.hasOwnProperty.call(obj, key); }
+
+  function learnedResult(id, word) {
+    var cat = findCategory(id);
+    return { id: cat.id, label: cat.label, base: cat.base, matched: [word], candidates: [], learned: true, unknown: false };
+  }
+
+  function classify(task, opts) {
     var text = normalize(task);
+    var learned = opts && opts.learned && typeof opts.learned === "object" ? opts.learned : null;
+    if (learned && text && has(learned, text) && isCategoryId(learned[text])) return learnedResult(learned[text], String(task).trim());
     var hits = [];
     KEYWORDS.forEach(function (kw) {
       if (!kw.word) return;
@@ -1015,13 +1031,23 @@
     });
 
     var best = ranked[0];
+    if (!best && learned) {
+      var phrase = null;
+      Object.keys(learned).forEach(function (w) {
+        if (w.length < 2 || text.indexOf(w) === -1 || learned[w] === FALLBACK.id || !isCategoryId(learned[w])) return;
+        if (!phrase || w.length >= phrase.length) phrase = w;
+      });
+      if (phrase) return learnedResult(learned[phrase], phrase);
+    }
     var cat = best ? best.cat : FALLBACK;
     return {
       id: cat.id,
       label: cat.label,
       base: cat.base,
       matched: best ? best.words : [],
-      candidates: ranked.map(function (r) { return { id: r.cat.id, score: r.score }; })
+      candidates: ranked.map(function (r) { return { id: r.cat.id, score: r.score }; }),
+      learned: false,
+      unknown: !best
     };
   }
 
@@ -1128,8 +1154,11 @@
   }
 
   // やりたいこと・気の重さ・時間・エネルギーから、マス目の計画をまとめて返す
+  //   input.category: 質問で一緒に決めたカテゴリ(あれば分類しない) / input.learned: 覚えた分類(classify の opts.learned)
   function plan(input) {
-    var c = classify(input.task);
+    var c = input.category && isCategoryId(input.category) ?
+      { id: input.category, label: findCategory(input.category).label, base: findCategory(input.category).base, matched: [] } :
+      classify(input.task, { learned: input.learned });
     var o = { heaviness: input.heaviness, energy: input.energy, time: input.time, base: c.base };
     var score = difficultyScore(o);
     var light = isLight(score);
@@ -1204,6 +1233,7 @@
     CATEGORY_EMOJI: CATEGORY_EMOJI,
     normalize: normalize,
     classify: classify,
+    isCategoryId: isCategoryId,
     categoryFactor: categoryFactor,
     difficultyScore: difficultyScore,
     countScore: countScore,
