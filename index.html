@@ -3020,7 +3020,7 @@
     return drawBoxReward(taskBoxLevel(i), state.boxPlaces[i] === "out" ? { place: "out" } : undefined);
   }
   // 全部埋めたときのご褒美の条件。運動・寝る紙では量の多い外食を出さない。最後のマスが外なら外でもらえるものから。
-  // 寝る紙は全部埋まるのが寝る直前なので、明日以降にもらうもの(時期が NERU_FINAL_MIN_WHEN 以上)から引く
+  // 寝る紙は全部埋まるのが寝る直前なので、明日以降にもらうもの(時期が NERU_FINAL_MIN_WHEN 以上。翌朝などの部品も入る)から引く
   var NERU_FINAL_MIN_WHEN = 2;
   function taskFinalOpts() {
     var o = {};
@@ -3028,17 +3028,6 @@
     if (state.category === "neru") o.minWhen = NERU_FINAL_MIN_WHEN;
     if (state.boxPlaces[state.steps.length - 1] === "out") o.place = "out";
     return o;
-  }
-  // 全部埋めたときのご褒美を引くレベル。時期でしぼって候補が残らないレベル(低いレベルは今日のうちのものだけ)は、
-  // 候補が残る一番近い上のレベルから引く(明日以降に延ばす分、ご褒美が少し大きくなる)
-  function taskFinalLevel(level, opts) {
-    if (!opts.minWhen) return level;
-    for (var lv = level; lv <= R.LEVELS; lv++) if (R.pool("final", lv, opts).length) return lv;
-    return level;
-  }
-  function drawTaskFinalReward(level) {
-    var o = taskFinalOpts();
-    return drawFinalReward(taskFinalLevel(level, o), o);
   }
   // マスごとの役割と場所をそろえる。保存していない紙(綴じ帳から呼び戻した紙・前から保存してある紙)は、
   // マスの文から求め直す。文言が変わっていて求められなければ、紙のレベルのまま・場所の指定なし(これまでどおり)
@@ -3506,7 +3495,7 @@
     delete state.tier;
 
     $("tierLabel").textContent = levelName(plan.level);
-    setFinalReward(drawTaskFinalReward(plan.level));
+    setFinalReward(drawFinalReward(plan.level, taskFinalOpts()));
     renderPlanMeta();
 
     renderBoxes();
@@ -3519,7 +3508,7 @@
 
   $("rerollBtn").addEventListener("click", function () {
     if ($("rerollBtn").disabled || $("rerollBtn").hidden) return;
-    setFinalReward(drawTaskFinalReward(state.level));
+    setFinalReward(drawFinalReward(state.level, taskFinalOpts()));
     updateProgress();
     saveState();
     syncRecord();

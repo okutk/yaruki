@@ -28,7 +28,10 @@
  *       span  … 期間の「いつ」(今週中に など)。ひと工夫の span は、期間の「いつ」か「いつ」なしとだけ組む
  *       h / o … 場所(行動と同じ)
  *       w0-1  … その部品が合う時期の範囲。t/m/e/w + 数 … 大きさに足す分
+ *       next  … 翌日用の「いつ」(明日の朝・起きたら など)。寝る紙の全部埋めたときのご褒美だけで使う(下の「時期」)
  *   ・「いつ」は行動の時期(w)と離れすぎないものだけ組む(小さいご褒美を先に延ばさない・大きいものを今すぐにしない)。
+ *     翌日用の「いつ」は、先に延ばすためのものなので、この決まりを当てない。
+ *   ・行動の5つ目の欄に next と書いた行動も翌日用。翌日用の「いつ」とだけ組む。
  *   ・MAX_LEN を超える組み合わせは使わない(スマホの2列表示で長くなりすぎるため)。
  *
  * 場所(pool・draw の opts.place):
@@ -37,8 +40,9 @@
  * 除外(pool・draw の opts.skip): SKIP_GROUPS の名前を並べると、その言葉を含む行動を除く。
  *   "feast" … 食べ放題・焼肉・ラーメンなど量の多い外食(運動の紙のご褒美に渡す)。省略すれば何も除かない。
  * 時期(pool・draw の opts.minWhen): 数を渡すと、もらえる時期(大きさの w)がその数以上のものだけにする。
- *   例: 2 … 明日・次の休み以降のものだけ(寝る紙の全完了のご褒美に渡す)。省略すれば時期でしぼらない。
- *   しぼると残らないレベルもある(低いレベルは時期 1 まで)。そのときの draw は時期でしぼらずに引く。
+ *   例: 2 … 明日以降のものだけ(寝る紙の全完了のご褒美に渡す)。省略すれば時期でしぼらない。
+ *   minWhen を渡したときだけ、翌日用(next)の部品も使う。省略したときの結果は、翌日用の部品がないときと同じ。
+ *   しぼって候補が残らないときの draw は、時期でしぼらずに引く。
  *
  * 抽選(非復元):
  *   ・レベルごとに「今の周回で出したもの」を記録し、使い切るまで同じものは出さない。
@@ -53,7 +57,7 @@
 })(this, function () {
   "use strict";
 
-  var VERSION = 3;
+  var VERSION = 4;
   var LEVELS = 6;
   var RECENT_LIMIT = 1000;
   var MAX_LEN = { box: 28, final: 40 };
@@ -197,7 +201,15 @@
     // 冷蔵庫の前で食べるのは、冷やしておくものだけ
     [["冷蔵庫"], ["ラムネ", "飴", "ガム", "干し梅", "キャラメル", "マシュマロ", "クッキー", "ナッツ", "グミ", "おせんべい", "ビスケット", "ドライフルーツ", "白湯", "温かい", "コーヒー", "紅茶", "お茶", "とっておき"]],
     // 音楽をかけながら何もしない
-    [["音楽をかけながら", "かみしめながら"], ["何もしない"]]
+    [["音楽をかけながら", "かみしめながら"], ["何もしない"]],
+    // 翌朝の「いつ」と、夜・眠る・帰り道・昼の行動
+    [["明日の朝", "起きたら", "目が覚めたら", "休みの朝"], ["夜", "星", "暗く", "照明", "パジャマ", "昼寝", "眠", "寝る", "帰る", "帰り", "寄って", "ランチ", "ディナー", "今日"]],
+    // 起きたあとは布団に残らない
+    [["起きたら"], ["布団にいる", "横に"]],
+    // 明日の夜に日なた・朝のこと・半日かかること
+    [["明日の夜"], ["天気", "日光", "日の光", "日の当たる", "公園", "朝", "早起き", "半日", "1日"]],
+    // 明日の午後に、夜や朝のこと
+    [["明日の午後"], ["夜", "星", "パジャマ", "朝", "早起き", "目覚まし"]]
   ];
 
   /* ────────────────────────────────────────────────
@@ -557,7 +569,10 @@
         "care|h|e0.5|首や肩を温めて15分休む",
         "think|a||休みの日の楽しみを思い浮かべる",
         "think|a||行きたい場所を地図で眺める",
-        "drink_in|h|e1|ホットミルクを作って飲む"
+        "drink_in|h|e1|ホットミルクを作って飲む",
+        // 翌日用(5つ目の欄 next): 翌日用の「いつ」とだけ組む。寝る紙の全部埋めたときのご褒美で使う
+        "morning|h||少しだけ長く布団にいる|next", "morning|h||窓を開けて外の空気を吸う|next",
+        "morning|h||カーテンを開けて日の光を浴びる|next", "listen|a||好きな曲を1曲聴く|next"
       ],
       2: [
         "buy|a|t0.5 m0.5 e1|コンビニで好きなスイーツを1つ買う", "buy|a|t0.5 m0.5 e1|好きなおやつを300円ぶん買う",
@@ -767,7 +782,17 @@
       "今週中に|*|4-5|2|span",
       "今月中に|*|5-6|3|span",
       "次の連休に|*|5-6|3",
-      "近いうちに|*|5-6|3|span"
+      "近いうちに|*|5-6|3|span",
+      // 翌日用(印 next): 寝る紙の全部埋めたときのご褒美だけで使う(pool・draw に minWhen を渡したとき)。
+      // 寝る紙は寝る直前に全部埋まるので、翌朝以降にもらうご褒美にする。小さいご褒美でも先に延ばしてよい
+      "明日の朝|drink_in eat_in listen read watch play rest care bath out think hobby buy drink_out morning|1-3|2|next",
+      "起きたら|drink_in eat_in listen read watch rest care bath out think hobby buy drink_out morning|1-3|2|next",
+      "目が覚めたら|drink_in eat_in listen read watch rest care think morning|1-2|2|next",
+      "次の休みの朝に|drink_in eat_in listen read watch rest care bath out morning|1-3|2|next",
+      "明日の午後|* -bath -morning|1-4|2|next",
+      "明日の夜|watch read play rest bath listen care eat_in drink_in hobby|1-4|2|next",
+      "明日|*|1-4|2|next",
+      "次の休みに|*|2-4|2|next"
     ]
   };
 
@@ -797,10 +822,11 @@
 
   // 印「h seq w0-1 m0.5」→ { place, seq, span, wMin, wMax, add }
   function parseMarks(spec) {
-    var out = { place: "a", seq: false, span: false, wMin: 0, wMax: 3, add: parseSize(spec) };
+    var out = { place: "a", seq: false, span: false, next: false, wMin: 0, wMax: 3, add: parseSize(spec) };
     (spec || "").split(/\s+/).forEach(function (tok) {
       if (tok === "h" || tok === "o") out.place = tok;
       else if (tok === "seq") out.seq = true;
+      else if (tok === "next") out.next = true;
       else if (tok === "span") out.span = true;
       else {
         var m = /^w(\d+)-(\d+)$/.exec(tok);
@@ -870,7 +896,7 @@
     var out = [];
     (def.acts[level] || []).forEach(function (s) {
       var p = s.split("|");
-      out.push({ kind: p[0], place: p[1], size: parseSize(p[2]), text: p[3] });
+      out.push({ kind: p[0], place: p[1], size: parseSize(p[2]), text: p[3], next: p[4] === "next" });
     });
     (def.scaled || []).forEach(function (s) {
       var p = s.split("|");
@@ -908,8 +934,8 @@
   function combine(type, act, twist, when) {
     var aw = act.size.w;
     if (when) {
-      // 小さいご褒美を先に延ばさない・大きいご褒美を今すぐにしない
-      if (when.w < aw - 0.5 || when.w > aw + 1) return null;
+      // 小さいご褒美を先に延ばさない・大きいご褒美を今すぐにしない(翌日用の「いつ」は、先に延ばすためのものなので除く)
+      if (when.w < aw - 0.5 || (when.w > aw + 1 && !when.next)) return null;
       if (twist && (when.w < twist.wMin || when.w > twist.wMax)) return null;
       if (twist && twist.span && !when.span) return null;
       if (twist && twist.seq && when.seq) return null;
@@ -932,7 +958,8 @@
       place: place,
       size: size,
       base: score(act.size),
-      score: score(size)
+      score: score(size),
+      next: !!(act.next || (when && when.next))
     };
   }
 
@@ -954,6 +981,8 @@
     actsFor(def, level).forEach(function (act) {
       var tws = [null].concat(twists.filter(function (t) { return t.fits(act.kind) && !conflicts(t.text, act.text); }));
       var whs = [null].concat(whens.filter(function (w) { return w.fits(act.kind) && !conflicts(w.text, act.text); }));
+      // 翌日用の行動は、翌日用の「いつ」とだけ組む
+      if (act.next) whs = whs.filter(function (w) { return w && w.next; });
       whs.forEach(function (w) {
         tws.forEach(function (t) {
           var item = combine(type, act, t, w);
@@ -997,6 +1026,7 @@
       detailCache[key] = fullPool(type, level).filter(function (it) {
         if (!fitsPlace(type, it, place)) return false;
         if (minWhen !== null && it.size.w < minWhen) return false;
+        if (it.next && minWhen === null) return false;
         for (var i = 0; i < skip.length; i++) if (hasAny(it.act, SKIP_GROUPS[skip[i]])) return false;
         return true;
       });
@@ -1070,7 +1100,7 @@
   }
 
   // opts.place: "out" なら外で使えるものだけから引く(省略時は家・どこでも)。opts.skip: 除く行動の種類(SKIP_GROUPS)
-  // opts.minWhen: もらえる時期(w)の下限。しぼって候補が残らないレベルでは、時期でしぼらずに引く
+  // opts.minWhen: もらえる時期(w)の下限。渡すと翌日用の部品も使う。しぼって候補が残らないときは、時期でしぼらずに引く
   function draw(type, level, hist, rng, opts) {
     rng = rng || Math.random;
     level = clampLevel(level);
