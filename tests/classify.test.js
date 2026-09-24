@@ -204,6 +204,15 @@ HS.forEach(function (h) { ES.forEach(function (e) { TS.forEach(function (t) {
     shiftSum += avg - p.level; sheets++;
   });
 }); }); });
+// 使える時間が5分のときは1マス少ない(最小2マス)。締めのマスは残る
+HS.forEach(function (h) { ES.forEach(function (e) {
+  C.CATEGORIES.forEach(function (cat) {
+    var p5 = C.plan({ task: cat.label, heaviness: h, energy: e, time: 5 });
+    var n = C.stepCount(C.countScore({ heaviness: h, energy: e, time: 5, base: cat.base }), e === 1);
+    check(p5.steps.length === Math.max(2, n - 1), cat.id + ": 5分の紙は1マス少ない h" + h + " e" + e + " (" + p5.steps.length + " / " + n + ")");
+    check(p5.roles.indexOf("close") !== -1, cat.id + ": 5分の紙にも締めのマスがある");
+  });
+}); });
 var outCats = C.CATEGORIES.filter(function (cat) { return cat.steps.concat(cat.light).some(function (s) { return /^\d+o\|/.test(s); }); }).map(function (c) { return c.id; });
 console.log("マスごとの段階: " + (failures === before ? "範囲・並び OK" : "NG あり") + "  紙の平均のずれ(全組み合わせの平均) " +
   (Math.round(shiftSum / sheets * 1000) / 1000) + "  外のマスがあるカテゴリ: " + outCats.join(", "));

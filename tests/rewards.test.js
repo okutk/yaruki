@@ -145,6 +145,21 @@ TYPES.forEach(function (type) {
   R.pool("box", 4).forEach(function (t) { homeSet[t] = true; });
   for (var j = 0; j < 300; j++) check(homeSet[R.draw("box", 4, hist, rng).text], "省略時に外だけの文が出た");
 })();
+// 除外(opts.skip): 運動の紙では量の多い外食を出さない。省略すれば今と同じ
+(function () {
+  for (var lv = 1; lv <= R.LEVELS; lv++) {
+    var all = R.pool("final", lv), skipped = R.pool("final", lv, { skip: ["feast"] });
+    check(JSON.stringify(R.pool("final", lv, { skip: [] })) === JSON.stringify(all), "skip が空なら省略と同じ(レベル" + lv + ")");
+    check(JSON.stringify(R.pool("final", lv, { skip: ["?"] })) === JSON.stringify(all), "知らない名前の skip は無視する(レベル" + lv + ")");
+    skipped.forEach(function (text) { check(!/食べ放題|焼肉|ラーメン/.test(text), "feast を除いたのに出た: 「" + text + "」"); });
+    check(skipped.length >= 900, "feast を除いても十分な件数がある(レベル" + lv + "): " + skipped.length);
+  }
+  var hist = R.emptyHistory("final"), rng = makeRng(11);
+  for (var i = 0; i < 300; i++) {
+    var r = R.draw("final", 5, hist, rng, { skip: ["feast"] });
+    check(!/食べ放題|焼肉|ラーメン/.test(r.text), "feast を除いた抽選で出た: 「" + r.text + "」");
+  }
+})();
 function windowDuplicatesOf(texts, windowSize) {
   var last = {}, bad = [];
   texts.forEach(function (t, i) {

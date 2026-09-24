@@ -34,6 +34,8 @@
  * 場所(pool・draw の opts.place):
  *   省略 / "home" … 外にいるときだけの部品(o)を除く(これまでと同じ)。
  *   "out"          … 家でしかできない部品(h)を除く。全完了のご褒美は、今夜以降のもの(w が1以上)なら家のものも残す。
+ * 除外(pool・draw の opts.skip): SKIP_GROUPS の名前を並べると、その言葉を含む行動を除く。
+ *   "feast" … 食べ放題・焼肉・ラーメンなど量の多い外食(運動の紙のご褒美に渡す)。省略すれば何も除かない。
  *
  * 抽選(非復元):
  *   ・レベルごとに「今の周回で出したもの」を記録し、使い切るまで同じものは出さない。
@@ -967,21 +969,35 @@
     return opts && opts.place === "out" ? "out" : "home";
   }
 
-  // 場所で絞った組み合わせ(details)と、その文だけの配列(pool)
+  // 省略できる除外。名前 → 行動の文に含まれる言葉
+  var SKIP_GROUPS = {
+    feast: ["食べ放題", "焼肉", "ラーメン"]
+  };
+  function skipOf(opts) {
+    if (!opts || !Array.isArray(opts.skip)) return [];
+    return opts.skip.filter(function (k) { return SKIP_GROUPS.hasOwnProperty(k); }).sort();
+  }
+  function optsKey(opts) { return placeOf(opts) + "|" + skipOf(opts).join(","); }
+
+  // 場所と除外で絞った組み合わせ(details)と、その文だけの配列(pool)
   var detailCache = {}, poolCache = {};
   function details(type, level, opts) {
     level = clampLevel(level);
-    var place = placeOf(opts);
-    var key = type + level + place;
+    var place = placeOf(opts), skip = skipOf(opts);
+    var key = type + level + optsKey(opts);
     if (!detailCache[key]) {
-      detailCache[key] = fullPool(type, level).filter(function (it) { return fitsPlace(type, it, place); });
+      detailCache[key] = fullPool(type, level).filter(function (it) {
+        if (!fitsPlace(type, it, place)) return false;
+        for (var i = 0; i < skip.length; i++) if (hasAny(it.act, SKIP_GROUPS[skip[i]])) return false;
+        return true;
+      });
     }
     return detailCache[key];
   }
 
   function pool(type, level, opts) {
     level = clampLevel(level);
-    var key = type + level + placeOf(opts);
+    var key = type + level + optsKey(opts);
     if (!poolCache[key]) poolCache[key] = details(type, level, opts).map(function (it) { return it.text; });
     return poolCache[key];
   }
@@ -1044,7 +1060,7 @@
     return Math.max(1, Math.min(LEVELS, level));
   }
 
-  // opts.place: "out" なら外で使えるものだけから引く(省略時は家・どこでも)
+  // opts.place: "out" なら外で使えるものだけから引く(省略時は家・どこでも)。opts.skip: 除く行動の種類(SKIP_GROUPS)
   function draw(type, level, hist, rng, opts) {
     rng = rng || Math.random;
     level = clampLevel(level);
@@ -1086,6 +1102,7 @@
     RECENT_LIMIT: RECENT_LIMIT,
     MAX_LEN: MAX_LEN,
     BANDS: BANDS,
+    SKIP_GROUPS: SKIP_GROUPS,
     pool: pool,
     details: details,
     signature: signature,
