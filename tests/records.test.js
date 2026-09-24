@@ -53,29 +53,69 @@ function rec(over) {
   check(Rec.removeSheet(b, "s1") && b.sheets.length === 0, "1枚を外せる");
 })();
 
-// ── 2. 累計マスとお祝い ────────────────────────
+// ── 2. 累計マス(原稿用紙の枚数は manuscript.js で数える) ──────
 (function () {
   var b = Rec.emptyBinder();
-  check(Rec.totalDone(b) === 0 && Rec.pageToCelebrate(b) === 0, "空なら 0");
+  check(Rec.totalDone(b) === 0, "空なら 0");
   for (var i = 0; i < 49; i++) {
     Rec.putSheet(b, rec({ id: "p" + i, steps: ["1", "2", "3", "4", "5", "6", "7", "8"],
       done: [true, true, true, true, true, true, true, true] }), T1);
   }
-  check(Rec.totalDone(b) === 392 && Rec.pageToCelebrate(b) === 0, "392マスではまだお祝いしない");
-  var p = Rec.pageInfo(392);
-  check(p.pages === 0 && p.rest === 392, "原稿用紙 0枚と392マス");
-  Rec.putSheet(b, rec({ id: "last", steps: ["1", "2", "3", "4", "5", "6", "7", "8"],
-    done: [true, true, true, true, true, true, true, true] }), T2);
-  check(Rec.totalDone(b) === 400 && Rec.pageToCelebrate(b) === 1, "400マスで通算1枚目のお祝い");
-  b.celebratedPages = 1;
-  Rec.putSheet(b, rec({ id: "last", steps: ["1", "2", "3", "4", "5", "6", "7", "8"],
-    done: [true, true, true, true, true, true, true, false] }), T3);
-  Rec.putSheet(b, rec({ id: "last", steps: ["1", "2", "3", "4", "5", "6", "7", "8"],
-    done: [true, true, true, true, true, true, true, true] }), T3);
-  check(Rec.pageToCelebrate(b) === 0, "外して付け直しても、もう一度は出ない");
-  var round = Rec.checkBinder(JSON.parse(JSON.stringify(b)));
-  check(round.celebratedPages === 1 && Rec.pageToCelebrate(round) === 0, "保存して読み直しても出ない");
-  check(Rec.pageInfo(803).pages === 2 && Rec.pageInfo(803).rest === 3, "803マス = 2枚と3マス");
+  check(Rec.totalDone(b) === 392, "埋めたマスを全部の紙で足す");
+  Rec.putSheet(b, rec({ id: "p0", steps: ["1", "2", "3", "4", "5", "6", "7", "8"],
+    done: [true, true, true, true, true, true, true, false] }), T2);
+  check(Rec.totalDone(b) === 391, "マスを外すと累計も減る");
+  check(typeof Rec.pageToCelebrate === "undefined" && typeof Rec.pageInfo === "undefined",
+    "「400マスで1枚」のお祝いは使わない(原稿用紙の枚数に置き換え)");
+  var round = Rec.checkBinder(JSON.parse(JSON.stringify({ celebratedPages: 2, sheets: [] })));
+  check(round.celebratedPages === 2, "前の版の celebratedPages は読み直しても残す");
+})();
+
+// ── 2b. 金のマス(マス目を作るときに決め、記録に残す) ────
+(function () {
+  var b = Rec.emptyBinder();
+  Rec.putSheet(b, rec({ gold: [2, 0, 0, 5, -1, "x"], done: [true, false, false] }), T1);
+  check(b.sheets[0].gold.join() === "0,2", "金のマスの番号をそろえて残す(範囲外・重複は外す)");
+  check(Rec.checkSheet(rec({ done: [true, false, false], updatedAt: T1 })).gold.length === 0, "金のマスが無い古い記録は空");
+  Rec.putSheet(b, rec({ gold: [0, 2], done: [true, true, false] }), T2);
+  check(b.sheets[0].gold.join() === "0,2" && b.sheets[0].updatedAt === T2, "埋めても金のマスの番号は変わらない");
+  var gym = Rec.checkSheet({ id: "g", kind: "gym", steps: ["1", "2", "3", "4", "5"], done: [true, false, false, false, false],
+    createdAt: T0, mainCount: 4, gold: [4] });
+  check(gym.gold.join() === "4", "ジムのおまけのマスも金になれる");
+})();
+
+// ── 2c. 最近のタスク ───────────────────────────
+(function () {
+  var now = new Date("2026-09-24T12:00:00Z");
+  function at(daysAgo) { return new Date(now.getTime() - daysAgo * 86400000).toISOString(); }
+  function s(id, task, daysAgo, extra) {
+    var r = { id: id, kind: "task", task: task, category: "souji", heaviness: 3, time: 15, createdAt: at(daysAgo + 1),
+      filledAt: [at(daysAgo)] };
+    for (var k in extra || {}) r[k] = extra[k];
+    return r;
+  }
+  var sheets = [
+    s("a", "部屋の掃除", 3),
+    s("b", "  部屋の　掃除 ", 1, { heaviness: 4, time: 30 }),
+    s("c", "洗濯物をたたむ", 2, { category: "sentaku", heaviness: 2, time: 5 }),
+    s("g", "ジム", 0, { kind: "gym" }),
+    s("d", "本を読む", 10, { category: "dokusho" }),
+    s("e", "書類を出す", 20, { category: "shorui" }),
+    s("f", "メールの返信", 30, { category: "renraku" }),
+    s("h", "植木に水をやる", 40, { category: "kaji" }),
+    s("old", "古いこと", 61),
+    s("blank", "   ", 0)
+  ];
+  var r = Rec.recentTasks(sheets, now);
+  check(r.length === 5 && Rec.RECENT_MAX === 5, "最大5件");
+  check(r.map(function (x) { return x.task; }).join("/") === "部屋の 掃除/洗濯物をたたむ/本を読む/書類を出す/メールの返信",
+    "重複なし・新しい順(ジムの紙と空の入力は入らない)");
+  check(r[0].heaviness === 4 && r[0].time === 30 && r[0].category === "souji", "同じ入力文は新しい方の気の重さ・時間を使う");
+  check(Rec.recentTasks([s("old", "古いこと", 61)], now).length === 0 && Rec.recentTasks([s("x", "少し前", 59)], now).length === 1,
+    "60日より前のものは出さない");
+  check(Rec.recentTasks([], now).length === 0, "記録が無ければ空");
+  var noFill = { id: "n", kind: "task", task: "作っただけ", createdAt: at(2), filledAt: [] };
+  check(Rec.recentTasks([noFill], now)[0].task === "作っただけ", "マスの時刻が無ければ作った時刻で並べる");
 })();
 
 // ── 3. 同じ種類・気分の傾向・前のあなたより ───────
@@ -272,12 +312,12 @@ function rec(over) {
   r = Rec.mergeBinder(older, newerFile);
   check(r.updated === 1 && Rec.findSheet(older, "x2").done[1] === true, "ファイルの方が新しければファイルを残す");
 
-  // 読み込みで400マスを超えてもお祝いは出さない
+  // 読み込みで400マスを超えても、前の版の「400マスで1枚」のお祝いが出直さないようにしておく
   var big = Rec.emptyBinder();
   for (var i = 0; i < 134; i++) Rec.putSheet(big, rec({ id: "b" + i, done: [true, true, true] }), T1);
   var target = Rec.emptyBinder();
   Rec.mergeBinder(target, big);
-  check(Rec.totalDone(target) === 402 && Rec.pageToCelebrate(target) === 0, "読み込みで増えたマスではお祝いしない");
+  check(Rec.totalDone(target) === 402 && target.celebratedPages === 1, "読み込みで増えたマスでは、前の版のお祝いも出さない");
 
   // 壊れたファイル・別アプリのファイル
   check(Rec.parseBackup("{ これは壊れている").error === "broken", "JSON でなければ broken");

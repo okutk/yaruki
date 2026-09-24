@@ -229,5 +229,9 @@ console.log("全組み合わせ(" + total + "通り)のレベル分布: " + dist
   return "Lv" + (i + 1) + " " + Math.round(n * 100 / total) + "%";
 }).join(" / ") + "  軽い手順 " + Math.round(lightCount * 100 / total) + "%");
 
+// カテゴリの絵文字(最近のタスクのボタン)
+check(C.CATEGORIES.every(function (c) { return typeof C.CATEGORY_EMOJI[c.id] === "string" && C.CATEGORY_EMOJI[c.id]; }) &&
+  !C.CATEGORY_EMOJI[C.FALLBACK.id], "カテゴリごとに絵文字がある(「その他」には無い)");
+
 if (failures) { console.log("\n失敗: " + failures + " 件"); process.exit(1); }
 console.log("\nすべて成功");

@@ -2,7 +2,7 @@
 // そのため更新を push すれば、次にオンラインで開いたときに最新版が表示される。
 // 電波が弱くて NETWORK_TIMEOUT を過ぎても返事がないときは、保存してある版を先に表示する
 // (ネットワークの取得はそのまま続け、届いたらキャッシュを新しくする)。
-var CACHE = "genkouyoushi-v6";
+var CACHE = "genkouyoushi-v7";
 var NETWORK_TIMEOUT = 3000;
 var ASSETS = [
   "./",
@@ -12,6 +12,7 @@ var ASSETS = [
   "./records.js",
   "./gym.js",
   "./watch.js",
+  "./manuscript.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",

@@ -824,6 +824,13 @@
   // ご褒美レベル: スコアがこの値以上なら次のレベル(レベル1〜6)
   var LEVEL_THRESHOLDS = [24, 34, 46, 58, 72];
   var LEVEL_NAMES = ["ささやか", "ちょっと", "ほどよく", "しっかり", "たっぷり", "とっておき"];
+  // カテゴリの絵文字(最近のタスクのボタンに付ける)。「その他」には付けない
+  var CATEGORY_EMOJI = {
+    souji: "🧹", katazuke: "📦", ryouri: "🍳", sentaku: "👕", kaji: "🏠", shorui: "📄", okane: "💴",
+    renraku: "✉️", shigoto: "💼", benkyou: "📚", dokusho: "📖", sousaku: "✏️", shumi: "🎨", undou: "🏃",
+    tsuuin: "🏥", kenkou: "🌿", mijitaku: "🪥", kaimono: "🛒", ryokou: "🧳", goraku: "🎁",
+    hitozukiai: "🤝", shukatsu: "👔", programming: "💻", hikkoshi: "🚚"
+  };
 
   function nearestKey(map, v) {
     var keys = Object.keys(map).map(Number);
@@ -944,6 +951,7 @@
     LIGHT_BELOW: LIGHT_BELOW,
     LEVEL_THRESHOLDS: LEVEL_THRESHOLDS,
     LEVEL_NAMES: LEVEL_NAMES,
+    CATEGORY_EMOJI: CATEGORY_EMOJI,
     normalize: normalize,
     classify: classify,
     categoryFactor: categoryFactor,
