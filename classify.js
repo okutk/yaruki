@@ -942,6 +942,20 @@
     return Math.max(1, Math.min(LEVEL_NAMES.length, lv));
   }
 
+  // 保存してあるマスの文(steps)から、役割と場所を求め直す(綴じ帳から呼び戻した紙・前から保存してある紙)。
+  // カテゴリの手順から作った文と全部一致すれば { roles, places }。文言が変わっていて一致しなければ null
+  function stepInfoFor(categoryId, light, steps, task) {
+    if (!Array.isArray(steps) || !steps.length) return null;
+    var cat = findCategory(categoryId);
+    var d = stepDetails(light ? cat.light : cat.steps, steps.length, task);
+    if (d.length !== steps.length) return null;
+    for (var i = 0; i < d.length; i++) if (d[i].text !== steps[i]) return null;
+    return {
+      roles: d.map(function (x) { return x.role; }),
+      places: d.map(function (x) { return x.place; })
+    };
+  }
+
   return {
     CATEGORIES: CATEGORIES,
     FALLBACK: FALLBACK,
@@ -964,6 +978,7 @@
     plan: plan,
     BOX_LEVEL_SHIFT: BOX_LEVEL_SHIFT,
     stepDetails: stepDetails,
+    stepInfoFor: stepInfoFor,
     boxLevelFor: boxLevelFor
   };
 });

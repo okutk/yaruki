@@ -204,6 +204,15 @@ HS.forEach(function (h) { ES.forEach(function (e) { TS.forEach(function (t) {
     shiftSum += avg - p.level; sheets++;
   });
 }); }); });
+// 保存してあるマスから役割・場所を求め直せる(文が変わっていれば null)
+C.CATEGORIES.forEach(function (cat) {
+  var p = C.plan({ task: cat.label, heaviness: 3, energy: 2, time: 15 });
+  var info = C.stepInfoFor(p.category, p.light, p.steps, cat.label);
+  check(info && JSON.stringify(info.roles) === JSON.stringify(p.roles) && JSON.stringify(info.places) === JSON.stringify(p.places),
+    cat.id + ": stepInfoFor で plan と同じ役割・場所になる");
+  check(C.stepInfoFor(p.category, p.light, p.steps.concat(["別の文"]), cat.label) === null, cat.id + ": 文が合わなければ null");
+});
+check(C.stepInfoFor("souji", false, ["昔の文言のマス", "もう1つ"], "") === null, "昔の文言の紙は null(紙のレベルのまま引く)");
 // 使える時間が5分のときは1マス少ない(最小2マス)。締めのマスは残る
 HS.forEach(function (h) { ES.forEach(function (e) {
   C.CATEGORIES.forEach(function (cat) {

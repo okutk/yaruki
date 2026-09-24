@@ -311,6 +311,11 @@
     return { done: count(s.done.slice(s.mainCount)), total: s.steps.length - s.mainCount };
   }
   function isBonus(s, i) { return i >= s.mainCount; }
+  // マスごとのご褒美を引く場所。着替えてから着くまでと、ジムでのおまけは外("out")。
+  // 最後のおまけ(帰ってからのマス)だけ家(null)。着替えた直後に、家でくつろぐご褒美が出ないようにする
+  function placeFor(s, i) {
+    return isBonus(s, i) && i === s.steps.length - 1 ? null : "out";
+  }
 
   // i マス目を埋めたときのひとこと(4マス目は null。完成の欄で大きく褒める)
   function praiseFor(s, i) {
@@ -380,6 +385,7 @@
     doneCount: doneCount,
     bonus: bonus,
     isBonus: isBonus,
+    placeFor: placeFor,
     praiseFor: praiseFor,
     arriveWords: arriveWords,
     arrivedDaysThisMonth: arrivedDaysThisMonth

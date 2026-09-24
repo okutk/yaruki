@@ -2612,8 +2612,10 @@
   // sheetId: 今の原稿用紙の id(綴じ帳の記録と同じ)。task / timeAtGen / energyAtGen: 生成したときの入力。
   // moodBefore / moodAfter: 始める前・終わった後の気分(1〜5)。note: 次の自分への一言。sticky: 付箋。どれも任意。
   // gold: 金のマスの番号(生成したときに決める。埋めるまでは見た目で分からない)。
+  // boxRoles / boxPlaces: マスごとの役割(start/main/close)と場所("out"/null)。classify.js の plan が決める。
   var state = {
     heaviness: 3, time: 15, energy: 2, lockChoice: "show", steps: [], done: [], gold: [], boxRewards: [],
+    boxRoles: [], boxPlaces: [],
     heavinessAtGen: 3, rewardLocked: false, lowEnergyAtGen: false,
     level: 3, score: null, category: "", categoryLabel: "", finalUserId: null,
     sheetId: null, createdAt: null, task: "", timeAtGen: null, energyAtGen: null,
@@ -2669,8 +2671,9 @@
   function saveHistory() {
     store(HISTORY_KEY, JSON.stringify(rewardHistory));
   }
-  function drawBoxReward(level) {
-    var r = R.draw("box", level, loadHistory().box);
+  // opts: rewards.js の draw に渡す条件({ place: "out" } など)。省略するとこれまでと同じ
+  function drawBoxReward(level, opts) {
+    var r = R.draw("box", level, loadHistory().box, undefined, opts);
     saveHistory();
     return r.text;
   }
@@ -2702,7 +2705,7 @@
   // 合うものが無ければ前後1つのレベルのものを、割合を NEAR_LEVEL_RATIO_SCALE 倍に下げて出す(たまに出る程度)。
   // 自分のご褒美も、候補を一巡するまでは同じものを出さない。
   var NEAR_LEVEL_RATIO_SCALE = 1 / 3;
-  function drawFinalReward(level) {
+  function drawFinalReward(level, opts) {
     var fits = my.items.filter(function (it) { return it.levels.indexOf(level) !== -1; });
     var ratio = my.ratio;
     if (!fits.length) {
@@ -2723,7 +2726,7 @@
       saveMy();
       return { text: pick.text, userId: pick.id };
     }
-    var r = R.draw("final", level, loadHistory().final);
+    var r = R.draw("final", level, loadHistory().final, undefined, opts);
     saveHistory();
     return { text: r.text, userId: null };
   }
@@ -2816,7 +2819,7 @@
       var rewardTextEl = box.querySelector(".box-reward-text");
       var rerollEl = box.querySelector(".box-reroll");
 
-      if (typeof state.boxRewards[i] !== "string") state.boxRewards[i] = drawBoxReward(taskBoxLevel(i));
+      if (typeof state.boxRewards[i] !== "string") state.boxRewards[i] = drawTaskBoxReward(i);
       function refreshRewardText() {
         setBoxRewardText(rewardTextEl, state.boxRewards[i], isWelcomeBox(state.sheetId, i), gold);
       }
@@ -2829,7 +2832,7 @@
         // おかえりの後、最初に埋めたマスは、ご褒美を1段上げる(金のマスはもう1段上げてあるので、そのまま。二重には上げない)
         var welcomed = newDone && takeWelcomeBonus(state.sheetId, i);
         if (welcomed) {
-          if (!gold) state.boxRewards[i] = drawBoxReward(W.bumpLevel(state.level));
+          if (!gold) state.boxRewards[i] = drawTaskBoxReward(i);
           refreshRewardText();
         }
         var finished = newDone && !wasComplete && taskComplete();
@@ -2869,7 +2872,7 @@
 
       rerollEl.addEventListener("click", function (e) {
         e.stopPropagation();
-        state.boxRewards[i] = drawBoxReward(taskBoxLevel(i));
+        state.boxRewards[i] = drawTaskBoxReward(i);
         refreshRewardText();
         saveState();
       });
@@ -3006,9 +3009,34 @@
   /* ── 金のマス(マス目を作るときに約3%で仕込む。埋めた瞬間に金色になり、ご褒美は1段上) ── */
   var GOLD_PRAISE = "✦ 金のマス！このマスのご褒美、1段上げたよ";
   function isGoldTask(i) { return state.gold.indexOf(i) !== -1; }
-  // 普段の紙のマスのご褒美レベル。金のマス・おかえりのおまけは1段上(重なっても1段だけ)
+  // 普段の紙のマスのご褒美レベル。最初のマスは1段上・締めのマスは1段下(classify.js の boxLevelFor)。
+  // 金のマス・おかえりのおまけは、そこからさらに1段上(重なっても1段だけ)
   function taskBoxLevel(i) {
-    return isGoldTask(i) || isWelcomeBox(state.sheetId, i) ? W.bumpLevel(state.level) : state.level;
+    var lv = C.boxLevelFor(state.level, state.boxRoles[i] || "main");
+    return isGoldTask(i) || isWelcomeBox(state.sheetId, i) ? W.bumpLevel(lv) : lv;
+  }
+  // 外でやるマス(通院・買い物・運動の本体など)は、外でできるご褒美から引く
+  function drawTaskBoxReward(i) {
+    return drawBoxReward(taskBoxLevel(i), state.boxPlaces[i] === "out" ? { place: "out" } : undefined);
+  }
+  // 全部埋めたときのご褒美の条件。運動の紙では量の多い外食を出さない。最後のマスが外なら外でもらえるものから
+  function taskFinalOpts() {
+    var o = {};
+    if (state.category === "undou") o.skip = ["feast"];
+    if (state.boxPlaces[state.steps.length - 1] === "out") o.place = "out";
+    return o;
+  }
+  // マスごとの役割と場所をそろえる。保存していない紙(綴じ帳から呼び戻した紙・前から保存してある紙)は、
+  // マスの文から求め直す。文言が変わっていて求められなければ、紙のレベルのまま・場所の指定なし(これまでどおり)
+  function setBoxInfo(info) {
+    var n = state.steps.length;
+    state.boxRoles = info && info.roles.length === n ? info.roles.slice() : state.steps.map(function () { return "main"; });
+    state.boxPlaces = info && info.places.length === n ? info.places.slice() : state.steps.map(function () { return null; });
+  }
+  function ensureBoxInfo() {
+    var n = state.steps.length;
+    if (Array.isArray(state.boxRoles) && state.boxRoles.length === n && Array.isArray(state.boxPlaces) && state.boxPlaces.length === n) return;
+    setBoxInfo(C.stepInfoFor(state.category, state.lowEnergyAtGen, state.steps, state.task));
   }
   // きらっとさせる(動きを減らす設定では、色が変わるだけ)
   function shine(box) {
@@ -3452,14 +3480,15 @@
     state.category = plan.category;
     state.categoryLabel = plan.categoryLabel;
     state.lowEnergyAtGen = plan.light;
+    setBoxInfo({ roles: plan.roles, places: plan.places });
     state.gold = M.drawGold(state.steps.length);
-    state.boxRewards = state.steps.map(function (_, i) { return drawBoxReward(taskBoxLevel(i)); });
+    state.boxRewards = state.steps.map(function (_, i) { return drawTaskBoxReward(i); });
     state.heavinessAtGen = state.heaviness;
     state.rewardLocked = state.lockChoice === "lock";
     delete state.tier;
 
     $("tierLabel").textContent = levelName(plan.level);
-    setFinalReward(drawFinalReward(plan.level));
+    setFinalReward(drawFinalReward(plan.level, taskFinalOpts()));
     renderPlanMeta();
 
     renderBoxes();
@@ -3472,7 +3501,7 @@
 
   $("rerollBtn").addEventListener("click", function () {
     if ($("rerollBtn").disabled || $("rerollBtn").hidden) return;
-    setFinalReward(drawFinalReward(state.level));
+    setFinalReward(drawFinalReward(state.level, taskFinalOpts()));
     updateProgress();
     saveState();
     syncRecord();
@@ -3507,6 +3536,8 @@
     state.steps = [];
     state.done = [];
     state.gold = [];
+    state.boxRoles = [];
+    state.boxPlaces = [];
     state.rewardLocked = false;
     state.finalUserId = null;
     state.score = null;
@@ -3604,6 +3635,7 @@
     if (!(savedLevel >= 1 && savedLevel <= 6)) state.level = LEGACY_TIER_LEVEL[saved.state.tier] || 3;
     if (!Array.isArray(state.boxRewards)) state.boxRewards = [];
     state.gold = M.checkGold(state.gold, (state.steps || []).length);
+    if (Array.isArray(state.steps)) ensureBoxInfo();
     if (typeof state.finalUserId !== "string") state.finalUserId = null;
     state.sticky = Rec.stickyOrNull(state.sticky);
     $("taskInput").value = saved.task || "";
@@ -4152,7 +4184,8 @@
     state.sticky = s.sticky;
     state.gold = (s.gold || []).slice();
     stickyEditing = false;
-    state.boxRewards = s.steps.map(function (_, i) { return drawBoxReward(taskBoxLevel(i)); });
+    setBoxInfo(C.stepInfoFor(state.category, state.lowEnergyAtGen, state.steps, state.task));
+    state.boxRewards = s.steps.map(function (_, i) { return drawTaskBoxReward(i); });
     delete state.tier;
     $("taskInput").value = s.task;
     $("rewardInput").value = s.finalReward;
@@ -4458,11 +4491,13 @@
     var lv = G.isBonus(s, i) ? 1 : s.level;
     return isGoldGym(s, i) ? W.bumpLevel(lv) : lv;
   }
+  function gymBoxOpts(s, i) { return G.placeFor(s, i) === "out" ? { place: "out" } : undefined; }
+  var GYM_FINAL_OPTS = { place: "out", skip: ["feast"] };
   function fillGymBoxRewards(s) {
     var changed = false;
     s.steps.forEach(function (_, i) {
       if (typeof s.boxRewards[i] === "string") return;
-      s.boxRewards[i] = drawBoxReward(gymBoxLevel(s, i));
+      s.boxRewards[i] = drawBoxReward(gymBoxLevel(s, i), gymBoxOpts(s, i));
       changed = true;
     });
     return changed;
@@ -4481,7 +4516,7 @@
     s.gold = M.drawGold(s.steps.length);
     fillGymBoxRewards(s);
     // 休日は「ジムの後のお昼ごはん」を最初の候補にする(「他の案」で変えられる)
-    var f = s.dayType === "holiday" ? { text: G.HOLIDAY_LUNCH, userId: null } : drawFinalReward(s.level);
+    var f = s.dayType === "holiday" ? { text: G.HOLIDAY_LUNCH, userId: null } : drawFinalReward(s.level, GYM_FINAL_OPTS);
     s.finalReward = f.text;
     s.finalUserId = f.userId;
     gym.today.sheet = s;
@@ -4525,7 +4560,7 @@
     }
     // おかえりの後、最初に埋めたマス(押したマス)は、ご褒美を1段上げる(金のマスはもう上げてあるので二重には上げない)
     var welcomed = next && takeWelcomeBonus(s.id, i);
-    if (welcomed && !isGoldGym(s, i)) s.boxRewards[i] = drawBoxReward(W.bumpLevel(gymBoxLevel(s, i)));
+    if (welcomed && !isGoldGym(s, i)) s.boxRewards[i] = drawBoxReward(W.bumpLevel(gymBoxLevel(s, i)), gymBoxOpts(s, i));
     // 今回埋まった金のマス(着いたときは、まとめて埋まったマスも)
     var goldNow = [];
     s.done.forEach(function (d, k) { if (d && !before[k] && isGoldGym(s, k)) goldNow.push(k); });
@@ -4585,7 +4620,7 @@
         var cur = gymSheet();
         if (!cur) return;
         var lv = gymBoxLevel(cur, i);
-        cur.boxRewards[i] = drawBoxReward(isWelcomeBox(cur.id, i) && !isGoldGym(cur, i) ? W.bumpLevel(lv) : lv);
+        cur.boxRewards[i] = drawBoxReward(isWelcomeBox(cur.id, i) && !isGoldGym(cur, i) ? W.bumpLevel(lv) : lv, gymBoxOpts(cur, i));
         paintGymBoxes(cur);
         saveGym();
       });
@@ -4853,7 +4888,7 @@
   $("gymRerollBtn").addEventListener("click", function () {
     var s = gymSheet();
     if (!s || $("gymRerollBtn").disabled || $("gymRerollBtn").hidden) return;
-    var f = drawFinalReward(s.level);
+    var f = drawFinalReward(s.level, GYM_FINAL_OPTS);
     s.finalReward = f.text;
     s.finalUserId = f.userId;
     gymPeeking = false;

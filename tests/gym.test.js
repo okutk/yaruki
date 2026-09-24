@@ -244,5 +244,15 @@ function at(y, m, d, h, min) { return new Date(y, m - 1, d, h, min || 0); }
   check(!found.length, "index.html の画面の文字に NG の言葉が無い" + (found.length ? ": " + found.join(" / ") : ""));
 })();
 
+// マスごとのご褒美を引く場所: 帰ってからのマス(最後のおまけ)だけ家、ほかは外
+[false, true].forEach(function (light) {
+  var s = G.newSheet({ id: "t", light: light, dayType: "weekday", hasCompanion: false, level: 4 });
+  s.steps.forEach(function (text, i) {
+    var last = i === s.steps.length - 1;
+    check(G.placeFor(s, i) === (last ? null : "out"), (light ? "軽め" : "ふつう") + "のジムの紙 " + (i + 1) + "マス目の場所");
+    if (last) check(/^帰ったら/.test(text), "最後のおまけは帰ってからのマス: " + text);
+  });
+});
+
 if (failures) { console.log("\n失敗: " + failures + " 件"); process.exit(1); }
 console.log("\nすべて成功");
