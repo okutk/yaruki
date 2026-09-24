@@ -3019,12 +3019,26 @@
   function drawTaskBoxReward(i) {
     return drawBoxReward(taskBoxLevel(i), state.boxPlaces[i] === "out" ? { place: "out" } : undefined);
   }
-  // 全部埋めたときのご褒美の条件。運動の紙では量の多い外食を出さない。最後のマスが外なら外でもらえるものから
+  // 全部埋めたときのご褒美の条件。運動・寝る紙では量の多い外食を出さない。最後のマスが外なら外でもらえるものから。
+  // 寝る紙は全部埋まるのが寝る直前なので、明日以降にもらうもの(時期が NERU_FINAL_MIN_WHEN 以上)から引く
+  var NERU_FINAL_MIN_WHEN = 2;
   function taskFinalOpts() {
     var o = {};
-    if (state.category === "undou") o.skip = ["feast"];
+    if (state.category === "undou" || state.category === "neru") o.skip = ["feast"];
+    if (state.category === "neru") o.minWhen = NERU_FINAL_MIN_WHEN;
     if (state.boxPlaces[state.steps.length - 1] === "out") o.place = "out";
     return o;
+  }
+  // 全部埋めたときのご褒美を引くレベル。時期でしぼって候補が残らないレベル(低いレベルは今日のうちのものだけ)は、
+  // 候補が残る一番近い上のレベルから引く(明日以降に延ばす分、ご褒美が少し大きくなる)
+  function taskFinalLevel(level, opts) {
+    if (!opts.minWhen) return level;
+    for (var lv = level; lv <= R.LEVELS; lv++) if (R.pool("final", lv, opts).length) return lv;
+    return level;
+  }
+  function drawTaskFinalReward(level) {
+    var o = taskFinalOpts();
+    return drawFinalReward(taskFinalLevel(level, o), o);
   }
   // マスごとの役割と場所をそろえる。保存していない紙(綴じ帳から呼び戻した紙・前から保存してある紙)は、
   // マスの文から求め直す。文言が変わっていて求められなければ、紙のレベルのまま・場所の指定なし(これまでどおり)
@@ -3416,6 +3430,10 @@
   function notePlaceholder() {
     if (state.category === "undou") return "例：行くまでがだるいだけ。行けば気分いい";
     if (state.category === "souji" || state.category === "katazuke") return "例：終わった後の部屋、気持ちよかった";
+    if (state.category === "ofuro") return "例：入るまでが面倒なだけ。入ればさっぱりする";
+    if (state.category === "taberu") return "例：食べたら、少し元気が出た";
+    if (state.category === "okiru") return "例：カーテンを開けたら、目が覚めてきた";
+    if (state.category === "neru") return "例：早めに布団に入ると、次の朝が楽";
     return "例：やってみたら、思ったより早く終わった";
   }
   function renderAfter() {
@@ -3488,7 +3506,7 @@
     delete state.tier;
 
     $("tierLabel").textContent = levelName(plan.level);
-    setFinalReward(drawFinalReward(plan.level, taskFinalOpts()));
+    setFinalReward(drawTaskFinalReward(plan.level));
     renderPlanMeta();
 
     renderBoxes();
@@ -3501,7 +3519,7 @@
 
   $("rerollBtn").addEventListener("click", function () {
     if ($("rerollBtn").disabled || $("rerollBtn").hidden) return;
-    setFinalReward(drawFinalReward(state.level, taskFinalOpts()));
+    setFinalReward(drawTaskFinalReward(state.level));
     updateProgress();
     saveState();
     syncRecord();

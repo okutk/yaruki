@@ -160,6 +160,48 @@ TYPES.forEach(function (type) {
     check(!/食べ放題|焼肉|ラーメン/.test(r.text), "feast を除いた抽選で出た: 「" + r.text + "」");
   }
 })();
+// 時期(opts.minWhen): 寝る紙の全完了のご褒美は、明日以降にもらうもの(w が2以上)から引く。省略すれば今と同じ
+(function () {
+  var NERU = { skip: ["feast"], minWhen: 2 };
+  var sizes = [];
+  for (var lv = 1; lv <= R.LEVELS; lv++) {
+    var all = R.pool("final", lv), skipOnly = R.details("final", lv, { skip: ["feast"] });
+    check(JSON.stringify(R.pool("final", lv, { minWhen: 0 })) === JSON.stringify(all), "minWhen が0なら省略と同じ(レベル" + lv + ")");
+    check(JSON.stringify(R.pool("final", lv, { minWhen: "?" })) === JSON.stringify(all), "数でない minWhen は無視する(レベル" + lv + ")");
+    [1, 2, 3].forEach(function (mw) {
+      var expect = skipOnly.filter(function (x) { return x.size.w >= mw; }).map(function (x) { return x.text; });
+      var got = R.details("final", lv, { skip: ["feast"], minWhen: mw }).map(function (x) { return x.text; });
+      check(JSON.stringify(got) === JSON.stringify(expect), "minWhen " + mw + " は時期でしぼるだけ(レベル" + lv + ")");
+      check(JSON.stringify(R.pool("final", lv, { skip: ["feast"], minWhen: mw })) === JSON.stringify(expect), "minWhen " + mw + " の pool と details が同じ(レベル" + lv + ")");
+    });
+    sizes.push(R.pool("final", lv, NERU).length);
+  }
+  // 寝る紙が引くレベル。index.html の taskFinalLevel と同じく、候補が残る一番近い上のレベル
+  var used = [];
+  for (var sl = 1; sl <= R.LEVELS; sl++) {
+    var at = sl;
+    while (at < R.LEVELS && !R.pool("final", at, NERU).length) at++;
+    var n = R.pool("final", at, NERU).length;
+    used.push(at + ":" + n);
+    check(n >= 150, "寝る紙のレベル" + sl + "で引く候補(レベル" + at + ")が少ない: " + n);
+    check(at - sl <= 2, "寝る紙のレベル" + sl + "のご褒美がレベル" + at + "まで上がる");
+  }
+  console.log("final: 明日以降のもの(minWhen 2・feast 除く)の件数 レベル1〜6 = " + sizes.join(" / ") +
+    "  寝る紙が引くレベル:件数 = " + used.join(" / "));
+  // 抽選: しぼった候補だけが出る・使い切るまで重複しない
+  var rng = makeRng(13), hist = R.emptyHistory("final"), ok = {};
+  var n3 = R.pool("final", 3, NERU).length, texts = [];
+  R.pool("final", 3, NERU).forEach(function (text) { ok[text] = true; });
+  for (var i = 0; i < n3; i++) {
+    var r = R.draw("final", 3, hist, rng, NERU);
+    check(ok[r.text], "minWhen でしぼった抽選で候補以外が出た: 「" + r.text + "」");
+    texts.push(r.text);
+  }
+  check(windowDuplicatesOf(texts, n3).length === 0, "minWhen でしぼった抽選で、使い切る前に重複した");
+  // しぼって候補が残らないレベルでも落ちない(時期でしぼらずに引く)
+  var r1 = R.draw("final", 1, hist, rng, NERU);
+  check(r1.level === 1 && R.pool("final", 1, { skip: ["feast"] }).indexOf(r1.text) !== -1, "候補が残らないレベルでも引ける");
+})();
 function windowDuplicatesOf(texts, windowSize) {
   var last = {}, bad = [];
   texts.forEach(function (t, i) {

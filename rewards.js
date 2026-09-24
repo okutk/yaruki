@@ -36,6 +36,9 @@
  *   "out"          … 家でしかできない部品(h)を除く。全完了のご褒美は、今夜以降のもの(w が1以上)なら家のものも残す。
  * 除外(pool・draw の opts.skip): SKIP_GROUPS の名前を並べると、その言葉を含む行動を除く。
  *   "feast" … 食べ放題・焼肉・ラーメンなど量の多い外食(運動の紙のご褒美に渡す)。省略すれば何も除かない。
+ * 時期(pool・draw の opts.minWhen): 数を渡すと、もらえる時期(大きさの w)がその数以上のものだけにする。
+ *   例: 2 … 明日・次の休み以降のものだけ(寝る紙の全完了のご褒美に渡す)。省略すれば時期でしぼらない。
+ *   しぼると残らないレベルもある(低いレベルは時期 1 まで)。そのときの draw は時期でしぼらずに引く。
  *
  * 抽選(非復元):
  *   ・レベルごとに「今の周回で出したもの」を記録し、使い切るまで同じものは出さない。
@@ -977,17 +980,23 @@
     if (!opts || !Array.isArray(opts.skip)) return [];
     return opts.skip.filter(function (k) { return SKIP_GROUPS.hasOwnProperty(k); }).sort();
   }
-  function optsKey(opts) { return placeOf(opts) + "|" + skipOf(opts).join(","); }
+  // 省略できる時期の下限。正の数でなければ null(しぼらない)
+  function minWhenOf(opts) {
+    var v = opts ? Number(opts.minWhen) : NaN;
+    return isFinite(v) && v > 0 ? v : null;
+  }
+  function optsKey(opts) { return placeOf(opts) + "|" + skipOf(opts).join(",") + "|" + (minWhenOf(opts) || ""); }
 
-  // 場所と除外で絞った組み合わせ(details)と、その文だけの配列(pool)
+  // 場所・除外・時期で絞った組み合わせ(details)と、その文だけの配列(pool)
   var detailCache = {}, poolCache = {};
   function details(type, level, opts) {
     level = clampLevel(level);
-    var place = placeOf(opts), skip = skipOf(opts);
+    var place = placeOf(opts), skip = skipOf(opts), minWhen = minWhenOf(opts);
     var key = type + level + optsKey(opts);
     if (!detailCache[key]) {
       detailCache[key] = fullPool(type, level).filter(function (it) {
         if (!fitsPlace(type, it, place)) return false;
+        if (minWhen !== null && it.size.w < minWhen) return false;
         for (var i = 0; i < skip.length; i++) if (hasAny(it.act, SKIP_GROUPS[skip[i]])) return false;
         return true;
       });
@@ -1061,11 +1070,13 @@
   }
 
   // opts.place: "out" なら外で使えるものだけから引く(省略時は家・どこでも)。opts.skip: 除く行動の種類(SKIP_GROUPS)
+  // opts.minWhen: もらえる時期(w)の下限。しぼって候補が残らないレベルでは、時期でしぼらずに引く
   function draw(type, level, hist, rng, opts) {
     rng = rng || Math.random;
     level = clampLevel(level);
     var all = fullPool(type, level), n = all.length;
     var list = details(type, level, opts);
+    if (!list.length && minWhenOf(opts) !== null) list = details(type, level, { place: opts.place, skip: opts.skip });
     var used = decodeBits(hist.used[level], n);
     var recentAt = {};
     hist.recent.forEach(function (id, k) { recentAt[id] = k; });
